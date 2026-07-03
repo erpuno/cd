@@ -36,6 +36,11 @@
 \DeclareFontShape{T2A}{phv}{m}{it}{<->ssub * cmss/m/it}{}
 \DeclareFontShape{T2A}{phv}{bx}{it}{<->ssub * cmss/bx/it}{}
 
+\let\originalfootnotesize\footnotesize
+\let\oldverbatim\verbatim
+\let\oldendverbatim\endverbatim
+\renewenvironment{verbatim}{\originalfootnotesize\oldverbatim}{\oldendverbatim}
+
 \titleformat{\section} {\color{primary}\Huge\bfseries}{\thesection.}{1em}{} \titlespacing*{\section}{0pt}{30pt}{12pt}
 \titleformat{\subsection} {\color{primary}\LARGE\bfseries}{\thesubsection.}{1em}{} \titlespacing*{\subsection}{0pt}{20pt}{8pt}
 \titleformat{\subsubsection} {\color{primary}\Large\bfseries}{\thesubsubsection.}{1em}{} \titlespacing*{\subsubsection}{0pt}{10pt}{6pt}
@@ -49,13 +54,6 @@
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0.4pt}
 \renewcommand{\footrule}{\color{footergray}\hrule width \textwidth height 0.4pt}
-
-\lstset{
-  basicstyle=\ttfamily\small,
-  breaklines=true,
-  frame=single,
-  numbers=left
-}
 
 \begin{document}
 \pagestyle{fancy}
@@ -149,13 +147,15 @@ Chaos Engineering & Інженерія хаосу (тестування відм
 
 Приклади SLI для ERP/1 (використовувати Prometheus + Grafana):
 
-\begin{lstlisting}
-# Availability
+Availability:
+\begin{verbatim}
 sum(rate(http_requests_total{status!~"5.."}[5m])) / sum(rate(http_requests_total[5m]))
+\end{verbatim}
 
-# Latency
+Latency:
+\begin{verbatim}
 histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
-\end{lstlisting}
+\end{verbatim}
 
 \subsection{Observability Stack (erp-telemetry)}
 
