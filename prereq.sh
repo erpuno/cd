@@ -128,6 +128,6 @@ echo "  bash deploy.sh"
 
 echo -e "\nOr deploy manually:\n"
 echo "  cd helm"
-echo "  helm install erp-uno . --namespace erp-uno --create-namespace"
+echo "  ./deploy.sh"
 
 echo ""
