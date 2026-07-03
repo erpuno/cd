@@ -1,0 +1,241 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage{helvet}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{eso-pic}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{microtype}
+\usepackage[english,ukrainian]{babel}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{listings}
+\usepackage{enumitem}
+
+% Define brand colors
+\definecolor{primary}{HTML}{293757}
+\definecolor{footergray}{gray}{0.65}
+
+\renewcommand{\familydefault}{\sfdefault}
+\setcounter{secnumdepth}{3}
+
+% Font shapes for T2A/Helvetica
+\DeclareFontFamily{T2A}{phv}{}
+\DeclareFontShape{T2A}{phv}{m}{n}{<->ssub * cmss/m/n}{}
+\DeclareFontShape{T2A}{phv}{bx}{n}{<->ssub * cmss/bx/n}{}
+\DeclareFontShape{T2A}{phv}{m}{it}{<->ssub * cmss/m/it}{}
+\DeclareFontShape{T2A}{phv}{bx}{it}{<->ssub * cmss/bx/it}{}
+
+\titleformat{\section} {\color{primary}\Huge\bfseries}{\thesection.}{1em}{} \titlespacing*{\section}{0pt}{30pt}{12pt}
+\titleformat{\subsection} {\color{primary}\LARGE\bfseries}{\thesubsection.}{1em}{} \titlespacing*{\subsection}{0pt}{20pt}{8pt}
+\titleformat{\subsubsection} {\color{primary}\Large\bfseries}{\thesubsubsection.}{1em}{} \titlespacing*{\subsubsection}{0pt}{10pt}{6pt}
+
+\fancyhf{}
+\fancyhead[R]{\small\color{footergray} 04 липня 2026}
+\fancyfoot[L]{\small\color{footergray} Технічні рекомендації ERP/1. SRE Handbook}
+\fancyfoot[R]{\small\color{footergray}\thepage}
+
+\newcommand\HUGE[1]{\fontsize{38}{38}\selectfont #1}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\footrule}{\color{footergray}\hrule width \textwidth height 0.4pt}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  numbers=left
+}
+
+\begin{document}
+\pagestyle{fancy}
+
+\begin{titlepage}
+\AddToShipoutPictureBG*{\AtPageLowerLeft{\color{primary}\rule{\paperwidth}{\paperheight}}}
+\color{white}\thispagestyle{empty}\vspace*{4cm}\centering
+  {\Huge \textbf{ERP/1: Підприємство} \par} \vspace{2cm}
+  {\HUGE \textbf{SRE Handbook} \par} \vspace{2.5cm}
+  {\LARGE \textbf{Практики Site Reliability Engineering \\ для Continuous Delivery ERP/1} \par} \vspace{2.5cm}
+\vfill
+  {\large 2026 \copyright\ Системи Електронного Урядування \par}
+\end{titlepage}
+
+\newpage
+\begin{center}
+  {\Huge\color{primary}\bfseries Зміст\par}
+\end{center}
+\vspace{40pt}
+\tableofcontents
+
+\newpage
+\begin{abstract}
+У цьому документі наведено практичний посібник з Site Reliability Engineering (SRE) для ERP/1: Continuous Development. Він адаптує класичні принципи SRE від Google до контексту Kubernetes-based, Helm-managed, multi-namespace розгортань ERP.uno. Посібник охоплює SLO/SLI, error budgets, on-call, monitoring, automation, chaos engineering та інтеграцію з Helm/GitOps для забезпечення високої надійності державних та корпоративних систем.
+\end{abstract}
+
+\newpage
+\section{Умовні скорочення та визначення}
+
+\begin{longtable}{p{4cm}p{10cm}}
+\toprule
+\textbf{Термін / Скорочення} & \textbf{Значення} \\
+\midrule
+SRE & Site Reliability Engineering (Інженерія надійності сайтів) \\
+SLO & Service Level Objective (Цільовий рівень обслуговування) \\
+SLI & Service Level Indicator (Індикатор рівня обслуговування) \\
+SLA & Service Level Agreement (Угода про рівень обслуговування) \\
+TOIL & Time spent On Internal Labor (Ручна робота) \\
+K8s & Kubernetes \\
+Helm & Package manager for Kubernetes \\
+GitOps & Declarative continuous delivery \\
+ERP/1 & Електронна система планування ресурсів версії 1 \\
+CD & Continuous Development / Continuous Delivery \\
+ observability & Спостережуваність (metrics, logs, traces) \\
+Chaos Engineering & Інженерія хаосу (тестування відмовостійкості) \\
+\bottomrule
+\end{longtable}
+
+\newpage
+\section{Загальні відомості}
+
+\subsection{Передумови}
+
+Сучасні державні та корпоративні системи ERP/1 вимагають високої доступності, швидкого відновлення та автоматизованої надійності. Репозиторій \texttt{erpuno/cd} надає Helm-чарти, shared resources та lib для multi-namespace deployment'ів, що створює основу для SRE-практик.
+
+Ключові виклики:
+\begin{enumerate}
+\item Забезпечення 99.9\%+ uptime в умовах потенційних кіберзагроз та інфраструктурних збоїв.
+\item Мінімізація TOIL через автоматизацію GitOps.
+\item Комплаєнс з КСЗІ та міжнародними стандартами надійності.
+\item Масштабування observability для сотень вузлів.
+\end{enumerate}
+
+\subsection{Призначення SRE Handbook}
+
+Цей handbook визначає:
+\begin{itemize}
+    \item Принципи SRE, адаптовані до ERP/1 CD pipeline.
+    \item Конкретні SLI/SLO для namespaces (\texttt{erp-ai}, \texttt{erp-telemetry}, \texttt{erp-apps} тощо).
+    \item Практики on-call, incident management та postmortems.
+    \item Інтеграцію з Helm, ArgoCD/GitOps та telemetry stacks.
+\end{itemize}
+
+\newpage
+\section{Основні принципи SRE}
+
+\subsection{Embracing Risk та Error Budgets}
+
+Надійність — це не 100\% uptime, а баланс між інноваціями та стабільністю.
+
+\begin{itemize}
+    \item \textbf{Error Budget}: Дозволений downtime = (1 - SLO). Наприклад, для SLO 99.9\% (monthly) — ~43 хв downtime.
+    \item Якщо error budget витрачено — фокус на reliability, а не на нових features.
+\end{itemize}
+
+Для ERP/1:
+- \texttt{erp-services}: SLO 99.95\%
+- \texttt{erp-telemetry}: SLO 99.99\% (критично для observability)
+
+\subsection{SLI — Service Level Indicators}
+
+Приклади SLI для ERP/1 (використовувати Prometheus + Grafana):
+
+\begin{lstlisting}
+# Availability
+sum(rate(http_requests_total{status!~"5.."}[5m])) / sum(rate(http_requests_total[5m]))
+
+# Latency
+histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+\end{lstlisting}
+
+\subsection{Observability Stack (erp-telemetry)}
+
+Використовувати namespaces з \texttt{erpuno/cd/shared} та \texttt{lib/erp-telemetry}:
+\begin{itemize}
+    \item Prometheus + Alertmanager
+    \item Loki / ELK для logs
+    \item Jaeger / Tempo для traces
+    \item Grafana dashboards per namespace
+\end{itemize}
+
+\newpage
+\section{Автоматизація та GitOps}
+
+\subsection{Helm + GitOps}
+
+Всі розгортання через Helm charts з \texttt{erpuno/cd/helm}:
+\begin{itemize}
+    \item \texttt{values.yaml} — конфігурація per environment
+    \item \texttt{templates/} — declarative manifests
+    \item Shared resources: NetworkPolicies, RBAC, StorageClasses
+\end{itemize}
+
+Рекомендації:
+\begin{enumerate}
+    \item ArgoCD або Flux для GitOps reconciliation
+    \item ImagePolicy / Kyverno для security
+    \item Helmfile або Helm + Kustomize overlays
+\end{enumerate}
+
+\subsection{Continuous Development Pipeline}
+
+Інтеграція SRE в CD:
+- Automated testing (unit, integration, chaos)
+- Canary / Blue-Green deployments via Helm
+- Automated rollbacks on SLO violation
+
+\newpage
+\section{Incident Management та On-Call}
+
+\subsection{On-Call Rotations}
+
+\begin{itemize}
+    \item PagerDuty / Alertmanager + OpsGenie
+    \item Primary + Secondary on-call
+    \item Postmortem template (mandatory for all Sev1/Sev2)
+\end{itemize}
+
+\subsection{Playbooks}
+
+Створити runbooks в repo для типових інцидентів:
+- Pod crashloop
+- High latency in erp-ai
+- NetworkPolicy violations
+- etcd / control-plane issues
+
+\newpage
+\section{Chaos Engineering та Resilience}
+
+\begin{itemize}
+    \item Chaos Mesh або LitmusChaos в \texttt{erp-infra}
+    \item Regular failure injection: node drain, network partition, pod kill
+    \item Test recovery time objectives (RTO/RPO)
+\end{itemize}
+
+\section{Метрики успіху та TCO}
+
+\begin{itemize}
+    \item MTTR < 15 хв
+    \item TOIL < 50\% engineer time
+    \item Error budget burn rate monitoring
+\end{itemize}
+
+\newpage
+\section{Висновок}
+
+SRE Handbook ERP/1 є живим документом. Оновлюйте його разом з еволюцією \texttt{erpuno/cd} репозиторію. Головна мета — зробити Continuous Delivery максимально надійною практикою для критичних державних систем.
+
+\begin{flushright}
+2026 \copyright\ Zen Crypted
+\end{flushright}
+
+\end{document}
