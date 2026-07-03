@@ -1,14 +1,12 @@
 apiVersion: v2
 name: erp-uno
-description: ERP.uno multi-namespace Helm chart - generated from namespace YAML structure
+description: "ERP/1: Підприємство"
 type: application
 version: 2024.6.15
 appVersion: "2024.6.15"
 keywords:
-  - erp
   - beam
   - kubernetes
   - gitops
-  - multi-namespace
 maintainers:
-  - name: ERP.uno Team
+  - name: Zen Crypted
