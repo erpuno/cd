@@ -24,22 +24,13 @@ deploy_service() {
   local service_path="$SCRIPT_DIR/lib/$namespace/$service"
   if [ -d "$service_path" ]; then
     echo "    Deploying $service to $namespace..."
-    # Apply PVC if exists
-    if [ -f "$service_path/pvc.yaml" ]; then
-      sed "s/namespace: .*/namespace: $namespace/" "$service_path/pvc.yaml" | kubectl apply -f -
-    fi
-    # Apply deployment
-    if [ -f "$service_path/deployment.yaml" ]; then
-      sed "s/namespace: .*/namespace: $namespace/" "$service_path/deployment.yaml" | kubectl apply -f -
-    fi
-    # Apply service
-    if [ -f "$service_path/service.yaml" ]; then
-      sed "s/namespace: .*/namespace: $namespace/" "$service_path/service.yaml" | kubectl apply -f -
-    fi
-    # Apply HPA if exists
-    if [ -f "$service_path/hpa.yaml" ]; then
-      sed "s/namespace: .*/namespace: $namespace/" "$service_path/hpa.yaml" | kubectl apply -f -
-    fi
+
+    for kind in pvc.yaml deployment.yaml service.yaml hpa.yaml; do
+      if [ -f "$service_path/$kind" ]; then
+        sed "s/namespace: .*/namespace: $namespace/" "$service_path/$kind" | \
+        kubectl apply -f -
+      fi
+    done
   fi
 }
 

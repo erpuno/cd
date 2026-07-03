@@ -9,11 +9,20 @@ metadata:
     name: {{ $namespace }}
     tier: {{ $ns.tier }}
     environment: {{ $.Values.global.environment }}
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: erp-uno
+    meta.helm.sh/release-namespace: default
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {{ $namespace }}-sa
   namespace: {{ $namespace }}
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: erp-uno
+    meta.helm.sh/release-namespace: default
 {{- end }}
 {{- end }}

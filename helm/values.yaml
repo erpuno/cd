@@ -1,203 +1,34 @@
-# Global configuration for all namespaces
+---
 global:
   domain: erp.uno
   environment: production
   registry: docker.io
   imagePullPolicy: IfNotPresent
-  version: "2024.6.15"
-
-# Namespace configurations
+  version: 2024.6.15
 namespaces:
+  erp-ai:
+    enabled: true
+    tier: application
+  erp-apps:
+    enabled: true
+    tier: application
   erp-infra:
     enabled: true
     tier: infrastructure
-  erp-telemetry:
-    enabled: true
-    tier: observability
   erp-security:
     enabled: true
     tier: security
-  erp-ai:
-    enabled: true
-    tier: application
   erp-services:
     enabled: true
     tier: application
-  erp-apps:
-    enabled: true
-    tier: application
-
-# Services per namespace - derived from /namespaces/ directory structure
-services:
-  # erp-infra services
-  erp-infra:
-    ns-dns:
-      enabled: true
-      image: synrc/ns:10.7.1
-      port: 53
-      protocol: UDP
-      resources:
-        requests:
-          cpu: 50m
-          memory: 32Mi
-        limits:
-          cpu: 100m
-          memory: 64Mi
-    docker-registry:
-      enabled: true
-      image: registry:2.8.3
-      port: 5000
-      resources:
-        requests:
-          cpu: 50m
-          memory: 128Mi
-        limits:
-          cpu: 200m
-          memory: 512Mi
-      persistence:
-        enabled: true
-        size: 50Gi
-        mountPath: /var/lib/registry
-
-  # erp-telemetry services
   erp-telemetry:
-    prometheus:
-      enabled: true
-      image: prom/prometheus:v2.53.0
-      port: 9090
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 1Gi
-      persistence:
-        enabled: true
-        size: 50Gi
-        mountPath: /prometheus
-    grafana:
-      enabled: true
-      image: grafana/grafana:11.1.0
-      port: 3000
-      resources:
-        requests:
-          cpu: 50m
-          memory: 128Mi
-        limits:
-          cpu: 200m
-          memory: 512Mi
-    loki:
-      enabled: true
-      image: grafana/loki:3.0.0
-      port: 3100
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 1Gi
-      persistence:
-        enabled: true
-        size: 100Gi
-        mountPath: /loki
-    otel-collector:
-      enabled: true
-      image: otel/opentelemetry-collector-contrib:0.104.0
-      ports:
-        grpc: 8404
-        http: 8405
-      resources:
-        requests:
-          cpu: 50m
-          memory: 128Mi
-        limits:
-          cpu: 200m
-          memory: 256Mi
-
-  # erp-security services
-  erp-security:
-    ca-pki:
-      enabled: true
-      image: erpuno/ca:10.7.1
-      port: 8107
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-    vpn-wireguard:
-      enabled: true
-      image: zencrypted/vpn:1.2.0
-      port: 8080
-      resources:
-        requests:
-          cpu: 100m
-          memory: 128Mi
-        limits:
-          cpu: 200m
-          memory: 256Mi
-    ias-auth:
-      enabled: true
-      replicas: 2
-      image: zencrypted/ias:2.1.0
-      port: 8204
-      resources:
-        requests:
-          cpu: 200m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-      hpa:
-        enabled: true
-        minReplicas: 2
-        maxReplicas: 5
-        targetCPUUtilization: 75
-
-  # erp-ai services
+    enabled: true
+    tier: observability
+services:
   erp-ai:
     ai-generation:
       enabled: true
-      image: erpuno/ai-generation:2024.6.15
-      port: 8601
-      resources:
-        requests:
-          cpu: 500m
-          memory: 2Gi
-        limits:
-          cpu: 2000m
-          memory: 8Gi
-      gpu:
-        enabled: false
-        resourceName: nvidia.com/gpu
-        limit: 1
-
-  # erp-services (core application services)
-  erp-services:
-    kvs-database:
-      enabled: true
-      replicas: 2
-      image: erpuno/kvs:2024.6.15
-      port: 8301
-      resources:
-        requests:
-          cpu: 200m
-          memory: 512Mi
-        limits:
-          cpu: 1000m
-          memory: 2Gi
-      persistence:
-        enabled: true
-        size: 20Gi
-        mountPath: /var/lib/kvs
-    bpe-engine:
-      enabled: true
-      image: erpuno/bpe:2024.6.15
-      port: 8302
+      replicas: 1
       resources:
         requests:
           cpu: 100m
@@ -205,59 +36,11 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
-    rest-bpe:
-      enabled: true
-      image: erpuno/rest:2024.6.15
-      port: 8303
-      resources:
-        requests:
-          cpu: 50m
-          memory: 128Mi
-        limits:
-          cpu: 200m
-          memory: 256Mi
-    n2o-server:
-      enabled: true
-      replicas: 2
-      image: erpuno/n2o:3.0.0
-      port: 8511
-      resources:
-        requests:
-          cpu: 200m
-          memory: 256Mi
-        limits:
-          cpu: 1000m
-          memory: 1Gi
-      hpa:
-        enabled: true
-        minReplicas: 2
-        maxReplicas: 8
-        targetCPUUtilization: 70
-    nitro-portal:
-      enabled: true
-      replicas: 2
-      image: erpuno/nitro:2024.6.15
-      port: 8510
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-      hpa:
-        enabled: true
-        minReplicas: 2
-        maxReplicas: 6
-        targetCPUUtilization: 75
-
-  # erp-apps (business logic applications)
+      port: 8080
   erp-apps:
-    lms-education:
+    acc-accounting:
       enabled: true
-      replicas: 2
-      image: erpuno/lms-education:2024.6.15
-      port: 8506
+      replicas: 1
       resources:
         requests:
           cpu: 100m
@@ -265,16 +48,50 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
-      hpa:
-        enabled: true
-        minReplicas: 2
-        maxReplicas: 6
-        targetCPUUtilization: 75
+      port: 8080
+    cart-registers:
+      enabled: true
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      port: 8080
+    crm-documents:
+      enabled: true
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      port: 8080
     hl7-health:
       enabled: true
       replicas: 2
-      image: erpuno/hl7-health:2024.6.15
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
       port: 8502
+      image: hl7-health
+      protocol: TCP
+      hpa:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 6
+        targetCPUUtilization: 75
+    itsm-incidents:
+      enabled: true
+      replicas: 1
       resources:
         requests:
           cpu: 100m
@@ -282,79 +99,10 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
-      hpa:
-        enabled: true
-        minReplicas: 2
-        maxReplicas: 6
-        targetCPUUtilization: 75
-    crm-documents:
+      port: 8080
+    lms-education:
       enabled: true
       replicas: 2
-      image: erpuno/crm-documents:2024.6.15
-      port: 8503
-      resources:
-        requests:
-          cpu: 200m
-          memory: 512Mi
-        limits:
-          cpu: 1000m
-          memory: 2Gi
-      persistence:
-        enabled: true
-        size: 50Gi
-        mountPath: /var/lib/documents
-      hpa:
-        enabled: true
-        minReplicas: 2
-        maxReplicas: 6
-        targetCPUUtilization: 75
-    acc-accounting:
-      enabled: true
-      replicas: 2
-      image: erpuno/acc-accounting:2024.6.15
-      port: 8504
-      resources:
-        requests:
-          cpu: 200m
-          memory: 256Mi
-        limits:
-          cpu: 1000m
-          memory: 1Gi
-      persistence:
-        enabled: true
-        size: 15Gi
-        mountPath: /var/lib/mnesia
-      hpa:
-        enabled: true
-        minReplicas: 2
-        maxReplicas: 4
-        targetCPUUtilization: 75
-    wms-warehouse:
-      enabled: true
-      replicas: 2
-      image: erpuno/wms-warehouse:2024.6.15
-      port: 8505
-      resources:
-        requests:
-          cpu: 200m
-          memory: 256Mi
-        limits:
-          cpu: 1000m
-          memory: 1Gi
-      persistence:
-        enabled: true
-        size: 30Gi
-        mountPath: /var/lib/rocks
-      hpa:
-        enabled: true
-        minReplicas: 2
-        maxReplicas: 4
-        targetCPUUtilization: 75
-    cart-registers:
-      enabled: true
-      replicas: 2
-      image: erpuno/cart-registers:2024.6.15
-      port: 8501
       resources:
         requests:
           cpu: 100m
@@ -362,6 +110,9 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      port: 8506
+      image: lms-education
+      protocol: TCP
       hpa:
         enabled: true
         minReplicas: 2
@@ -369,9 +120,166 @@ services:
         targetCPUUtilization: 75
     pm-projects:
       enabled: true
-      replicas: 2
-      image: erpuno/pm-projects:2024.6.15
-      port: 8514
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      port: 8080
+    wms-warehouse:
+      enabled: true
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      port: 8080
+  erp-infra:
+    docker-registry:
+      enabled: true
+      replicas: 1
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 512Mi
+      port: 5000
+      image: registry
+      protocol: TCP
+      persistence:
+        enabled: true
+        size: 10Gi
+        mountPath: "/data"
+    ns-dns:
+      enabled: true
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      port: 8080
+  erp-security:
+    ca-pki:
+      enabled: true
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      port: 8080
+  erp-services:
+    bpe-engine:
+      enabled: true
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      port: 8080
+    chat-messenger:
+      enabled: true
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      port: 8080
+    kvs-database:
+      enabled: true
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      port: 8080
+    n2o-server:
+      enabled: true
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      port: 8080
+    rest-bpe:
+      enabled: true
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      port: 8080
+  erp-telemetry:
+    grafana:
+      enabled: true
+      replicas: 1
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 512Mi
+      port: 3000
+      image: grafana
+      protocol: TCP
+      persistence:
+        enabled: true
+        size: 10Gi
+        mountPath: "/data"
+    loki:
+      enabled: true
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      port: 8080
+    otel-collector:
+      enabled: true
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      port: 8080
+    prometheus:
+      enabled: true
+      replicas: 1
       resources:
         requests:
           cpu: 100m
@@ -379,72 +287,26 @@ services:
         limits:
           cpu: 500m
           memory: 1Gi
-      hpa:
-        enabled: true
-        minReplicas: 2
-        maxReplicas: 4
-        targetCPUUtilization: 75
-    itsm-incidents:
-      enabled: true
-      replicas: 2
-      image: erpuno/itsm-incidents:2024.6.15
-      port: 8513
-      resources:
-        requests:
-          cpu: 200m
-          memory: 256Mi
-        limits:
-          cpu: 1000m
-          memory: 1Gi
+      port: 9090
+      image: prometheus
+      protocol: TCP
       persistence:
         enabled: true
-        size: 20Gi
-        mountPath: /var/lib/rocks
-      hpa:
-        enabled: true
-        minReplicas: 2
-        maxReplicas: 4
-        targetCPUUtilization: 75
-    chat-messenger:
-      enabled: true
-      replicas: 2
-      image: erpuno/chat:3.0.0
-      port: 8507
-      resources:
-        requests:
-          cpu: 200m
-          memory: 256Mi
-        limits:
-          cpu: 1000m
-          memory: 1Gi
-      hpa:
-        enabled: true
-        minReplicas: 2
-        maxReplicas: 10
-        targetCPUUtilization: 70
-
-# RBAC
+        size: 10Gi
+        mountPath: "/data"
 rbac:
   create: true
-
-# Network policies
 networkPolicy:
   enabled: true
-
-# Ingress
 ingress:
   enabled: true
   className: nginx
   tls:
     enabled: false
   hosts:
-    - host: erp.uno
-      paths:
-        - path: /
-          service: nitro-portal
-          namespace: erp-services
-          port: 8510
-        - path: /api/bpe
-          service: rest-bpe
-          namespace: erp-services
-          port: 8303
+  - host: erp.uno
+    paths:
+    - path: "/"
+      service: nitro-portal
+      namespace: erp-services
+      port: 8510

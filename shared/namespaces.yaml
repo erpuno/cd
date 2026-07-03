@@ -6,6 +6,10 @@ metadata:
     name: erp-security
     tier: security
     environment: production
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: erp-uno
+    meta.helm.sh/release-namespace: default
 ---
 apiVersion: v1
 kind: Namespace
@@ -15,6 +19,10 @@ metadata:
     name: erp-ai
     tier: application
     environment: production
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: erp-uno
+    meta.helm.sh/release-namespace: default
 ---
 apiVersion: v1
 kind: Namespace
@@ -24,6 +32,10 @@ metadata:
     name: erp-telemetry
     tier: observability
     environment: production
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: erp-uno
+    meta.helm.sh/release-namespace: default
 ---
 apiVersion: v1
 kind: Namespace
@@ -33,6 +45,10 @@ metadata:
     name: erp-infra
     tier: infrastructure
     environment: production
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: erp-uno
+    meta.helm.sh/release-namespace: default
 ---
 apiVersion: v1
 kind: Namespace
@@ -42,6 +58,10 @@ metadata:
     name: erp-apps
     tier: application
     environment: production
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: erp-uno
+    meta.helm.sh/release-namespace: default
 ---
 apiVersion: v1
 kind: Namespace
@@ -51,3 +71,7 @@ metadata:
     name: erp-services
     tier: application
     environment: production
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: erp-uno
+    meta.helm.sh/release-namespace: default
