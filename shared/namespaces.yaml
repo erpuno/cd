@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: erp-security
+  labels:
+    name: erp-security
+    tier: security
+    environment: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: erp-ai
+  labels:
+    name: erp-ai
+    tier: application
+    environment: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: erp-telemetry
+  labels:
+    name: erp-telemetry
+    tier: observability
+    environment: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: erp-infra
+  labels:
+    name: erp-infra
+    tier: infrastructure
+    environment: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: erp-apps
+  labels:
+    name: erp-apps
+    tier: application
+    environment: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: erp-services
+  labels:
+    name: erp-services
+    tier: application
+    environment: production

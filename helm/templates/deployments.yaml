@@ -1,0 +1,70 @@
+{{- range $namespace, $services := .Values.services }}
+{{- if (index $.Values.namespaces $namespace).enabled }}
+---
+# Deployments for {{ $namespace }}
+{{- range $serviceName, $service := $services }}
+{{- if $service.enabled }}
+apiVersion: apps/v1
+kind: {{ if $service.persistence }}StatefulSet{{ else }}Deployment{{ end }}
+metadata:
+  name: {{ $serviceName }}
+  namespace: {{ $namespace }}
+  labels:
+    app: {{ $serviceName }}
+    namespace: {{ $namespace }}
+spec:
+  {{- if $service.persistence }}
+  serviceName: {{ $serviceName }}
+  {{- end }}
+  replicas: {{ $service.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ $serviceName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $serviceName }}
+    spec:
+      serviceAccountName: {{ $namespace }}-sa
+      containers:
+      - name: {{ $serviceName }}
+        image: {{ $.Values.global.registry }}/{{ $service.image }}
+        imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
+        {{- if $service.port }}
+        ports:
+        - name: http
+          containerPort: {{ $service.port }}
+        {{- else if $service.ports }}
+        ports:
+        {{- range $portName, $portNum := $service.ports }}
+        - name: {{ $portName }}
+          containerPort: {{ $portNum }}
+        {{- end }}
+        {{- end }}
+        resources:
+          requests:
+            cpu: {{ $service.resources.requests.cpu }}
+            memory: {{ $service.resources.requests.memory }}
+          limits:
+            cpu: {{ $service.resources.limits.cpu }}
+            memory: {{ $service.resources.limits.memory }}
+        {{- if $service.persistence }}
+        volumeMounts:
+        - name: data
+          mountPath: {{ $service.persistence.mountPath }}
+        {{- end }}
+      {{- if $service.persistence }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: local-path
+      resources:
+        requests:
+          storage: {{ $service.persistence.size }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

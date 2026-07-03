@@ -1,0 +1,380 @@
+---
+# Deny-all baseline for each namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: erp-deny-all
+  namespace: erp-infra
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: erp-deny-all
+  namespace: erp-telemetry
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: erp-deny-all
+  namespace: erp-security
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: erp-deny-all
+  namespace: erp-ai
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: erp-deny-all
+  namespace: erp-apps
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+# Allow internal + DNS
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: erp-allow-internal
+  namespace: erp-infra
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow from same namespace
+  - from:
+    - podSelector: {}
+  # Allow from other ERP namespaces
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: erp-telemetry
+    - namespaceSelector:
+        matchLabels:
+          name: erp-security
+    - namespaceSelector:
+        matchLabels:
+          name: erp-ai
+    - namespaceSelector:
+        matchLabels:
+          name: erp-apps
+  egress:
+  # Allow to same namespace
+  - to:
+    - podSelector: {}
+  # Allow DNS queries
+  - to:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow external HTTPS (pulls, updates)
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+---
+# erp-telemetry - allow all internal + DNS
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: erp-allow-internal
+  namespace: erp-telemetry
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: erp-infra
+    - namespaceSelector:
+        matchLabels:
+          name: erp-security
+    - namespaceSelector:
+        matchLabels:
+          name: erp-ai
+    - namespaceSelector:
+        matchLabels:
+          name: erp-apps
+  egress:
+  - to:
+    - podSelector: {}
+  - to:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+---
+# erp-security - allow all internal + DNS
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: erp-allow-internal
+  namespace: erp-security
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: erp-infra
+    - namespaceSelector:
+        matchLabels:
+          name: erp-telemetry
+    - namespaceSelector:
+        matchLabels:
+          name: erp-ai
+    - namespaceSelector:
+        matchLabels:
+          name: erp-apps
+  egress:
+  - to:
+    - podSelector: {}
+  - to:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+---
+# erp-ai - allow to core (registry, db) + telemetry (metrics) + security (auth) + DNS
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: erp-allow-internal
+  namespace: erp-ai
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+  # Access to erp-infra (registry, kvs-database)
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: erp-infra
+    ports:
+    - protocol: TCP
+      port: 5000
+    - protocol: TCP
+      port: 8301
+  # Access to erp-telemetry (prometheus)
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: erp-telemetry
+    ports:
+    - protocol: TCP
+      port: 9090
+  # Access to erp-security (auth)
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: erp-security
+    ports:
+    - protocol: TCP
+      port: 8204
+  # DNS
+  - to:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+  # External HTTPS
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+---
+# erp-apps - allow to core (registry, db) + telemetry (metrics) + security (auth) + DNS
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: erp-allow-internal
+  namespace: erp-apps
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+  # Access to erp-infra (registry, kvs-database)
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: erp-infra
+    ports:
+    - protocol: TCP
+      port: 5000
+    - protocol: TCP
+      port: 8301
+  # Access to erp-telemetry (prometheus)
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: erp-telemetry
+    ports:
+    - protocol: TCP
+      port: 9090
+  # Access to erp-security (auth)
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: erp-security
+    ports:
+    - protocol: TCP
+      port: 8204
+  # DNS
+  - to:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+  # External HTTPS
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: erp-allow-internal
+  namespace: erp-services
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector: {}
+  egress:
+  - to:
+    - podSelector: {}
+  # Access to erp-infra (registry, kvs-database)
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: erp-infra
+    ports:
+    - protocol: TCP
+      port: 5000
+    - protocol: TCP
+      port: 8301
+  # Access to erp-telemetry (prometheus)
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: erp-telemetry
+    ports:
+    - protocol: TCP
+      port: 9090
+  # Access to erp-security (auth)
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: erp-security
+    ports:
+    - protocol: TCP
+      port: 8204
+  # DNS
+  - to:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+  # External HTTPS
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: erp-deny-all
+  namespace: erp-services
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress

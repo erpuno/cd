@@ -1,591 +1,427 @@
-# Global configuration
+# Global configuration for all namespaces
 global:
   domain: erp.uno
   environment: production
-  registry: registry.erp.uno
+  registry: docker.io
   imagePullPolicy: IfNotPresent
-  # Calendar versioning: X.Y.Z = years.months.days
   version: "2024.6.15"
 
-  # Resource defaults for stateless services
-  defaults:
-    stateless:
-      requests:
-        cpu: 50m
-        memory: 128Mi
-      limits:
-        cpu: 200m
-        memory: 256Mi
-    stateful:
-      requests:
-        cpu: 100m
-        memory: 256Mi
-      limits:
-        cpu: 500m
-        memory: 512Mi
+# Namespace configurations
+namespaces:
+  erp-infra:
+    enabled: true
+    tier: infrastructure
+  erp-telemetry:
+    enabled: true
+    tier: observability
+  erp-security:
+    enabled: true
+    tier: security
+  erp-ai:
+    enabled: true
+    tier: application
+  erp-services:
+    enabled: true
+    tier: application
+  erp-apps:
+    enabled: true
+    tier: application
 
-  # PVC defaults
-  storage:
-    storageClass: local-path  # or ceph-rbd, longhorn for multi-node
-    size: 10Gi
-
-# Service configurations
+# Services per namespace - derived from /namespaces/ directory structure
 services:
-  # Infrastructure services (SLUB)
-  ns-dns:
-    enabled: true
-    type: stateless
-    replicaCount: 1
-    image: erpuno/ns:10.7.1
-    port: 53
-    protocol: UDP
-    resources:
-      requests:
-        cpu: 50m
-        memory: 32Mi
-      limits:
-        cpu: 100m
-        memory: 64Mi
-    probes:
-      enabled: false  # DNS doesn't expose HTTP
-  
-  ca-pki:
-    enabled: true
-    type: stateless
-    replicaCount: 1
-    image: erpuno/ca:10.7.1
-    ports:
-      issuer: 8107
-      ocsp: 8020
-      tsp: 8021
-    resources:
-      requests:
-        cpu: 100m
-        memory: 256Mi
-      limits:
-        cpu: 500m
-        memory: 512Mi
-    probes:
+  # erp-infra services
+  erp-infra:
+    ns-dns:
       enabled: true
-      path: /health
-      initialDelaySeconds: 10
-  
-  vpn-wireguard:
-    enabled: true
-    type: stateless
-    replicaCount: 1
-    image: zencrypted/vpn:1.2.0
-    port: 8080
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
-      limits:
-        cpu: 200m
-        memory: 256Mi
-    probes:
+      image: synrc/ns:10.7.1
+      port: 53
+      protocol: UDP
+      resources:
+        requests:
+          cpu: 50m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 64Mi
+    docker-registry:
       enabled: true
-      path: /api/admin/summary
-  
-  ldap-directory:
-    enabled: true
-    type: stateless
-    replicaCount: 1
-    image: erpuno/ldap:1.0.0
-    port: 8202
-    resources: {}  # Use defaults
-    probes:
-      enabled: false
-  
-  ias-auth:
-    enabled: true
-    type: stateful
-    replicaCount: 2
-    image: zencrypted/ias:2.1.0
-    port: 8204
-    backend: kvs_mnesia
-    resources:
-      requests:
-        cpu: 200m
-        memory: 256Mi
-      limits:
-        cpu: 500m
-        memory: 512Mi
-    probes:
-      enabled: true
-      path: /health
-      initialDelaySeconds: 15
-    hpa:
-      enabled: true
-      minReplicas: 2
-      maxReplicas: 5
-      targetCPUUtilization: 75
-  
-  chat-messenger:
-    enabled: true
-    type: stateless
-    replicaCount: 2
-    image: erpuno/chat:3.0.0
-    port: 8507
-    resources:
-      requests:
-        cpu: 200m
-        memory: 256Mi
-      limits:
-        cpu: 1000m
-        memory: 1Gi
-    probes:
-      enabled: true
-      path: /health
-    hpa:
-      enabled: true
-      minReplicas: 2
-      maxReplicas: 10
-      targetCPUUtilization: 70
-  
-  mail-delivery:
-    enabled: true
-    type: stateless
-    replicaCount: 1
-    image: erpuno/mail:1.0.0
-    port: 8508
-    resources: {}
-    probes:
-      enabled: true
-  
-  rest-bpe:
-    enabled: true
-    type: stateless
-    replicaCount: 1
-    image: erpuno/rest:1.0.0
-    port: 8303
-    resources: {}
-    probes:
-      enabled: true
-  
-  abac-clearance:
-    enabled: true
-    type: stateless
-    replicaCount: 1
-    image: zencrypted/clearance:1.0.0
-    port: 8203
-    resources: {}
-    probes:
-      enabled: true
-  
-  mach-ivr:
-    enabled: true
-    type: stateless
-    replicaCount: 1
-    image: erpuno/mach:1.0.0
-    port: 8509
-    resources: {}
-    probes:
-      enabled: true
-  
-  bpe-engine:
-    enabled: true
-    type: stateless
-    replicaCount: 1
-    image: erpuno/bpe:1.0.0
-    port: 8302
-    resources:
-      requests:
-        cpu: 100m
-        memory: 256Mi
-      limits:
-        cpu: 500m
-        memory: 512Mi
-    probes:
-      enabled: true
-  
-  kvs-database:
-    enabled: true
-    type: stateful
-    replicaCount: 2
-    image: erpuno/kvs:1.0.0
-    port: 8301
-    backend: disc_copies
-    resources:
-      requests:
-        cpu: 200m
-        memory: 512Mi
-      limits:
-        cpu: 1000m
-        memory: 2Gi
-    probes:
-      enabled: false  # BEAM RPC only
-    persistence:
-      enabled: true
-      size: 20Gi
-      mountPath: /var/lib/kvs
-  
-  nitro-portal:
-    enabled: true
-    type: stateless
-    replicaCount: 2
-    image: erpuno/nitro:1.0.0
-    port: 8510
-    resources:
-      requests:
-        cpu: 100m
-        memory: 256Mi
-      limits:
-        cpu: 500m
-        memory: 512Mi
-    probes:
-      enabled: true
-    hpa:
-      enabled: true
-      minReplicas: 2
-      maxReplicas: 6
-      targetCPUUtilization: 75
-  
-  n2o-server:
-    enabled: true
-    type: stateless
-    replicaCount: 2
-    image: erpuno/n2o:3.0.0
-    port: 8511
-    resources:
-      requests:
-        cpu: 200m
-        memory: 256Mi
-      limits:
-        cpu: 1000m
-        memory: 1Gi
-    probes:
-      enabled: true
-    hpa:
-      enabled: true
-      minReplicas: 2
-      maxReplicas: 8
-      targetCPUUtilization: 70
-  
-  faiss-search:
-    enabled: true
-    type: stateless
-    replicaCount: 1
-    image: erpuno/faiss:1.0.0
-    port: 8602
-    resources:
-      requests:
-        cpu: 200m
-        memory: 512Mi
-      limits:
-        cpu: 1000m
-        memory: 2Gi
-    probes:
-      enabled: true
-  
-  # Application services (IKS)
-  lms-education:
-    enabled: true
-    type: stateless
-    replicaCount: 2
-    image: erpuno/lms-education:1.0.0
-    port: 8506
-    resources:
-      requests:
-        cpu: 100m
-        memory: 256Mi
-      limits:
-        cpu: 500m
-        memory: 512Mi
-    probes:
-      enabled: true
-    hpa:
-      enabled: true
-      minReplicas: 2
-      maxReplicas: 6
-      targetCPUUtilization: 75
-  
-  hl7-health:
-    enabled: true
-    type: stateless
-    replicaCount: 2
-    image: erpuno/hl7-health:1.0.0
-    port: 8502
-    resources:
-      requests:
-        cpu: 100m
-        memory: 256Mi
-      limits:
-        cpu: 500m
-        memory: 512Mi
-    probes:
-      enabled: true
-    hpa:
-      enabled: true
-      minReplicas: 2
-      maxReplicas: 6
-      targetCPUUtilization: 75
-  
-  crm-documents:
-    enabled: true
-    type: stateless
-    replicaCount: 2
-    image: erpuno/crm-documents:1.0.0
-    port: 8503
-    resources:
-      requests:
-        cpu: 200m
-        memory: 512Mi
-      limits:
-        cpu: 1000m
-        memory: 2Gi
-    probes:
-      enabled: true
-    hpa:
-      enabled: true
-      minReplicas: 2
-      maxReplicas: 6
-      targetCPUUtilization: 75
-    persistence:
-      enabled: true
-      size: 50Gi
-      mountPath: /var/lib/documents
-  
-  acc-accounting:
-    enabled: true
-    type: stateful
-    replicaCount: 2
-    image: erpuno/acc-accounting:1.0.0
-    port: 8504
-    backend: kvs_mnesia
-    resources:
-      requests:
-        cpu: 200m
-        memory: 256Mi
-      limits:
-        cpu: 1000m
-        memory: 1Gi
-    probes:
-      enabled: true
-    hpa:
-      enabled: true
-      minReplicas: 2
-      maxReplicas: 4
-      targetCPUUtilization: 75
-    persistence:
-      enabled: true
-      size: 15Gi
-      mountPath: /var/lib/mnesia
-  
-  wms-warehouse:
-    enabled: true
-    type: stateful
-    replicaCount: 2
-    image: erpuno/wms-warehouse:1.0.0
-    port: 8505
-    backend: kvs_rocks
-    resources:
-      requests:
-        cpu: 200m
-        memory: 256Mi
-      limits:
-        cpu: 1000m
-        memory: 1Gi
-    probes:
-      enabled: true
-    hpa:
-      enabled: true
-      minReplicas: 2
-      maxReplicas: 4
-      targetCPUUtilization: 75
-    persistence:
-      enabled: true
-      size: 30Gi
-      mountPath: /var/lib/rocks
-  
-  cart-registers:
-    enabled: true
-    type: stateless
-    replicaCount: 2
-    image: erpuno/cart-registers:1.0.0
-    port: 8501
-    resources:
-      requests:
-        cpu: 100m
-        memory: 256Mi
-      limits:
-        cpu: 500m
-        memory: 512Mi
-    probes:
-      enabled: true
-    hpa:
-      enabled: true
-      minReplicas: 2
-      maxReplicas: 6
-      targetCPUUtilization: 75
-  
-  ai-generation:
-    enabled: true
-    type: stateless
-    replicaCount: 1
-    image: erpuno/ai-generation:1.0.0
-    port: 8601
-    resources:
-      requests:
-        cpu: 500m
-        memory: 2Gi
-      limits:
-        cpu: 2000m
-        memory: 8Gi
-    gpu:
-      enabled: true
-      resourceName: nvidia.com/gpu
-      limit: 1
-    probes:
-      enabled: true
-      initialDelaySeconds: 30
-  
-  olap-analytics:
-    enabled: true
-    type: stateful
-    replicaCount: 1
-    image: erpuno/olap-analytics:1.0.0
-    port: 8512
-    resources:
-      requests:
-        cpu: 200m
-        memory: 512Mi
-      limits:
-        cpu: 1000m
-        memory: 4Gi
-    probes:
-      enabled: true
-    persistence:
-      enabled: true
-      size: 100Gi
-      mountPath: /var/lib/duckdb
-  
-  pm-projects:
-    enabled: true
-    type: stateless
-    replicaCount: 2
-    image: erpuno/pm-projects:1.0.0
-    port: 8514
-    resources:
-      requests:
-        cpu: 100m
-        memory: 256Mi
-      limits:
-        cpu: 500m
-        memory: 1Gi
-    probes:
-      enabled: true
-    hpa:
-      enabled: true
-      minReplicas: 2
-      maxReplicas: 4
-      targetCPUUtilization: 75
-  
-  itsm-incidents:
-    enabled: true
-    type: stateful
-    replicaCount: 2
-    image: erpuno/itsm-incidents:1.0.0
-    port: 8513
-    backend: kvs_rocks
-    resources:
-      requests:
-        cpu: 200m
-        memory: 256Mi
-      limits:
-        cpu: 1000m
-        memory: 1Gi
-    probes:
-      enabled: true
-    hpa:
-      enabled: true
-      minReplicas: 2
-      maxReplicas: 4
-      targetCPUUtilization: 75
-    persistence:
-      enabled: true
-      size: 20Gi
-      mountPath: /var/lib/rocks
-  
-  # Telemetry
-  prometheus:
-    enabled: true
-    type: stateful
-    replicaCount: 1
-    image: prom/prometheus:v2.53.0
-    port: 8401
-    resources:
-      requests:
-        cpu: 100m
-        memory: 256Mi
-      limits:
-        cpu: 500m
-        memory: 1Gi
-    probes:
-      enabled: true
-    persistence:
-      enabled: true
-      size: 50Gi
-      mountPath: /prometheus
-  
-  grafana:
-    enabled: true
-    type: stateless
-    replicaCount: 1
-    image: grafana/grafana:11.1.0
-    port: 8402
-    resources:
-      requests:
-        cpu: 50m
-        memory: 128Mi
-      limits:
-        cpu: 200m
-        memory: 512Mi
-    probes:
-      enabled: true
-  
-  loki:
-    enabled: true
-    type: stateful
-    replicaCount: 1
-    image: grafana/loki:3.0.0
-    port: 8403
-    resources:
-      requests:
-        cpu: 100m
-        memory: 256Mi
-      limits:
-        cpu: 500m
-        memory: 1Gi
-    probes:
-      enabled: true
-    persistence:
-      enabled: true
-      size: 100Gi
-      mountPath: /loki
-  
-  otel-collector:
-    enabled: true
-    type: stateless
-    replicaCount: 1
-    image: otel/opentelemetry-collector-contrib:0.104.0
-    ports:
-      grpc: 8404
-      http: 8405
-      metrics: 8406
-    resources:
-      requests:
-        cpu: 50m
-        memory: 128Mi
-      limits:
-        cpu: 200m
-        memory: 256Mi
-    probes:
-      enabled: true
-      path: /healthz
+      image: registry:2.8.3
+      port: 5000
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 512Mi
+      persistence:
+        enabled: true
+        size: 50Gi
+        mountPath: /var/lib/registry
 
-# Namespace
-namespace: erp-uno
+  # erp-telemetry services
+  erp-telemetry:
+    prometheus:
+      enabled: true
+      image: prom/prometheus:v2.53.0
+      port: 9090
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 1Gi
+      persistence:
+        enabled: true
+        size: 50Gi
+        mountPath: /prometheus
+    grafana:
+      enabled: true
+      image: grafana/grafana:11.1.0
+      port: 3000
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 512Mi
+    loki:
+      enabled: true
+      image: grafana/loki:3.0.0
+      port: 3100
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 1Gi
+      persistence:
+        enabled: true
+        size: 100Gi
+        mountPath: /loki
+    otel-collector:
+      enabled: true
+      image: otel/opentelemetry-collector-contrib:0.104.0
+      ports:
+        grpc: 8404
+        http: 8405
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+
+  # erp-security services
+  erp-security:
+    ca-pki:
+      enabled: true
+      image: erpuno/ca:10.7.1
+      port: 8107
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+    vpn-wireguard:
+      enabled: true
+      image: zencrypted/vpn:1.2.0
+      port: 8080
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+    ias-auth:
+      enabled: true
+      replicas: 2
+      image: zencrypted/ias:2.1.0
+      port: 8204
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      hpa:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 5
+        targetCPUUtilization: 75
+
+  # erp-ai services
+  erp-ai:
+    ai-generation:
+      enabled: true
+      image: erpuno/ai-generation:2024.6.15
+      port: 8601
+      resources:
+        requests:
+          cpu: 500m
+          memory: 2Gi
+        limits:
+          cpu: 2000m
+          memory: 8Gi
+      gpu:
+        enabled: false
+        resourceName: nvidia.com/gpu
+        limit: 1
+
+  # erp-services (core application services)
+  erp-services:
+    kvs-database:
+      enabled: true
+      replicas: 2
+      image: erpuno/kvs:2024.6.15
+      port: 8301
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: 1000m
+          memory: 2Gi
+      persistence:
+        enabled: true
+        size: 20Gi
+        mountPath: /var/lib/kvs
+    bpe-engine:
+      enabled: true
+      image: erpuno/bpe:2024.6.15
+      port: 8302
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+    rest-bpe:
+      enabled: true
+      image: erpuno/rest:2024.6.15
+      port: 8303
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+    n2o-server:
+      enabled: true
+      replicas: 2
+      image: erpuno/n2o:3.0.0
+      port: 8511
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+      hpa:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 8
+        targetCPUUtilization: 70
+    nitro-portal:
+      enabled: true
+      replicas: 2
+      image: erpuno/nitro:2024.6.15
+      port: 8510
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      hpa:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 6
+        targetCPUUtilization: 75
+
+  # erp-apps (business logic applications)
+  erp-apps:
+    lms-education:
+      enabled: true
+      replicas: 2
+      image: erpuno/lms-education:2024.6.15
+      port: 8506
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      hpa:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 6
+        targetCPUUtilization: 75
+    hl7-health:
+      enabled: true
+      replicas: 2
+      image: erpuno/hl7-health:2024.6.15
+      port: 8502
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      hpa:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 6
+        targetCPUUtilization: 75
+    crm-documents:
+      enabled: true
+      replicas: 2
+      image: erpuno/crm-documents:2024.6.15
+      port: 8503
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: 1000m
+          memory: 2Gi
+      persistence:
+        enabled: true
+        size: 50Gi
+        mountPath: /var/lib/documents
+      hpa:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 6
+        targetCPUUtilization: 75
+    acc-accounting:
+      enabled: true
+      replicas: 2
+      image: erpuno/acc-accounting:2024.6.15
+      port: 8504
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+      persistence:
+        enabled: true
+        size: 15Gi
+        mountPath: /var/lib/mnesia
+      hpa:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 4
+        targetCPUUtilization: 75
+    wms-warehouse:
+      enabled: true
+      replicas: 2
+      image: erpuno/wms-warehouse:2024.6.15
+      port: 8505
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+      persistence:
+        enabled: true
+        size: 30Gi
+        mountPath: /var/lib/rocks
+      hpa:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 4
+        targetCPUUtilization: 75
+    cart-registers:
+      enabled: true
+      replicas: 2
+      image: erpuno/cart-registers:2024.6.15
+      port: 8501
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      hpa:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 6
+        targetCPUUtilization: 75
+    pm-projects:
+      enabled: true
+      replicas: 2
+      image: erpuno/pm-projects:2024.6.15
+      port: 8514
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 1Gi
+      hpa:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 4
+        targetCPUUtilization: 75
+    itsm-incidents:
+      enabled: true
+      replicas: 2
+      image: erpuno/itsm-incidents:2024.6.15
+      port: 8513
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+      persistence:
+        enabled: true
+        size: 20Gi
+        mountPath: /var/lib/rocks
+      hpa:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 4
+        targetCPUUtilization: 75
+    chat-messenger:
+      enabled: true
+      replicas: 2
+      image: erpuno/chat:3.0.0
+      port: 8507
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+      hpa:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 10
+        targetCPUUtilization: 70
 
 # RBAC
 rbac:
@@ -594,36 +430,21 @@ rbac:
 # Network policies
 networkPolicy:
   enabled: true
-  policyTypes:
-    - Ingress
-    - Egress
 
 # Ingress
 ingress:
   enabled: true
   className: nginx
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
   tls:
-    enabled: true
+    enabled: false
   hosts:
     - host: erp.uno
       paths:
         - path: /
           service: nitro-portal
+          namespace: erp-services
           port: 8510
         - path: /api/bpe
           service: rest-bpe
+          namespace: erp-services
           port: 8303
-        - path: /api/auth
-          service: ias-auth
-          port: 8204
-        - path: /lms
-          service: lms-education
-          port: 8506
-        - path: /health
-          service: hl7-health
-          port: 8502
-        - path: /documents
-          service: crm-documents
-          port: 8503

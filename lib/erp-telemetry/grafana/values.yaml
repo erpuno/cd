@@ -1,0 +1,20 @@
+# Grafana values
+grafana:
+  enabled: true
+  replicaCount: 1
+  image: grafana/grafana:11.1.0
+  port: 3000
+  adminUser: admin
+  adminPassword: admin
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+  persistence:
+    enabled: false  # Use emptyDir for demo
+  probes:
+    enabled: true
+    initialDelaySeconds: 10

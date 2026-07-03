@@ -1,0 +1,21 @@
+# LMS Education Service
+lms-education:
+  enabled: true
+  replicaCount: 2
+  image: erpuno/lms-education:2024.6.15
+  port: 8506
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  probes:
+    enabled: true
+    initialDelaySeconds: 10
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilization: 75

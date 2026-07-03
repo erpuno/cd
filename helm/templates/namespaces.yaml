@@ -1,0 +1,19 @@
+{{- range $namespace, $ns := .Values.namespaces }}
+{{- if $ns.enabled }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ $namespace }}
+  labels:
+    name: {{ $namespace }}
+    tier: {{ $ns.tier }}
+    environment: {{ $.Values.global.environment }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $namespace }}-sa
+  namespace: {{ $namespace }}
+{{- end }}
+{{- end }}

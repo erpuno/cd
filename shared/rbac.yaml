@@ -1,0 +1,179 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: erp-security-sa
+  namespace: erp-security
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: erp-security-role
+  namespace: erp-security
+rules:
+- apiGroups: [""]
+  resources: ["pods", "endpoints", "configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: erp-security-rolebinding
+  namespace: erp-security
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: erp-security-role
+subjects:
+- kind: ServiceAccount
+  name: erp-security-sa
+  namespace: erp-security
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: erp-ai-sa
+  namespace: erp-ai
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: erp-ai-role
+  namespace: erp-ai
+rules:
+- apiGroups: [""]
+  resources: ["pods", "endpoints", "configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: erp-ai-rolebinding
+  namespace: erp-ai
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: erp-ai-role
+subjects:
+- kind: ServiceAccount
+  name: erp-ai-sa
+  namespace: erp-ai
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: erp-telemetry-sa
+  namespace: erp-telemetry
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: erp-telemetry-role
+  namespace: erp-telemetry
+rules:
+- apiGroups: [""]
+  resources: ["pods", "endpoints", "configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: erp-telemetry-rolebinding
+  namespace: erp-telemetry
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: erp-telemetry-role
+subjects:
+- kind: ServiceAccount
+  name: erp-telemetry-sa
+  namespace: erp-telemetry
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: erp-infra-sa
+  namespace: erp-infra
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: erp-infra-role
+  namespace: erp-infra
+rules:
+- apiGroups: [""]
+  resources: ["pods", "endpoints", "configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: erp-infra-rolebinding
+  namespace: erp-infra
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: erp-infra-role
+subjects:
+- kind: ServiceAccount
+  name: erp-infra-sa
+  namespace: erp-infra
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: erp-apps-sa
+  namespace: erp-apps
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: erp-apps-role
+  namespace: erp-apps
+rules:
+- apiGroups: [""]
+  resources: ["pods", "endpoints", "configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: erp-apps-rolebinding
+  namespace: erp-apps
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: erp-apps-role
+subjects:
+- kind: ServiceAccount
+  name: erp-apps-sa
+  namespace: erp-apps
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: erp-services-sa
+  namespace: erp-services
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: erp-services-role
+  namespace: erp-services
+rules:
+- apiGroups: [""]
+  resources: ["pods", "endpoints", "configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: erp-services-rolebinding
+  namespace: erp-services
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: erp-services-role
+subjects:
+- kind: ServiceAccount
+  name: erp-services-sa
+  namespace: erp-services

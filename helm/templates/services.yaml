@@ -1,0 +1,42 @@
+{{- range $namespace, $services := .Values.services }}
+{{- if (index $.Values.namespaces $namespace).enabled }}
+---
+# Services for {{ $namespace }}
+{{- range $serviceName, $service := $services }}
+{{- if $service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $serviceName }}
+  namespace: {{ $namespace }}
+  labels:
+    app: {{ $serviceName }}
+spec:
+  type: ClusterIP
+  {{- if $service.persistence }}
+  clusterIP: None
+  {{- end }}
+  ports:
+  {{- if $service.port }}
+  - name: http
+    port: {{ $service.port }}
+    targetPort: {{ $service.port }}
+    {{- if $service.protocol }}
+    protocol: {{ $service.protocol }}
+    {{- else }}
+    protocol: TCP
+    {{- end }}
+  {{- else if $service.ports }}
+  {{- range $portName, $portNum := $service.ports }}
+  - name: {{ $portName }}
+    port: {{ $portNum }}
+    targetPort: {{ $portNum }}
+    protocol: TCP
+  {{- end }}
+  {{- end }}
+  selector:
+    app: {{ $serviceName }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

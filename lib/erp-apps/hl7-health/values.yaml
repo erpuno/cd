@@ -1,0 +1,20 @@
+# HL7 Health Service
+hl7-health:
+  enabled: true
+  replicaCount: 2
+  image: erpuno/hl7-health:2024.6.15
+  port: 8502
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  probes:
+    enabled: true
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilization: 75

@@ -1,0 +1,17 @@
+# Docker Registry values
+registry:
+  enabled: true
+  replicaCount: 1
+  image: registry:2.8.3
+  port: 5000
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+  persistence:
+    enabled: true
+    size: 50Gi
+    mountPath: /var/lib/registry
