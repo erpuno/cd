@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: docker-registry
-  namespace: erp-core
+  namespace: erp-infra
   labels:
     app: docker-registry
 spec:
@@ -15,7 +15,7 @@ spec:
       labels:
         app: docker-registry
     spec:
-      serviceAccountName: erp-core-sa
+      serviceAccountName: erp-infra-sa
       containers:
       - name: registry
         image: registry:2.8.3

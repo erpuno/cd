@@ -1,5 +1,5 @@
 #!/bin/bash
-# Multi-namespace ERP.uno deployment
+# ERP/1 K8S Deployment
 
 set -e
 
@@ -24,7 +24,6 @@ deploy_service() {
   local service_path="$SCRIPT_DIR/lib/$namespace/$service"
   if [ -d "$service_path" ]; then
     echo "    Deploying $service to $namespace..."
-
     for kind in pvc.yaml deployment.yaml service.yaml hpa.yaml ingress.yaml; do
       if [ -f "$service_path/$kind" ]; then
         sed "s/namespace: .*/namespace: $namespace/" "$service_path/$kind" | \

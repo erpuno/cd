@@ -26,6 +26,7 @@ for ns in "${NAMESPACES[@]}"; do
       meta.helm.sh/release-name=$RELEASE_NAME \
       meta.helm.sh/release-namespace=default --overwrite 2>/dev/null || true
   done
+
 done
 
 echo "✅ All resources patched with Helm ownership metadata."

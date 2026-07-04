@@ -121,11 +121,7 @@ echo -e "\n╔══════════════════════
 echo "║                      Next Steps                        ║"
 echo "╚════════════════════════════════════════════════════════╝"
 
-echo -e "\nIf all checks pass, run K8S raw deploy:\n"
-echo "  bash deploy.sh"
-
-echo -e "\nOr deploy via helm:\n"
-echo "  cd helm"
-echo "  ./deploy.sh"
+echo -e "\nIf all checks pass, run K8S raw deploy: bash deploy.sh"
+echo -e "Or deploy via helm: cd heml && ./deploy.sh"
 
 echo ""

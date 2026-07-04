@@ -1,5 +1,5 @@
 #!/bin/bash
-# helm/deploy.sh - ERP.uno Helm deployment with auto-patch on ownership errors
+# ERP/1 Helm Deployment with auto-patch on ownership errors
 
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
