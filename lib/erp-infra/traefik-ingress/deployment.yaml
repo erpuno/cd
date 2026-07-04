@@ -10,7 +10,7 @@ metadata:
   name: traefik-ingress-controller
 rules:
 - apiGroups: [""]
-  resources: ["services", "endpoints", "secrets", "endpointslices"]
+  resources: ["services", "endpoints", "secrets"]
   verbs: ["get", "list", "watch"]
 - apiGroups: ["extensions", "networking.k8s.io"]
   resources: ["ingresses", "ingressclasses"]
@@ -55,7 +55,7 @@ spec:
         - --entrypoints.web.address=:80
         - --providers.kubernetesingress=true
         - --providers.kubernetesingress.ingressclass=traefik
-        - --log.level=INFO
+        - --log.level=WARN
         ports:
         - containerPort: 80
           hostPort: 80
