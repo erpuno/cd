@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: erp-uno-ingress
+  namespace: erp-infra
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    # traefik.ingress.kubernetes.io/router.entrypoints: websecure  # for HTTPS
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: erp-uno.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: erp-frontend
+            port:
+              number: 80
+
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: erp-backend
+            port:
+              number: 8080

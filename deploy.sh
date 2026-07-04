@@ -25,7 +25,7 @@ deploy_service() {
   if [ -d "$service_path" ]; then
     echo "    Deploying $service to $namespace..."
 
-    for kind in pvc.yaml deployment.yaml service.yaml hpa.yaml; do
+    for kind in pvc.yaml deployment.yaml service.yaml hpa.yaml ingress.yaml; do
       if [ -f "$service_path/$kind" ]; then
         sed "s/namespace: .*/namespace: $namespace/" "$service_path/$kind" | \
         kubectl apply -f -
@@ -37,6 +37,7 @@ deploy_service() {
 # Step 2: Deploy erp-infra (infrastructure only)
 echo -e "\n[2/8] Deploying erp-infra..."
 deploy_service "erp-infra" "ns-dns"
+deploy_service "erp-infra" "traefik-ingress"
 deploy_service "erp-infra" "docker-registry"
 
 # Step 3: Deploy erp-telemetry
@@ -81,8 +82,8 @@ echo -e "\n[8/8] Deployment Summary"
 echo "    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 for ns in erp-infra erp-telemetry erp-security erp-ai erp-services erp-apps; do
-  pod_count=$(kubectl get pods -n $ns --no-headers 2>/dev/null | wc -l)
-  running=$(kubectl get pods -n $ns --field-selector=status.phase=Running --no-headers 2>/dev/null | wc -l)
+  pod_count=$(kubectl get pods -n $ns --no-headers 2>/dev/null | wc -l | xargs)
+  running=$(kubectl get pods -n $ns --field-selector=status.phase=Running --no-headers 2>/dev/null | wc -l | xargs)
   n=$(printf %\ 20s $ns)
   echo "    $n: $running/$pod_count pods running"
 done
