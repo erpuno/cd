@@ -11,10 +11,10 @@ echo "╚═══════════════════════�
 
 # Step 1: Create namespaces and RBAC
 echo -e "\n[1/8] Setting up namespaces..."
-kubectl apply -f "$SCRIPT_DIR/shared/namespaces.yaml"
-kubectl apply -f "$SCRIPT_DIR/shared/rbac.yaml"
-kubectl apply -f "$SCRIPT_DIR/shared/storage-class.yaml"
-kubectl apply -f "$SCRIPT_DIR/shared/networkpolicy.yaml"
+kubectl apply -f "$SCRIPT_DIR/share/namespaces.yaml"
+kubectl apply -f "$SCRIPT_DIR/share/rbac.yaml"
+kubectl apply -f "$SCRIPT_DIR/share/storage-class.yaml"
+kubectl apply -f "$SCRIPT_DIR/share/networkpolicy.yaml"
 echo "    ✓ Namespaces, RBAC, and network policies created"
 
 # Function to deploy service

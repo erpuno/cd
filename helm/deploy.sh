@@ -16,13 +16,13 @@ kubectl delete hpa --all --all-namespaces --ignore-not-found 2>/dev/null || true
 
 # 2. Ensure namespaces exist before applying RBAC
 echo -e "\n[2/5] Ensuring namespaces..."
-kubectl apply -f "$SCRIPT_DIR/../shared/namespaces.yaml"
+kubectl apply -f "$SCRIPT_DIR/../share/namespaces.yaml"
 
 # 3. Deploy shared infrastructure resources
 echo -e "\n[3/5] Deploying shared infrastructure..."
-kubectl apply -f "$SCRIPT_DIR/../shared/rbac.yaml"
-kubectl apply -f "$SCRIPT_DIR/../shared/storage-class.yaml"
-kubectl apply -f "$SCRIPT_DIR/../shared/networkpolicy.yaml"
+kubectl apply -f "$SCRIPT_DIR/../share/rbac.yaml"
+kubectl apply -f "$SCRIPT_DIR/../share/storage-class.yaml"
+kubectl apply -f "$SCRIPT_DIR/../share/networkpolicy.yaml"
 echo "    ✓ Shared resources applied"
 
 # 4. Patch Helm ownership metadata (idempotent — safe to run every time)

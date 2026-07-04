@@ -312,7 +312,7 @@ erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\tex
 \rowcolor{rowalt}\texttt{helm/templates/} & Go-шаблони: \texttt{deployments.yaml}, \texttt{services.yaml}, \texttt{hpa.yaml}, \texttt{namespaces.yaml} \\[2pt]
 \texttt{lib/}            & Сирі маніфести на компонент: \texttt{lib/\{namespace\}/\{service\}/} \\[2pt]
 \rowcolor{rowalt}\texttt{lib/erp-*/}      & По одній директорії на кожен з 6 namespace'ів \\[2pt]
-\texttt{shared/}         & Кластерні ресурси: \texttt{namespaces.yaml}, \texttt{rbac.yaml}, \texttt{networkpolicy.yaml}, \texttt{storage-class.yaml} \\[2pt]
+\texttt{share/}         & Кластерні ресурси: \texttt{namespaces.yaml}, \texttt{rbac.yaml}, \texttt{networkpolicy.yaml}, \texttt{storage-class.yaml} \\[2pt]
 \rowcolor{rowalt}\texttt{values.rb}       & Ruby-скрипт: читає \texttt{lib/} $\rightarrow$ генерує \texttt{helm/values.yaml} \\[2pt]
 \texttt{deploy.sh}       & Bash-скрипт 8-крокового розгортання \\[2pt]
 \rowcolor{rowalt}\texttt{prereq.sh}       & Перевірка та встановлення передумов (kind, kubectl, helm) \\[2pt]
@@ -596,7 +596,7 @@ ruby values.rb --version 2024.7 # update all image versions
 
 \subsection{NetworkPolicy --- модель «deny-by-default»}
 
-Двошаровий підхід у \texttt{shared/networkpolicy.yaml}:
+Двошаровий підхід у \texttt{share/networkpolicy.yaml}:
 \begin{enumerate}[leftmargin=1.5cm]
   \item \textbf{erp-deny-all}: заборона всього Ingress/Egress у кожному namespace
   \item \textbf{erp-allow-internal}: дозвіл явно необхідних з'єднань
@@ -730,7 +730,7 @@ kubectl get pvc  -n erp-telemetry
 \color{white}\textbf{Дія} &
 \color{white}\textbf{Що відбувається} \\
 \midrule\endhead\bottomrule\endfoot
-1/8 & Namespaces + RBAC & \texttt{kubectl apply} на \texttt{shared/namespaces.yaml}, \texttt{rbac.yaml}, \texttt{storage-class.yaml}, \texttt{networkpolicy.yaml} \\[2pt]
+1/8 & Namespaces + RBAC & \texttt{kubectl apply} на \texttt{share/namespaces.yaml}, \texttt{rbac.yaml}, \texttt{storage-class.yaml}, \texttt{networkpolicy.yaml} \\[2pt]
 \rowcolor{rowalt}2/8 & erp-infra        & \texttt{ns-dns}, \texttt{docker-registry} \\[2pt]
 3/8 & erp-telemetry    & \texttt{prometheus}, \texttt{grafana}, \texttt{loki}, \texttt{otel-collector} \\[2pt]
 \rowcolor{rowalt}4/8 & erp-security     & \texttt{ca-pki}, \texttt{vpn-wireguard}, \texttt{ias-auth} \\[2pt]
