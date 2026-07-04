@@ -27,6 +27,13 @@
 \usepackage{amssymb}
 \usepackage[top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
 
+\lefthyphenmin=1
+\hyphenpenalty=100
+\tolerance=11000
+\emergencystretch=1em
+\hfuzz=2pt
+\vfuzz=2pt
+
 \definecolor{primary}{HTML}{293757}
 \definecolor{accent}{HTML}{3E6BCA}
 \definecolor{lightblue}{HTML}{EDF2FF}
@@ -211,7 +218,7 @@ $\rightarrow$ \texttt{apps}\\[4pt]
 Порядок відображає топологічне сортування залежностей між сервісами.
 \end{tcolorbox}
 
-\subsection{Namespace-рівні та їхні відповідальності}
+\subsection{Простори та їх призначення}
 
 \begin{longtable}{L{3cm} L{2.3cm} L{8.7cm}}
 \toprule
@@ -299,7 +306,7 @@ erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\tex
 
 % ===========================================================================
 \newpage
-\section{Структура репозиторію \texttt{erpuno/cd}}
+\section{Структура репозиторію}
 
 \subsection{Огляд директорій}
 
@@ -410,6 +417,7 @@ erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\tex
 
 {\footnotesize \textsuperscript{HL} headless service (\texttt{clusterIP: None}) для StatefulSet}
 
+\newpage
 \subsection{Параметри \texttt{deployment.yaml}}
 
 \begin{longtable}{L{4.8cm} L{2.5cm} L{6.7cm}}
@@ -453,6 +461,7 @@ erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\tex
 \texttt{spec.selector.app}       & string      & Мітка для вибору подів-бекендів \\[2pt]
 \end{longtable}
 
+\newpage
 \subsection{Параметри \texttt{hpa.yaml}}
 
 \begin{longtable}{L{4.8cm} L{2.5cm} L{6.7cm}}
@@ -483,7 +492,7 @@ erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\tex
 
 % ===========================================================================
 \newpage
-\section{Helm-чарт та синхронізація з \texttt{lib/}}
+\section{Синхронізація Helm-чарту}
 
 \subsection{Архітектура Helm-чарту}
 
@@ -527,6 +536,7 @@ helm upgrade --install erp-uno ./helm \
   & \texttt{className: nginx}, hosts, TLS, маршрут до \texttt{nitro-portal:8510} \\[4pt]
 \end{longtable}
 
+\newpage
 \subsection{Механізм синхронізації \texttt{values.rb}}
 
 \begin{tcolorbox}[notebox]
@@ -594,7 +604,7 @@ ruby values.rb --version 2024.7 # update all image versions
   & Прив'язує Role до ServiceAccount у відповідному namespace \\[4pt]
 \end{longtable}
 
-\subsection{NetworkPolicy --- модель «deny-by-default»}
+\subsection{NetworkPolicy --- Deny First}
 
 Двошаровий підхід у \texttt{share/networkpolicy.yaml}:
 \begin{enumerate}[leftmargin=1.5cm]
@@ -617,7 +627,7 @@ erp-apps     & erp-infra (:5000, :8301), erp-telemetry (:9090), erp-security (:8
 \rowcolor{rowalt}erp-services & erp-infra (:5000, :8301), erp-telemetry (:9090), erp-security (:8204), DNS, HTTPS & Тільки власний ns \\[2pt]
 \end{longtable}
 
-\subsection{Політика базових образів контейнерів (Alpine Linux)}
+\subsection{Політика базових образів контейнерів (UA/Alpine)}
 
 З метою мінімізації вектора атак, економії дискового простору та підвищення швидкості холодного старту подів у Kubernetes, діє сувора політика використання легковагого базового образу \textbf{Alpine Linux} (версії \texttt{alpine:3.20}) для побудови контейнерів BEAM-додатків платформи:
 
@@ -685,7 +695,7 @@ Pod Readiness & Availability
 
 % ===========================================================================
 \newpage
-\section{Observability Stack (erp-telemetry)}
+\section{Observability Stack}
 
 \subsection{Компоненти стеку}
 
@@ -817,7 +827,7 @@ Renovate Bot
 
 \begin{enumerate}[leftmargin=1.5cm]
     \item \textbf{Налаштування хост-резолвінгу (/etc/hosts)}: На кожному фізичному вузлі та керуючій машині прописуються статичні записи домену \texttt{erp.uno} та локального OCI-реєстру \texttt{registry.erp.uno} для забезпечення роботи транспортного контуру без зовнішнього DNS-сервера.
-    \item \textbf{Налаштування сертифікатів безпеки OCI-реєстру}: Для виключення помилок небезпечного з'єднання (insecure registry) на всіх робочих вузлах Kubernetes прописується кореневий CA-сертифікат у каталозі \texttt{/etc/docker/certs.d/registry.erp.uno/ca.crt} та \texttt{/etc/containerd/certs.d/}.
+    \item \textbf{Налаштування сертифікатів безпеки OCI-реєстру}: Для виключення помилок небезпечного з'єднання (insecure registry) на всіх робочих вузлах Kubernetes прописується кореневий CA-сертифікат у каталозі \\ \texttt{/etc/docker/certs.d/registry.erp.uno/ca.crt} \\ та \texttt{/etc/containerd/certs.d/}.
     \item \textbf{Запуск OCI Docker Registry}: На інфраструктурному хості запускається OCI-реєстр як системна служба \texttt{containerd} або Docker-контейнер з монтуванням локального сховища для образів компонентів.
     \item \textbf{Складання та публікація образів (CI/CD)}: Образи мікросервісів збираються на базі \textbf{Alpine Linux}, тегуються версією релізу та завантажуються (\texttt{docker push}) до \texttt{registry.erp.uno}.
     \item \textbf{Ініціалізація інфраструктури Kubernetes}: За допомогою \texttt{deploy.sh} або Helm застосовуються глобальні ресурси (Namespaces, StorageClasses, Calico NetworkPolicies та RBAC ролі).
@@ -860,7 +870,7 @@ Renovate Bot
 
 % ===========================================================================
 \newpage
-\section{Incident Management та On-Call}
+\section{Incident Management / On-Call}
 
 \subsection{Severity-рівні}
 
