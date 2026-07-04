@@ -19,13 +19,13 @@ $ tree -L 3 .
 │   ├── validate.sh
 │   ├── Chart.yaml
 │   └── values.yaml
-├── lib
-│   ├── erp-ai
-│   ├── erp-apps
-│   ├── erp-infra
-│   ├── erp-security
-│   ├── erp-services
-│   └── erp-telemetry
+├── lib/
+│   ├── erp-ai/
+│   ├── erp-apps/
+│   ├── erp-infra/
+│   ├── erp-security/
+│   ├── erp-services/
+│   └── erp-telemetry/
 ├── share/
 │   ├── namespaces.yaml
 │   ├── networkpolicy.yaml
