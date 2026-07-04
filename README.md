@@ -37,3 +37,8 @@ $ tree -L 3 .
 ├── prereq.sh
 └── values.rn
 ```
+
+Credits
+-------
+
+* 5HT
