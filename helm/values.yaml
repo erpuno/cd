@@ -8,7 +8,7 @@ global:
 namespaces:
   erp-ai:
     enabled: true
-    tier: application
+    tier: ai
   erp-apps:
     enabled: true
     tier: application
@@ -36,6 +36,8 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: erpuno/ai
+      tag: 2024.6.15
       port: 8080
   erp-apps:
     acc-accounting:
@@ -48,6 +50,8 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: erpuno/acc
+      tag: 2024.6.15
       port: 8080
     cart-registers:
       enabled: true
@@ -59,6 +63,8 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: erpuno/cart
+      tag: 2024.6.15
       port: 8080
     crm-documents:
       enabled: true
@@ -70,6 +76,8 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: erpuno/crm
+      tag: 2024.6.15
       port: 8080
     hl7-health:
       enabled: true
@@ -81,8 +89,9 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: erpuno/hl7-health
+      tag: 2024.6.15
       port: 8502
-      image: hl7-health
       protocol: TCP
       hpa:
         enabled: true
@@ -99,6 +108,8 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: erpuno/itsm
+      tag: 2024.6.15
       port: 8080
     lms-education:
       enabled: true
@@ -110,8 +121,9 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: erpuno/lms-education
+      tag: 2024.6.15
       port: 8506
-      image: lms-education
       protocol: TCP
       hpa:
         enabled: true
@@ -128,6 +140,8 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: erpuno/pm
+      tag: 2024.6.15
       port: 8080
     wms-warehouse:
       enabled: true
@@ -139,6 +153,8 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: erpuno/warehouse
+      tag: 2024.6.15
       port: 8080
   erp-infra:
     docker-registry:
@@ -151,8 +167,9 @@ services:
         limits:
           cpu: 200m
           memory: 512Mi
-      port: 5000
       image: registry
+      tag: 2.8.3
+      port: 5000
       protocol: TCP
       persistence:
         enabled: true
@@ -168,6 +185,8 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: erpuno/ns
+      tag: 2024.6.15
       port: 8080
   erp-security:
     ca-pki:
@@ -180,6 +199,8 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: erpuno/ca
+      tag: 2024.6.15
       port: 8080
   erp-services:
     bpe-engine:
@@ -192,6 +213,8 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: erpuno/bpe
+      tag: 2024.6.15
       port: 8080
     chat-messenger:
       enabled: true
@@ -203,6 +226,8 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: erpuno/chat
+      tag: 2024.6.15
       port: 8080
     kvs-database:
       enabled: true
@@ -214,6 +239,8 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: erpuno/kvs
+      tag: 2024.6.15
       port: 8080
     n2o-server:
       enabled: true
@@ -225,6 +252,8 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: erpuno/n2o
+      tag: 2024.6.15
       port: 8080
     rest-bpe:
       enabled: true
@@ -236,6 +265,8 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: erpuno/rest
+      tag: 2024.6.15
       port: 8080
   erp-telemetry:
     grafana:
@@ -248,8 +279,9 @@ services:
         limits:
           cpu: 200m
           memory: 512Mi
+      image: grafana/grafana
+      tag: 11.1.0
       port: 3000
-      image: grafana
       protocol: TCP
       persistence:
         enabled: true
@@ -265,6 +297,8 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: grafana/loki
+      tag: 3.1.0
       port: 8080
     otel-collector:
       enabled: true
@@ -276,6 +310,8 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
+      image: otel/opentelemetry-collector-contrib
+      tag: 0.102.0
       port: 8080
     prometheus:
       enabled: true
@@ -287,8 +323,9 @@ services:
         limits:
           cpu: 500m
           memory: 1Gi
+      image: prom/prometheus
+      tag: v2.53.0
       port: 9090
-      image: prometheus
       protocol: TCP
       persistence:
         enabled: true

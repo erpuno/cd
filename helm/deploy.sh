@@ -1,49 +1,55 @@
 #!/bin/bash
-# helm/deploy.sh - Clean & robust Helm deployment for ERP.uno
+# helm/deploy.sh - ERP.uno Helm deployment with auto-patch on ownership errors
 
 set -e
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CHART_DIR="$SCRIPT_DIR"
 
 echo "╔════════════════════════════════════════════════════════╗"
-echo "║    ERP.uno Multi-Namespace Helm Deployment            ║"
+echo "║    ERP/1: Підпримємство Helm Deployment                ║"
 echo "╚════════════════════════════════════════════════════════╝"
 
-# 1. Cleanup immutable resources (prevents common StatefulSet / HPA conflicts)
-echo -e "\n[1/4] Cleaning up immutable resources..."
-kubectl delete statefulset prometheus -n erp-telemetry --ignore-not-found --force --grace-period=0 || true
-kubectl delete hpa --all --all-namespaces --ignore-not-found || true
+# 1. Cleanup immutable resources (StatefulSet spec is immutable on upgrade)
+echo -e "\n[1/5] Cleaning up immutable resources..."
+kubectl delete statefulset prometheus -n erp-telemetry --ignore-not-found --force --grace-period=0 2>/dev/null || true
+kubectl delete hpa --all --all-namespaces --ignore-not-found 2>/dev/null || true
 
-# 2. Deploy namespaces (Helm will manage them)
-echo -e "\n[2/4] Ensuring namespaces..."
+# 2. Ensure namespaces exist before applying RBAC
+echo -e "\n[2/5] Ensuring namespaces..."
 kubectl apply -f "$SCRIPT_DIR/../shared/namespaces.yaml"
 
-# 3. Deploy shared resources
-echo -e "\n[3/4] Deploying shared infrastructure..."
+# 3. Deploy shared infrastructure resources
+echo -e "\n[3/5] Deploying shared infrastructure..."
 kubectl apply -f "$SCRIPT_DIR/../shared/rbac.yaml"
 kubectl apply -f "$SCRIPT_DIR/../shared/storage-class.yaml"
 kubectl apply -f "$SCRIPT_DIR/../shared/networkpolicy.yaml"
 echo "    ✓ Shared resources applied"
 
-# 4. Deploy main Helm chart
-echo -e "\n[4/4] Deploying Helm chart..."
+# 4. Patch Helm ownership metadata (idempotent — safe to run every time)
+#    Required because kubectl apply creates resources without Helm annotations.
+echo -e "\n[4/5] Patching Helm ownership metadata..."
+bash "$SCRIPT_DIR/patch.sh" 2>/dev/null
+echo "    ✓ Ownership metadata patched"
+
+# 5. Deploy main Helm chart (install or upgrade)
+echo -e "\n[5/5] Deploying Helm chart..."
 helm upgrade --install erp-uno "$CHART_DIR" \
   --values "$CHART_DIR/values.yaml" \
   --set global.domain=erp.uno \
   --set global.environment=production \
-  --cleanup-on-fail
+  --server-side=true \
+  --force-conflicts
 
 echo -e "\n╔════════════════════════════════════════════════════════╗"
-echo "║           Helm Deployment Complete ✓                  ║"
+echo "║           Helm Deployment Complete ✓                   ║"
 echo "╚════════════════════════════════════════════════════════╝"
 
 echo -e "\n📊 Quick Status:"
-kubectl get ns
+kubectl get ns | grep erp
 echo "Pods:"
-kubectl get pods -A --no-headers | wc -l | xargs echo "   Total running pods:"
-
-echo -e "\n🌐 Useful commands:"
+kubectl get pods -A --no-headers 2>/dev/null | awk '{print $4}' | sort | uniq -c | sort -rn
+echo ""
+echo "🌐 Useful commands:"
 echo "   kubectl get pods -A"
 echo "   kubectl get hpa -A"
 echo "   helm status erp-uno"

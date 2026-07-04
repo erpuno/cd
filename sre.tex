@@ -1,9 +1,7 @@
 \documentclass[12pt,a4paper]{article}
 
 \usepackage[utf8]{inputenc}
-\usepackage[T2A]{fontenc}
 \usepackage{helvet}
-\usepackage[top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
 \usepackage{xcolor}
 \usepackage{eso-pic}
 \usepackage{fancyhdr}
@@ -23,8 +21,8 @@
 \usepackage{enumitem}
 \usepackage{colortbl}
 \usepackage{tcolorbox}
+\usepackage[top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
 
-% Brand Colours
 \definecolor{primary}{HTML}{293757}
 \definecolor{accent}{HTML}{3E6BCA}
 \definecolor{lightblue}{HTML}{EDF2FF}
@@ -49,28 +47,14 @@
 \DeclareFontShape{T2A}{phv}{m}{it}{<->ssub * cmss/m/it}{}
 \DeclareFontShape{T2A}{phv}{bx}{it}{<->ssub * cmss/bx/it}{}
 
-\lstdefinestyle{shell}{
-  basicstyle=\footnotesize\ttfamily,
-  backgroundcolor=\color{codebg},
-  frame=single,framesep=4pt,
-  rulecolor=\color{primary!30},
-  breaklines=true,
-  showstringspaces=false,
-  commentstyle=\color{footergray}\itshape,
-}
-\lstset{style=shell}
-
 \let\originalfootnotesize\footnotesize
 \let\oldverbatim\verbatim
 \let\oldendverbatim\endverbatim
 \renewenvironment{verbatim}{\originalfootnotesize\oldverbatim}{\oldendverbatim}
 
-\titleformat{\section}{\color{primary}\Huge\bfseries}{\thesection.}{1em}{}
-\titlespacing*{\section}{0pt}{32pt}{14pt}
-\titleformat{\subsection}{\color{primary}\LARGE\bfseries}{\thesubsection.}{1em}{}
-\titlespacing*{\subsection}{0pt}{22pt}{10pt}
-\titleformat{\subsubsection}{\color{primary}\large\bfseries}{\thesubsubsection.}{1em}{}
-\titlespacing*{\subsubsection}{0pt}{14pt}{6pt}
+\titleformat{\section}{\color{primary}\Huge\bfseries}{\thesection.}{1em}{} \titlespacing*{\section}{0pt}{30pt}{20pt}
+\titleformat{\subsection}{\color{primary}\LARGE\bfseries}{\thesubsection.}{1em}{} \titlespacing*{\subsection}{0pt}{20pt}{8pt}
+\titleformat{\subsubsection}{\color{primary}\large\bfseries}{\thesubsubsection.}{1em}{} \titlespacing*{\subsubsection}{0pt}{10pt}{6pt}
 
 \fancyhf{}
 \fancyhead[R]{\small\color{footergray} 04 липня 2026}
@@ -108,15 +92,14 @@
 \color{white}\thispagestyle{empty}\vspace*{3cm}\centering
   {\Huge \textbf{ERP/1: Підприємство} \par}\vspace{1.5cm}
   {\HUGE \textbf{SRE Handbook} \par}\vspace{2cm}
-  {\LARGE \textbf{Архітектура. Компоненти. Надійність.\\Helm GitOps для Kubernetes} \par}
-  \vspace{1.5cm}
-  \textcolor{white!70}{\rule{8cm}{0.4pt}}
+  {\LARGE \textbf{Настанови системного адміністратора \\Helm GitOps для Kubernetes в ЦОД} \par}
   \vspace{1.5cm}
   \begin{tabular}{rl}
     \textbf{Версія системи:}  & 2024.6.15 \\[4pt]
-    \textbf{Кластер:}         & desktop-control-plane (arm64) \\[4pt]
-    \textbf{Namespace'и:}     & 6 просторів імен ERP \\[4pt]
-    \textbf{Компоненти:}      & 20 мікросервісів \\[4pt]
+    \textbf{Кластер:}         & synrc-control-plane (arm64) \\[4pt]
+    \textbf{Домен:}           & 1 (erp.uno)\\[4pt]
+    \textbf{Неймспейси:}      & 6 просторів (infra, telemetry, security, services, apps, ai) \\[4pt]
+    \textbf{Компоненти:}      & 20 сервісів \\[4pt]
     \textbf{Дата випуску:}    & 04 липня 2026 \\
   \end{tabular}
 \vfill
@@ -189,12 +172,12 @@ arch: arm64, 10 CPU, 8 ГБ RAM) під керуванням \textbf{Docker Desk
 \vspace{10pt}
 \begin{tcolorbox}[notebox]
 \textbf{Порядок розгортання (залежності):}\\[4pt]
-\texttt{erp-infra}
-$\rightarrow$ \texttt{erp-telemetry}
-$\rightarrow$ \texttt{erp-security}
-$\rightarrow$ \texttt{erp-ai}
-$\rightarrow$ \texttt{erp-services}
-$\rightarrow$ \texttt{erp-apps}\\[4pt]
+              \texttt{infra}
+$\rightarrow$ \texttt{telemetry}
+$\rightarrow$ \texttt{security}
+$\rightarrow$ \texttt{ai}
+$\rightarrow$ \texttt{services}
+$\rightarrow$ \texttt{apps}\\[4pt]
 \footnotesize Нижні рівні не залежать від верхніх.
 Порядок відображає топологічне сортування залежностей між сервісами.
 \end{tcolorbox}
@@ -362,37 +345,37 @@ erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\tex
 \color{white}\textbf{Сервіс} & \color{white}\textbf{Namespace} & \color{white}\textbf{Kind} & \color{white}\textbf{Port} & \color{white}\textbf{CPU req/lim} & \color{white}\textbf{Маніфести} \\
 \midrule\endhead\bottomrule\endfoot
 \multicolumn{6}{l}{\textcolor{infrablue}{\bfseries\small erp-infra --- Інфраструктурний рівень}}\\
-\texttt{ns-dns}          & erp-infra  & Deployment  & 8080 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
-\rowcolor{rowalt}\texttt{docker-registry} & erp-infra & Deployment & 5000 & 50m/200m & deployment $\cdot$ service $\cdot$ pvc(10Gi) $\cdot$ values \\
+\texttt{ns-dns}          & erp-infra  & Deployment  & 8080 & 100m/500m & deployment, service, values \\
+\rowcolor{rowalt}\texttt{docker-registry} & erp-infra & Deployment & 5000 & 50m/200m & deployment, service, pvc, values \\
 \midrule
 \multicolumn{6}{l}{\textcolor{successgreen}{\bfseries\small erp-telemetry --- Observability рівень}}\\
-\texttt{prometheus}      & erp-telemetry & StatefulSet & 9090 & 100m/500m & deployment $\cdot$ service\textsuperscript{HL} $\cdot$ pvc(10Gi) $\cdot$ values \\
-\rowcolor{rowalt}\texttt{grafana}  & erp-telemetry & Deployment & 3000 & 50m/200m & deployment $\cdot$ service $\cdot$ pvc(10Gi) $\cdot$ values \\
-\texttt{loki}            & erp-telemetry & Deployment  & 8403 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
-\rowcolor{rowalt}\texttt{otel-collector} & erp-telemetry & Deployment & 8404 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\texttt{prometheus}      & erp-telemetry & StatefulSet & 9090 & 100m/500m & deployment, service, pvc, values \\
+\rowcolor{rowalt}\texttt{grafana}  & erp-telemetry & Deployment & 3000 & 50m/200m & deployment, service,  pvc, values \\
+\texttt{loki}            & erp-telemetry & Deployment  & 8403 & 100m/500m & deployment, service, values \\
+\rowcolor{rowalt}\texttt{otel-collector} & erp-telemetry & Deployment & 8404 & 100m/500m & deployment, service, values \\
 \midrule
 \multicolumn{6}{l}{\textcolor{secpurple}{\bfseries\small erp-security --- Безпековий рівень}}\\
-\texttt{ca-pki}          & erp-security & Deployment & 8201 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\texttt{ca-pki}          & erp-security & Deployment & 8201 & 100m/500m & deployment, service, values \\
 \midrule
 \multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small erp-ai --- AI рівень}}\\
-\rowcolor{rowalt}\texttt{ai-generation} & erp-ai & Deployment & 8601 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\rowcolor{rowalt}\texttt{ai-generation} & erp-ai & Deployment & 8601 & 100m/500m & deployment, service, values \\
 \midrule
 \multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small erp-services --- Сервісний рівень}}\\
-\texttt{rest-bpe}        & erp-services & Deployment & 8303 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
-\rowcolor{rowalt}\texttt{bpe-engine}   & erp-services & Deployment & 8302 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
-\texttt{n2o-server}      & erp-services & Deployment & 8511 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
-\rowcolor{rowalt}\texttt{kvs-database} & erp-services & Deployment & 8301 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
-\texttt{chat-messenger}  & erp-services & Deployment & 8507 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\texttt{rest-bpe}        & erp-services & Deployment & 8303 & 100m/500m & deployment, service, values \\
+\rowcolor{rowalt}\texttt{bpe-engine}   & erp-services & Deployment & 8302 & 100m/500m & deployment, service, values \\
+\texttt{n2o-server}      & erp-services & Deployment & 8511 & 100m/500m & deployment, service, values \\
+\rowcolor{rowalt}\texttt{kvs-database} & erp-services & Deployment & 8301 & 100m/500m & deployment, service, values \\
+\texttt{chat-messenger}  & erp-services & Deployment & 8507 & 100m/500m & deployment, service, values \\
 \midrule
 \multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small erp-apps --- Бізнес рівень}}\\
-\rowcolor{rowalt}\texttt{hl7-health}   & erp-apps & Deployment & 8502 & 100m/500m & deployment $\cdot$ service $\cdot$ hpa(2--6) $\cdot$ values \\
-\texttt{lms-education}   & erp-apps & Deployment & 8506 & 100m/500m & deployment $\cdot$ service $\cdot$ hpa(2--6) $\cdot$ values \\
-\rowcolor{rowalt}\texttt{wms-warehouse}& erp-apps & Deployment & 8505 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
-\texttt{acc-accounting}  & erp-apps & Deployment & 8504 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
-\rowcolor{rowalt}\texttt{crm-documents}& erp-apps & Deployment & 8503 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
-\texttt{cart-registers}  & erp-apps & Deployment & 8501 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
-\rowcolor{rowalt}\texttt{pm-projects}  & erp-apps & Deployment & 8514 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
-\texttt{itsm-incidents}  & erp-apps & Deployment & 8513 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\rowcolor{rowalt}\texttt{hl7-health}   & erp-apps & Deployment & 8502 & 100m/500m & deployment, service, hpa, values \\
+\texttt{lms-education}   & erp-apps & Deployment & 8506 & 100m/500m & deployment, service, hpa, values \\
+\rowcolor{rowalt}\texttt{wms-warehouse}& erp-apps & Deployment & 8505 & 100m/500m & deployment, service, values \\
+\texttt{acc-accounting}  & erp-apps & Deployment & 8504 & 100m/500m & deployment, service, values \\
+\rowcolor{rowalt}\texttt{crm-documents}& erp-apps & Deployment & 8503 & 100m/500m & deployment, service, values \\
+\texttt{cart-registers}  & erp-apps & Deployment & 8501 & 100m/500m & deployment, service, values \\
+\rowcolor{rowalt}\texttt{pm-projects}  & erp-apps & Deployment & 8514 & 100m/500m & deployment, service, values \\
+\texttt{itsm-incidents}  & erp-apps & Deployment & 8513 & 100m/500m & deployment, service, values \\
 \end{longtable}
 }% end footnotesize
 
@@ -480,9 +463,11 @@ Helm-чарт \texttt{erp-uno} (version 2024.6.15) є єдиним umbrella-ча
 
 \begin{lstlisting}
 helm upgrade --install erp-uno ./helm \
-  --namespace erp-uno \
-  --values ./helm/values.yaml \
-  --create-namespace
+  --values "./helm/values.yaml" \
+  --set global.domain=erp.uno \
+  --set global.environment=production \
+  --server-side=true \
+  --force-conflicts
 \end{lstlisting}
 
 \subsection{Структура \texttt{helm/values.yaml}}

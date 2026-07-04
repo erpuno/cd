@@ -1,7 +1,2 @@
-helm uninstall erp-uno
-kubectl delete namespace erp-ai
-kubectl delete namespace erp-infra
-kubectl delete namespace erp-security
-kubectl delete namespace erp-services
-kubectl delete namespace erp-apps
-kubectl delete namespace erp-telemetry
+helm uninstall erp-uno --ignore-not-found 2>/dev/null || true
+kubectl delete namespace erp-ai erp-infra erp-security erp-services erp-apps erp-telemetry erp-uno --ignore-not-found
