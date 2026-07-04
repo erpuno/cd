@@ -3,7 +3,7 @@
 \usepackage[english]{babel}
 \usepackage{hyperref}
 
-\title{The Kind of Kubernetes: Using Docker Desktop for Local Production-like Clusters}
+\title{The Kind of Kubernetes: Using Docker Desktop for Local Kubernetes Clusters}
 \author{Namdak Tonpa}
 \date{\today}
 
@@ -161,7 +161,7 @@ Key advantages for ERP/1:
 \item Easy node dedication using labels and affinity
 \end{itemize}
 
-\section{Best Practices}
+\subsection{Best Practices}
 
 \begin{itemize}
     \item Maintain strict version alignment between local Kind clusters and target production environments.
@@ -171,10 +171,66 @@ Key advantages for ERP/1:
     \item Continuously monitor resource utilization through \texttt{kubectl top} and Docker Desktop metrics.
 \end{itemize}
 
-\section{Migration to Production Environments}
+\subsection{Migration to Production Environments}
 
 Owing to Kind's use of unmodified Kubernetes components, the transition of manifests to production clusters requires only localized modifications,
 primarily concerning persistent storage (replacement of \texttt{hostPath} with CSI volumes) and ingress/load-balancing configuration.
+
+\subsection{Managing Clusters with kind.sh}
+
+For convenient management of multiple local clusters alongside Docker Desktop, we provide a custom wrapper script \texttt{kind.sh}.
+
+\begin{verbatim}
+#!/bin/bash
+
+set -euo pipefail
+
+NAME="${2:-desktop}"
+CLUSTER_NAME="$NAME"
+
+create() {
+  echo "Creating KinD cluster: $CLUSTER_NAME"
+  kind create cluster --name "$CLUSTER_NAME" --wait 2m
+  kind get kubeconfig --name "$CLUSTER_NAME" > /tmp/kc.yaml
+  KUBECONFIG=~/.kube/config:/tmp/kc.yaml \
+  kubectl config view --flatten > ~/.kube/config.new
+  mv ~/.kube/config.new ~/.kube/config
+  rm -f /tmp/kc.yaml
+  echo "Cluster $CLUSTER_NAME created"
+}
+
+delete() {
+  echo "Deleting cluster: $CLUSTER_NAME"
+  kind delete cluster --name "$CLUSTER_NAME" 2>/dev/null || true
+  kubectl config delete-context "kind-$CLUSTER_NAME" 2>/dev/null || true
+  kubectl config delete-cluster "$CLUSTER_NAME" 2>/dev/null || true
+  kubectl config delete-user "$CLUSTER_NAME" 2>/dev/null || true
+  echo "Deleted $CLUSTER_NAME"
+}
+
+list() {
+  echo "=== KinD Clusters ==="
+  kind get clusters || echo "None"
+  echo ""
+  echo "=== Kubectl Contexts ==="
+  kubectl config get-contexts
+}
+
+case "${1:-list}" in
+  create) create ;;
+  delete) delete ;;
+  list) list ;;
+  *) echo "Usage: ./kind.sh <create|delete|list> [name]" ;;
+esac
+\end{verbatim}
+
+This script allows clean management of multiple environments:
+
+\begin{verbatim}
+./kind.sh create neo
+./kind.sh list
+./kind.sh delete neo
+\end{verbatim}
 
 \section{Conclusion}
 

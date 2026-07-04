@@ -1,8 +1,11 @@
 ERP/1: Continuous Delivery
 ==========================
 
+Крім шаблонів "ERP/1: Підприємство" для K8S цей репозиторій містить 3 статті:
+
 * Архітектура ЦОД
 * SRE Handbook
+* The Kind of Kubernetes
 
 ```sh
 $ tree -L 3 .
@@ -31,6 +34,10 @@ $ tree -L 3 .
 │   ├── networkpolicy.yaml
 │   ├── rbac.yaml
 │   └── storage-class.yaml
+├── kind.sh
+├── kind.pdf
+├── deployment.pdf
+├── sre.pdf
 ├── cleant.sh
 ├── delete.sh
 ├── deploy.sh
