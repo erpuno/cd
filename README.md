@@ -1,8 +1,8 @@
 ERP/1: Continuous Delivery
 ==========================
 
-1) Архітектура ЦОД
-2) SRE Handbook
+* Архітектура ЦОД
+* SRE Handbook
 
 ```sh
 $ tree -L 3 .
