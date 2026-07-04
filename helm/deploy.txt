@@ -1,0 +1,155 @@
+╔════════════════════════════════════════════════════════╗
+║    ERP/1: Підпримємство Helm Deployment                ║
+╚════════════════════════════════════════════════════════╝
+
+[1/5] Cleaning up immutable resources...
+statefulset.apps "prometheus" force deleted from erp-telemetry namespace
+horizontalpodautoscaler.autoscaling "lms-education" deleted from erp-apps namespace
+
+[2/5] Ensuring namespaces...
+namespace/erp-security unchanged
+namespace/erp-ai configured
+namespace/erp-telemetry unchanged
+namespace/erp-infra unchanged
+namespace/erp-apps unchanged
+namespace/erp-services unchanged
+
+[3/5] Deploying shared infrastructure...
+serviceaccount/erp-security-sa unchanged
+role.rbac.authorization.k8s.io/erp-security-role unchanged
+rolebinding.rbac.authorization.k8s.io/erp-security-rolebinding unchanged
+serviceaccount/erp-ai-sa unchanged
+role.rbac.authorization.k8s.io/erp-ai-role unchanged
+rolebinding.rbac.authorization.k8s.io/erp-ai-rolebinding unchanged
+serviceaccount/erp-telemetry-sa unchanged
+role.rbac.authorization.k8s.io/erp-telemetry-role unchanged
+rolebinding.rbac.authorization.k8s.io/erp-telemetry-rolebinding unchanged
+serviceaccount/erp-infra-sa unchanged
+role.rbac.authorization.k8s.io/erp-infra-role unchanged
+rolebinding.rbac.authorization.k8s.io/erp-infra-rolebinding unchanged
+serviceaccount/erp-apps-sa unchanged
+role.rbac.authorization.k8s.io/erp-apps-role unchanged
+rolebinding.rbac.authorization.k8s.io/erp-apps-rolebinding unchanged
+serviceaccount/erp-services-sa unchanged
+role.rbac.authorization.k8s.io/erp-services-role unchanged
+rolebinding.rbac.authorization.k8s.io/erp-services-rolebinding unchanged
+storageclass.storage.k8s.io/local-path unchanged
+networkpolicy.networking.k8s.io/erp-deny-all unchanged
+networkpolicy.networking.k8s.io/erp-deny-all unchanged
+networkpolicy.networking.k8s.io/erp-deny-all unchanged
+networkpolicy.networking.k8s.io/erp-deny-all unchanged
+networkpolicy.networking.k8s.io/erp-deny-all unchanged
+networkpolicy.networking.k8s.io/erp-allow-internal unchanged
+networkpolicy.networking.k8s.io/erp-allow-internal unchanged
+networkpolicy.networking.k8s.io/erp-allow-internal unchanged
+networkpolicy.networking.k8s.io/erp-allow-internal unchanged
+networkpolicy.networking.k8s.io/erp-allow-internal unchanged
+networkpolicy.networking.k8s.io/erp-allow-internal unchanged
+networkpolicy.networking.k8s.io/erp-deny-all unchanged
+    ✓ Shared resources applied
+
+[4/5] Patching Helm ownership metadata...
+Applying Helm ownership metadata to all resources...
+→ Processing namespace: erp-infra
+namespace/erp-infra not labeled
+namespace/erp-infra annotated
+serviceaccount/erp-infra-sa not labeled
+serviceaccount/erp-infra-sa annotated
+service/docker-registry not labeled
+service/ns-dns not labeled
+service/docker-registry annotated
+service/ns-dns annotated
+deployment.apps/docker-registry not labeled
+deployment.apps/ns-dns not labeled
+deployment.apps/docker-registry annotated
+deployment.apps/ns-dns annotated
+→ Processing namespace: erp-telemetry
+namespace/erp-telemetry not labeled
+namespace/erp-telemetry annotated
+serviceaccount/erp-telemetry-sa not labeled
+serviceaccount/erp-telemetry-sa annotated
+service/grafana not labeled
+service/prometheus not labeled
+service/grafana annotated
+service/prometheus annotated
+deployment.apps/grafana not labeled
+deployment.apps/grafana annotated
+→ Processing namespace: erp-security
+namespace/erp-security not labeled
+namespace/erp-security annotated
+serviceaccount/erp-security-sa not labeled
+serviceaccount/erp-security-sa annotated
+service/ca-pki not labeled
+service/ca-pki annotated
+deployment.apps/ca-pki not labeled
+deployment.apps/ca-pki annotated
+→ Processing namespace: erp-ai
+namespace/erp-ai not labeled
+namespace/erp-ai annotated
+serviceaccount/erp-ai-sa not labeled
+serviceaccount/erp-ai-sa annotated
+service/ai-generation not labeled
+service/ai-generation annotated
+deployment.apps/ai-generation not labeled
+deployment.apps/ai-generation annotated
+→ Processing namespace: erp-services
+namespace/erp-services not labeled
+namespace/erp-services annotated
+serviceaccount/erp-services-sa not labeled
+serviceaccount/erp-services-sa annotated
+service/rest-bpe not labeled
+service/rest-bpe annotated
+deployment.apps/rest-bpe not labeled
+deployment.apps/rest-bpe annotated
+→ Processing namespace: erp-apps
+namespace/erp-apps not labeled
+namespace/erp-apps annotated
+serviceaccount/erp-apps-sa not labeled
+serviceaccount/erp-apps-sa annotated
+service/hl7-health not labeled
+service/lms-education not labeled
+service/wms-warehouse not labeled
+service/hl7-health annotated
+service/lms-education annotated
+service/wms-warehouse annotated
+deployment.apps/hl7-health not labeled
+deployment.apps/lms-education not labeled
+deployment.apps/wms-warehouse not labeled
+deployment.apps/hl7-health annotated
+deployment.apps/lms-education annotated
+deployment.apps/wms-warehouse annotated
+✅ All resources patched with Helm ownership metadata.
+    ✓ Ownership metadata patched
+
+[5/5] Deploying Helm chart...
+Release "erp-uno" has been upgraded. Happy Helming!
+NAME: erp-uno
+LAST DEPLOYED: Sat Jul  4 10:23:50 2026
+NAMESPACE: default
+STATUS: deployed
+REVISION: 3
+DESCRIPTION: Upgrade complete
+TEST SUITE: None
+
+╔════════════════════════════════════════════════════════╗
+║           Helm Deployment Complete ✓                   ║
+╚════════════════════════════════════════════════════════╝
+
+📊 Quick Status:
+erp-ai               Active   7h2m
+erp-apps             Active   7h2m
+erp-infra            Active   7h2m
+erp-security         Active   7h2m
+erp-services         Active   7h2m
+erp-telemetry        Active   7h2m
+Pods:
+   5 Running
+   4 ImagePullBackOff
+   1 Pending
+   1 ErrImagePull
+
+🌐 Useful commands:
+   kubectl get pods -A
+   kubectl get hpa -A
+   helm status erp-uno
+   helm history erp-uno

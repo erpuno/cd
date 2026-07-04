@@ -6,7 +6,7 @@ set -e
 CHART_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "╔════════════════════════════════════════════════════════╗"
-echo "║    ERP/1: Підприємствр Helm Chart Validation           ║"
+echo "║    ERP/1: Підприємствр / Helm Chart Validation         ║"
 echo "╚════════════════════════════════════════════════════════╝"
 
 # Step 1: Check Helm

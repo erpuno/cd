@@ -2,7 +2,7 @@
 # Deployment Prerequisites Checklist
 
 echo "╔════════════════════════════════════════════════════════╗"
-echo "║        ERP/1 Deployment Prerequisites Check            ║"
+echo "║  ERP/1: Підприємство / Deployment Prerequisites Check  ║"
 echo "╚════════════════════════════════════════════════════════╝"
 
 PASS="✓"

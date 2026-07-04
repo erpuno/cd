@@ -1,0 +1,2 @@
+release "erp-uno" uninstalled
+service "kubernetes" deleted from default namespace

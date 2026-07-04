@@ -1,0 +1,4 @@
+🔨 Generating helm/values.yaml  (version: 2024.6.15)
+Overwrite /Users/tonpa/depot/erpuno/cd/helm/values.yaml? (y/N): ✅ Generated successfully!
+   Namespaces : 6
+   Services   : 21

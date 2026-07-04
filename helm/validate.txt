@@ -1,0 +1,38 @@
+╔════════════════════════════════════════════════════════╗
+║    ERP/1: Підприємствр Helm Chart Validation           ║
+╚════════════════════════════════════════════════════════╝
+
+[1/4] Checking Helm...
+    ✓ Helm v4.2.2
+
+[2/4] Validating chart structure...
+    ✓ Chart.yaml exists
+    ✓ values.yaml exists
+    ✓ templates/ directory exists with        4 files
+
+[3/4] Linting Helm chart...
+    ✓ Helm lint passed
+
+[4/4] Validating template rendering...
+    ✓ Templates render successfully (56 resources)
+
+╔════════════════════════════════════════════════════════╗
+║              Chart Validation Complete ✓               ║
+╚════════════════════════════════════════════════════════╝
+
+📋 Chart Info:
+    name: erp-uno
+    version: 2024.6.15
+    appVersion: "2024.6.15"
+      - name: Zen Crypted
+
+📊 Configuration:
+    Namespaces:        0
+    Services: ~25 (defined per namespace)
+
+🚀 Deploy with:
+
+    helm install erp-uno /Users/tonpa/depot/erpuno/cd/helm --values /Users/tonpa/depot/erpuno/cd/helm/values.yaml
+    OR
+    bash /Users/tonpa/depot/erpuno/cd/helm/deploy.sh
+

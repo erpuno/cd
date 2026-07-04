@@ -1,0 +1,7 @@
+release "erp-uno" uninstalled
+namespace "erp-ai" deleted
+namespace "erp-infra" deleted
+namespace "erp-security" deleted
+namespace "erp-services" deleted
+namespace "erp-apps" deleted
+namespace "erp-telemetry" deleted
