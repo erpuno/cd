@@ -125,8 +125,8 @@ EXAMPLES:
   ./kind.sh merge
   ./kind.sh create [name]
   ./kind.sh delete [name]
-  ./kind.sh use
-  ./kind.sh use-docker
+  ./kind.sh kind
+  ./kind.sh docker
   ./kind.sh list
 EOF
     ;;
