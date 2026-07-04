@@ -79,8 +79,6 @@ if [ -n "$ingress_ctrl" ]; then
   echo "    $PASS Ingress controller found: $ingress_ctrl"
 else
   echo "    $WARN No Ingress controller detected"
-  echo "       (Required for external access to Nitro Portal)"
-  echo "       Install: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.0/deploy/static/provider/cloud/deploy.yaml"
 fi
 
 # Check 6: DNS (CoreDNS)

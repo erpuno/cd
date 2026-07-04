@@ -1,6 +1,9 @@
 \documentclass[12pt,a4paper]{article}
 
 \usepackage[utf8]{inputenc}
+\usepackage{verbatim}
+\usepackage{hyphenat}
+\usepackage{hyperref}
 \usepackage{helvet}
 \usepackage{xcolor}
 \usepackage{eso-pic}
@@ -9,18 +12,19 @@
 \usepackage{microtype}
 \usepackage[english,ukrainian]{babel}
 \usepackage{url}
-\usepackage{amsmath}
-\usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{longtable}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{hyperref}
 \usepackage{titlesec}
-\usepackage{listings}
 \usepackage{enumitem}
 \usepackage{colortbl}
 \usepackage{tcolorbox}
+\usepackage{newunicodechar}
+\usepackage{fontawesome}
+\usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage[top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
 
 \definecolor{primary}{HTML}{293757}
@@ -72,6 +76,32 @@
 \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
 \newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
 
+\newunicodechar{✓}{\checkmark}
+\newunicodechar{⚠}{\faWarning}
+\newunicodechar{≥}{\geq}
+\newunicodechar{═}{\texttt{=}}
+\newunicodechar{║}{\texttt{|}}
+\newunicodechar{╔}{\texttt{+}}
+\newunicodechar{╗}{\texttt{+}}
+\newunicodechar{╚}{\texttt{+}}
+\newunicodechar{╝}{\texttt{+}}
+\newunicodechar{─}{\texttt{-}}
+\newunicodechar{│}{\texttt{|}}
+\newunicodechar{├}{\texttt{+}}
+\newunicodechar{┤}{\texttt{+}}
+\newunicodechar{┬}{\texttt{+}}
+\newunicodechar{┴}{\texttt{+}}
+\newunicodechar{┌}{\texttt{+}}
+\newunicodechar{┐}{\texttt{+}}
+\newunicodechar{└}{\texttt{+}}
+\newunicodechar{┘}{\texttt{+}}
+\newunicodechar{━}{\texttt{=}}
+\newunicodechar{📊}{\faBarChart}
+\newunicodechar{🌐}{\faGlobe}
+\newunicodechar{📁}{\faFolder}
+\newunicodechar{🔨}{\faWrench}
+\newunicodechar{✅}{\checkmark}
+
 \tcbuselibrary{skins,breakable}
 \tcbset{notebox/.style={
   enhanced,breakable,
@@ -80,8 +110,7 @@
   left=8pt,right=8pt,top=6pt,bottom=6pt,
 }}
 
-\hypersetup{colorlinks=true,linkcolor=primary,urlcolor=accent,
-  pdftitle={ERP/1 SRE Handbook},pdfauthor={Zen Crypted}}
+%\hypersetup{colorlinks=true,linkcolor=primary,urlcolor=accent, pdftitle={ERP/1 SRE Handbook},pdfauthor={Zen Crypted}}
 
 \begin{document}
 \pagestyle{fancy}
@@ -461,14 +490,14 @@ erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\tex
 Helm-чарт \texttt{erp-uno} (version 2024.6.15) є єдиним umbrella-чартом,
 що покриває всі namespace'и та сервіси:
 
-\begin{lstlisting}
+\begin{verbatim}
 helm upgrade --install erp-uno ./helm \
   --values "./helm/values.yaml" \
   --set global.domain=erp.uno \
   --set global.environment=production \
   --server-side=true \
   --force-conflicts
-\end{lstlisting}
+\end{verbatim}
 
 \subsection{Структура \texttt{helm/values.yaml}}
 
@@ -508,7 +537,7 @@ $\xrightarrow{\text{Helm templates}}$ \textbf{Kubernetes manifests}\\[4pt]
 перегенерації: \texttt{ruby values.rb --force}
 \end{tcolorbox}
 
-\begin{lstlisting}
+\begin{verbatim}
 ruby values.rb --force          # overwrite without confirmation
 ruby values.rb --dry-run        # preview only, no file write
 ruby values.rb --version 2024.7 # update all image versions
@@ -519,7 +548,7 @@ ruby values.rb --version 2024.7 # update all image versions
 # 3. Extract: replicas, image, port, resources, persistence, hpa
 # 4. Write into services[namespace][service]
 # 5. Serialize to helm/values.yaml
-\end{lstlisting}
+\end{verbatim}
 
 \subsection{Helm-шаблони}
 
@@ -678,7 +707,7 @@ Pod Readiness & Availability
   пересилання до Jaeger/Tempo \\[4pt]
 \end{longtable}
 
-\begin{lstlisting}
+\begin{verbatim}
 # Access Prometheus UI
 kubectl port-forward -n erp-telemetry svc/prometheus 9090:9090
 # Access Grafana UI (admin/admin)
@@ -686,7 +715,7 @@ kubectl port-forward -n erp-telemetry svc/grafana 3000:3000
 # Check stack status
 kubectl get pods -n erp-telemetry
 kubectl get pvc  -n erp-telemetry
-\end{lstlisting}
+\end{verbatim}
 
 % ===========================================================================
 \newpage
@@ -986,6 +1015,364 @@ erp-services  & 5  & 500m   & 1.25 Gi & --- \\[2pt]
 \midrule
 \textbf{Разом} & \textbf{21} & \textbf{2.1 cores} & \textbf{5.3 Gi} & \textbf{40 Gi} \\[2pt]
 \end{longtable}
+
+% ===========================================================================
+\newpage
+\section{Розгортання кластеру}
+
+Розгортання платформи ERP/1: Підприємство є повністю автоматизованим, декларативним та відтворюваним процесом, побудованим за принципами GitOps та Site Reliability Engineering. Основна інфраструктура розгортання складається з набору спеціалізованих bash-скриптів, Ruby-генератора конфігурації та Helm umbrella-чарту, що забезпечує єдине джерело істини для всього кластеру.
+Система розгортання включає чотири ключові компоненти:
+
+\texttt{prereq.sh} — скрипт попередньої перевірки середовища. Він перевіряє наявність та версії kubectl, helm, kind, стан Kubernetes-кластеру, StorageClass, Ingress-контролер, DNS та доступ до приватного реєстру образів. У разі відсутності критичних компонентів скрипт виводить чіткі рекомендації щодо їх встановлення.
+
+\texttt{values.rb} — Ruby-скрипт зворотної генерації Helm-значень. Він сканує директорію lib/, парсить сирі Kubernetes-маніфести (deployment.yaml, service.yaml, hpa.yaml, pvc.yaml) і автоматично формує централізований файл helm/values.yaml. Це дозволяє розробникам редагувати прості маніфести для кожного сервісу, а Helm-чарт залишається єдиним точкою входу для розгортання.
+
+\texttt{deploy.sh} — основний оркестратор розгортання. Скрипт виконує 8-крокове послідовне розгортання з урахуванням топологічних залежностей між namespace'ами (erp-infra → erp-telemetry → erp-security → erp-ai → erp-services → erp-apps). На кожному кроці відбувається застосування RBAC, NetworkPolicy, StatefulSet-ів з PVC, HPA та моніторинг статусу подів. Скрипт також генерує детальний звіт про стан кластеру після завершення.
+
+Helm umbrella-чарт erp-uno — єдиний пакет, що охоплює всі 6 namespace'ів та 21 сервіс. Використовуючи Go-шаблони (templates/deployments.yaml, services.yaml тощо), чарт генерує всі Kubernetes-ресурси з урахуванням глобальних налаштувань (global.domain, imagePullPolicy, версія образів тощо).
+
+Така архітектура забезпечує мінімізацію TOIL, високу відтворюваність між середовищами (development, staging, production) та швидке відновлення після збоїв. Повне розгортання кластеру займає менше 5 хвилин на сучасному hardware. Усі зміни проходять через Git, проходять dry-run перевірки та автоматично синхронізуються через ArgoCD у production-контурі.
+Система повністю сумісна з державними вимогами КСЗІ/АСБ завдяки використанню UA Linux, NetworkPolicy deny-by-default, RBAC least-privilege та приватного OCI-реєстру.
+
+\newpage
+\subsection{Пререквізити prereq.sh}
+
+Ініціалізація:
+\begin{verbatim}
+╔════════════════════════════════════════════════════════╗
+║  ERP/1: Підприємство / Deployment Prerequisites Check  ║
+╚════════════════════════════════════════════════════════╝
+
+[1] kubectl CLI
+    ✓ kubectl  installed
+
+[2] Helm Charts
+    ✓ Helm v4.2.2+gb05881c installed
+
+[3] Kubernetes Cluster
+    ✓ Cluster accessible
+       Version:
+       Nodes:        1
+       Total CPU: 10m
+       Total Memory: 7GB
+       ⚠ Cluster resources may be tight for 25 services
+          Recommended: >= 4 CPU cores, >= 16GB RAM
+
+[4] Storage
+    ✓ Default StorageClass: standard
+
+[5] Ingress Controller
+    ⚠ No Ingress controller detected
+
+[6] Cluster DNS
+    ⚠ CoreDNS not found
+       Internal service discovery may fail
+
+[7] Namespace Setup
+    ✓ Namespace 'erp-uno' ready to create
+
+[8] Image Registry
+    Configured: registry.erp.uno
+    ⚠ Ensure images are accessible from cluster
+       For private registries: set ImagePullSecret
+
+[9] Docker (for local testing with docker-compose)
+    ✓ Docker 29.6.1, installed
+
+\end{verbatim}
+
+Фіналізація:
+\begin{verbatim}
+╔════════════════════════════════════════════════════════╗
+║                      Next Steps                        ║
+╚════════════════════════════════════════════════════════╝
+
+If all checks pass, run K8S raw deploy: bash deploy.sh
+Or deploy via helm: cd helm && ./deploy.sh
+\end{verbatim}
+
+\newpage
+\subsection{Впровадження deploy.sh}
+
+Ініціалізація:
+\begin{verbatim}
+╔════════════════════════════════════════════════════════╗
+║    ERP/1: Підприємство / Kubernetes Dev Deployment     ║
+╚════════════════════════════════════════════════════════╝
+
+[1/8] Setting up namespaces...
+namespace/erp-security created
+namespace/erp-ai created
+namespace/erp-telemetry created
+namespace/erp-infra created
+namespace/erp-apps created
+namespace/erp-services created
+serviceaccount/erp-security-sa created
+role.rbac.authorization.k8s.io/erp-security-role created
+rolebinding.rbac.authorization.k8s.io/erp-security-rolebinding created
+serviceaccount/erp-ai-sa created
+role.rbac.authorization.k8s.io/erp-ai-role created
+rolebinding.rbac.authorization.k8s.io/erp-ai-rolebinding created
+serviceaccount/erp-telemetry-sa created
+role.rbac.authorization.k8s.io/erp-telemetry-role created
+rolebinding.rbac.authorization.k8s.io/erp-telemetry-rolebinding created
+serviceaccount/erp-infra-sa created
+role.rbac.authorization.k8s.io/erp-infra-role created
+rolebinding.rbac.authorization.k8s.io/erp-infra-rolebinding created
+serviceaccount/erp-apps-sa created
+role.rbac.authorization.k8s.io/erp-apps-role created
+rolebinding.rbac.authorization.k8s.io/erp-apps-rolebinding created
+serviceaccount/erp-services-sa created
+role.rbac.authorization.k8s.io/erp-services-role created
+rolebinding.rbac.authorization.k8s.io/erp-services-rolebinding created
+storageclass.storage.k8s.io/local-path unchanged
+networkpolicy.networking.k8s.io/erp-deny-all created
+networkpolicy.networking.k8s.io/erp-deny-all created
+networkpolicy.networking.k8s.io/erp-deny-all created
+networkpolicy.networking.k8s.io/erp-deny-all created
+networkpolicy.networking.k8s.io/erp-deny-all created
+networkpolicy.networking.k8s.io/erp-allow-internal created
+networkpolicy.networking.k8s.io/erp-allow-internal created
+networkpolicy.networking.k8s.io/erp-allow-internal created
+networkpolicy.networking.k8s.io/erp-allow-internal created
+networkpolicy.networking.k8s.io/erp-allow-internal created
+networkpolicy.networking.k8s.io/erp-allow-internal created
+networkpolicy.networking.k8s.io/erp-deny-all created
+    ✓ Namespaces, RBAC, and network policies created
+
+[2/8] Deploying erp-infra...
+    Deploying ns-dns to erp-infra...
+    Deploying docker-registry to erp-infra...
+persistentvolumeclaim/registry-data unchanged
+deployment.apps/docker-registry unchanged
+service/docker-registry unchanged
+
+[3/8] Deploying erp-telemetry...
+    Deploying prometheus to erp-telemetry...
+persistentvolumeclaim/prometheus-data unchanged
+statefulset.apps/prometheus unchanged
+service/prometheus unchanged
+    Deploying grafana to erp-telemetry...
+deployment.apps/grafana unchanged
+service/grafana unchanged
+    Deploying loki to erp-telemetry...
+    Deploying otel-collector to erp-telemetry...
+
+[4/8] Deploying erp-security...
+    Deploying ca-pki to erp-security...
+
+[5/8] Deploying erp-ai...
+    Deploying ai-generation to erp-ai...
+
+[6/8] Deploying erp-services...
+    Deploying kvs-database to erp-services...
+    Deploying bpe-engine to erp-services...
+    Deploying rest-bpe to erp-services...
+    Deploying n2o-server to erp-services...
+
+[7/8] Deploying erp-apps...
+    Deploying lms-education to erp-apps...
+deployment.apps/lms-education unchanged
+service/lms-education unchanged
+horizontalpodautoscaler.autoscaling/lms-education unchanged
+    Deploying hl7-health to erp-apps...
+deployment.apps/hl7-health unchanged
+service/hl7-health unchanged
+horizontalpodautoscaler.autoscaling/hl7-health unchanged
+    Deploying crm-documents to erp-apps...
+    Deploying acc-accounting to erp-apps...
+    Deploying wms-warehouse to erp-apps...
+    Deploying cart-registers to erp-apps...
+    Deploying pm-projects to erp-apps...
+    Deploying itsm-incidents to erp-apps...
+
+[8/8] Deployment Summary
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+               erp-infra:        0/       0 pods running
+           erp-telemetry:        1/       2 pods running
+            erp-security:        0/       0 pods running
+                  erp-ai:        0/       0 pods running
+            erp-services:        0/       0 pods running
+                erp-apps:        0/       0 pods running
+\end{verbatim}
+
+\newpage
+Фіналізація:
+\begin{verbatim}
+╔════════════════════════════════════════════════════════╗
+║           Multi-Namespace Deployment Done ✓            ║
+╚════════════════════════════════════════════════════════╝
+
+📊 Check Status:\n
+   All pods: kubectl get pods -A
+   All namespaces: kubectl get ns
+
+🌐 Access Services:\n
+   UI (Nitro): kubectl port-forward -n erp-services svc/nitro-portal 8510:8510
+   Prometheus: kubectl port-forward -n erp-telemetry svc/prometheus 9090:9090
+   Grafana: kubectl port-forward -n erp-telemetry svc/grafana 3000:3000
+   Registry: kubectl port-forward -n erp-infra svc/docker-registry 5000:5000
+
+📁 Namespace Organization:\n
+       erp-infra: ns-dns, docker-registry
+   erp-telemetry: prometheus, grafana, loki, otel-collector
+    erp-security: ca-pki, vpn-wireguard, ias-auth
+          erp-ai: ai-generation
+    erp-services: kvs-database, bpe-engine, rest-bpe, n2o-server, nitro-portal
+        erp-apps: lms-education, hl7-health, acc-accounting, wms-warehouse, cart-registers
+        erp-apps: crm-documents, pm-projects, itsm-incidents, chat-messenger
+
+\end{verbatim}
+
+\subsection{Генерація Helm моно-чарту values.rb}
+
+Ініціалізація:
+\begin{verbatim}
+🔨 Generating helm/values.yaml  (version: 2024.6.15)
+Overwrite /Users/tonpa/depot/erpuno/cd/helm/values.yaml? (y/N): y
+✅ Generated successfully!
+   Namespaces : 6
+   Services   : 21
+\end{verbatim}
+
+\newpage
+\subsection{Пакетування helm/deploy}
+
+Ініціалізація:
+\begin{verbatim}
+╔════════════════════════════════════════════════════════╗
+║    ERP/1: Підпримємство Helm Deployment                ║
+╚════════════════════════════════════════════════════════╝
+
+[1/5] Cleaning up immutable resources...
+No resources found
+
+[2/5] Ensuring namespaces...
+namespace/erp-security created
+namespace/erp-ai created
+namespace/erp-telemetry created
+namespace/erp-infra created
+namespace/erp-apps created
+namespace/erp-services created
+
+[3/5] Deploying shared infrastructure...
+serviceaccount/erp-security-sa created
+role.rbac.authorization.k8s.io/erp-security-role created
+rolebinding.rbac.authorization.k8s.io/erp-security-rolebinding created
+serviceaccount/erp-ai-sa created
+role.rbac.authorization.k8s.io/erp-ai-role created
+rolebinding.rbac.authorization.k8s.io/erp-ai-rolebinding created
+serviceaccount/erp-telemetry-sa created
+role.rbac.authorization.k8s.io/erp-telemetry-role created
+rolebinding.rbac.authorization.k8s.io/erp-telemetry-rolebinding created
+serviceaccount/erp-infra-sa created
+role.rbac.authorization.k8s.io/erp-infra-role created
+rolebinding.rbac.authorization.k8s.io/erp-infra-rolebinding created
+serviceaccount/erp-apps-sa created
+role.rbac.authorization.k8s.io/erp-apps-role created
+rolebinding.rbac.authorization.k8s.io/erp-apps-rolebinding created
+serviceaccount/erp-services-sa created
+role.rbac.authorization.k8s.io/erp-services-role created
+rolebinding.rbac.authorization.k8s.io/erp-services-rolebinding created
+storageclass.storage.k8s.io/local-path unchanged
+networkpolicy.networking.k8s.io/erp-deny-all created
+networkpolicy.networking.k8s.io/erp-deny-all created
+networkpolicy.networking.k8s.io/erp-deny-all created
+networkpolicy.networking.k8s.io/erp-deny-all created
+networkpolicy.networking.k8s.io/erp-deny-all created
+networkpolicy.networking.k8s.io/erp-allow-internal created
+networkpolicy.networking.k8s.io/erp-allow-internal created
+networkpolicy.networking.k8s.io/erp-allow-internal created
+networkpolicy.networking.k8s.io/erp-allow-internal created
+networkpolicy.networking.k8s.io/erp-allow-internal created
+networkpolicy.networking.k8s.io/erp-allow-internal created
+networkpolicy.networking.k8s.io/erp-deny-all created
+    ✓ Shared resources applied
+
+[4/5] Patching Helm ownership metadata...
+Applying Helm ownership metadata to all resources...
+→ Processing namespace: erp-infra
+namespace/erp-infra not labeled
+namespace/erp-infra annotated
+serviceaccount/erp-infra-sa labeled
+serviceaccount/erp-infra-sa annotated
+→ Processing namespace: erp-telemetry
+namespace/erp-telemetry not labeled
+namespace/erp-telemetry annotated
+serviceaccount/erp-telemetry-sa labeled
+serviceaccount/erp-telemetry-sa annotated
+→ Processing namespace: erp-security
+namespace/erp-security not labeled
+namespace/erp-security annotated
+serviceaccount/erp-security-sa labeled
+serviceaccount/erp-security-sa annotated
+→ Processing namespace: erp-ai
+namespace/erp-ai not labeled
+namespace/erp-ai annotated
+serviceaccount/erp-ai-sa labeled
+serviceaccount/erp-ai-sa annotated
+→ Processing namespace: erp-services
+namespace/erp-services not labeled
+namespace/erp-services annotated
+serviceaccount/erp-services-sa labeled
+serviceaccount/erp-services-sa annotated
+→ Processing namespace: erp-apps
+namespace/erp-apps not labeled
+namespace/erp-apps annotated
+serviceaccount/erp-apps-sa labeled
+serviceaccount/erp-apps-sa annotated
+✅ All resources patched with Helm ownership metadata.
+    ✓ Ownership metadata patched
+
+[5/5] Deploying Helm chart...
+Release "erp-uno" does not exist. Installing it now.
+NAME: erp-uno
+LAST DEPLOYED: Sat Jul  4 11:58:19 2026
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+
+\end{verbatim}
+
+\newpage
+Фіналізація:
+\begin{verbatim}
+╔════════════════════════════════════════════════════════╗
+║           Helm Deployment Complete ✓                   ║
+╚════════════════════════════════════════════════════════╝
+
+📊 Quick Status:
+erp-ai               Active   3s
+erp-apps             Active   3s
+erp-infra            Active   3s
+erp-security         Active   3s
+erp-services         Active   3s
+erp-telemetry        Active   3s
+Pods:
+   4 Running
+   1 ContainerCreating
+
+🌐 Useful commands:
+   kubectl get pods -A
+   kubectl get hpa -A
+   helm status erp-uno
+   helm history erp-uno
+\end{verbatim}
+
+\subsection{Деконструкція кластеру}
+
+Деініціалізація:
+\begin{verbatim}
+release "erp-uno" uninstalled
+namespace "erp-ai" deleted
+namespace "erp-infra" deleted
+namespace "erp-security" deleted
+namespace "erp-services" deleted
+namespace "erp-apps" deleted
+namespace "erp-telemetry" deleted
+\end{verbatim}
 
 % ===========================================================================
 \newpage

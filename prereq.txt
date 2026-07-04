@@ -22,8 +22,6 @@
 
 [5] Ingress Controller
     ⚠ No Ingress controller detected
-       (Required for external access to Nitro Portal)
-       Install: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.0/deploy/static/provider/cloud/deploy.yaml
 
 [6] Cluster DNS
     ⚠ CoreDNS not found

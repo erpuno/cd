@@ -3,60 +3,60 @@
 ╚════════════════════════════════════════════════════════╝
 
 [1/8] Setting up namespaces...
-namespace/erp-security created
-namespace/erp-ai created
-namespace/erp-telemetry created
-namespace/erp-infra created
-namespace/erp-apps created
-namespace/erp-services created
-serviceaccount/erp-security-sa created
-role.rbac.authorization.k8s.io/erp-security-role created
-rolebinding.rbac.authorization.k8s.io/erp-security-rolebinding created
-serviceaccount/erp-ai-sa created
-role.rbac.authorization.k8s.io/erp-ai-role created
-rolebinding.rbac.authorization.k8s.io/erp-ai-rolebinding created
-serviceaccount/erp-telemetry-sa created
-role.rbac.authorization.k8s.io/erp-telemetry-role created
-rolebinding.rbac.authorization.k8s.io/erp-telemetry-rolebinding created
-serviceaccount/erp-infra-sa created
-role.rbac.authorization.k8s.io/erp-infra-role created
-rolebinding.rbac.authorization.k8s.io/erp-infra-rolebinding created
-serviceaccount/erp-apps-sa created
-role.rbac.authorization.k8s.io/erp-apps-role created
-rolebinding.rbac.authorization.k8s.io/erp-apps-rolebinding created
-serviceaccount/erp-services-sa created
-role.rbac.authorization.k8s.io/erp-services-role created
-rolebinding.rbac.authorization.k8s.io/erp-services-rolebinding created
+namespace/erp-security unchanged
+namespace/erp-ai unchanged
+namespace/erp-telemetry unchanged
+namespace/erp-infra unchanged
+namespace/erp-apps unchanged
+namespace/erp-services unchanged
+serviceaccount/erp-security-sa unchanged
+role.rbac.authorization.k8s.io/erp-security-role unchanged
+rolebinding.rbac.authorization.k8s.io/erp-security-rolebinding unchanged
+serviceaccount/erp-ai-sa unchanged
+role.rbac.authorization.k8s.io/erp-ai-role unchanged
+rolebinding.rbac.authorization.k8s.io/erp-ai-rolebinding unchanged
+serviceaccount/erp-telemetry-sa unchanged
+role.rbac.authorization.k8s.io/erp-telemetry-role unchanged
+rolebinding.rbac.authorization.k8s.io/erp-telemetry-rolebinding unchanged
+serviceaccount/erp-infra-sa unchanged
+role.rbac.authorization.k8s.io/erp-infra-role unchanged
+rolebinding.rbac.authorization.k8s.io/erp-infra-rolebinding unchanged
+serviceaccount/erp-apps-sa unchanged
+role.rbac.authorization.k8s.io/erp-apps-role unchanged
+rolebinding.rbac.authorization.k8s.io/erp-apps-rolebinding unchanged
+serviceaccount/erp-services-sa unchanged
+role.rbac.authorization.k8s.io/erp-services-role unchanged
+rolebinding.rbac.authorization.k8s.io/erp-services-rolebinding unchanged
 storageclass.storage.k8s.io/local-path unchanged
-networkpolicy.networking.k8s.io/erp-deny-all created
-networkpolicy.networking.k8s.io/erp-deny-all created
-networkpolicy.networking.k8s.io/erp-deny-all created
-networkpolicy.networking.k8s.io/erp-deny-all created
-networkpolicy.networking.k8s.io/erp-deny-all created
-networkpolicy.networking.k8s.io/erp-allow-internal created
-networkpolicy.networking.k8s.io/erp-allow-internal created
-networkpolicy.networking.k8s.io/erp-allow-internal created
-networkpolicy.networking.k8s.io/erp-allow-internal created
-networkpolicy.networking.k8s.io/erp-allow-internal created
-networkpolicy.networking.k8s.io/erp-allow-internal created
-networkpolicy.networking.k8s.io/erp-deny-all created
+networkpolicy.networking.k8s.io/erp-deny-all unchanged
+networkpolicy.networking.k8s.io/erp-deny-all unchanged
+networkpolicy.networking.k8s.io/erp-deny-all unchanged
+networkpolicy.networking.k8s.io/erp-deny-all unchanged
+networkpolicy.networking.k8s.io/erp-deny-all unchanged
+networkpolicy.networking.k8s.io/erp-allow-internal unchanged
+networkpolicy.networking.k8s.io/erp-allow-internal unchanged
+networkpolicy.networking.k8s.io/erp-allow-internal unchanged
+networkpolicy.networking.k8s.io/erp-allow-internal unchanged
+networkpolicy.networking.k8s.io/erp-allow-internal unchanged
+networkpolicy.networking.k8s.io/erp-allow-internal unchanged
+networkpolicy.networking.k8s.io/erp-deny-all unchanged
     ✓ Namespaces, RBAC, and network policies created
 
 [2/8] Deploying erp-infra...
     Deploying ns-dns to erp-infra...
     Deploying docker-registry to erp-infra...
-persistentvolumeclaim/registry-data created
-deployment.apps/docker-registry created
-service/docker-registry created
+persistentvolumeclaim/registry-data unchanged
+deployment.apps/docker-registry unchanged
+service/docker-registry unchanged
 
 [3/8] Deploying erp-telemetry...
     Deploying prometheus to erp-telemetry...
-persistentvolumeclaim/prometheus-data created
-statefulset.apps/prometheus created
-service/prometheus created
+persistentvolumeclaim/prometheus-data unchanged
+statefulset.apps/prometheus unchanged
+service/prometheus unchanged
     Deploying grafana to erp-telemetry...
-deployment.apps/grafana created
-service/grafana created
+deployment.apps/grafana unchanged
+service/grafana unchanged
     Deploying loki to erp-telemetry...
     Deploying otel-collector to erp-telemetry...
 
@@ -74,13 +74,13 @@ service/grafana created
 
 [7/8] Deploying erp-apps...
     Deploying lms-education to erp-apps...
-deployment.apps/lms-education created
-service/lms-education created
-horizontalpodautoscaler.autoscaling/lms-education created
+deployment.apps/lms-education unchanged
+service/lms-education unchanged
+horizontalpodautoscaler.autoscaling/lms-education unchanged
     Deploying hl7-health to erp-apps...
-deployment.apps/hl7-health created
-service/hl7-health created
-horizontalpodautoscaler.autoscaling/hl7-health created
+deployment.apps/hl7-health unchanged
+service/hl7-health unchanged
+horizontalpodautoscaler.autoscaling/hl7-health unchanged
     Deploying crm-documents to erp-apps...
     Deploying acc-accounting to erp-apps...
     Deploying wms-warehouse to erp-apps...
@@ -97,25 +97,21 @@ horizontalpodautoscaler.autoscaling/hl7-health created
             erp-services:        0/       0 pods running
                 erp-apps:        0/       0 pods running
 
-
 ╔════════════════════════════════════════════════════════╗
 ║           Multi-Namespace Deployment Done ✓            ║
 ╚════════════════════════════════════════════════════════╝
 
-📊 Check Status:
-
+📊 Check Status:\n
    All pods: kubectl get pods -A
    All namespaces: kubectl get ns
 
-🌐 Access Services:
-
+🌐 Access Services:\n
    UI (Nitro): kubectl port-forward -n erp-services svc/nitro-portal 8510:8510
    Prometheus: kubectl port-forward -n erp-telemetry svc/prometheus 9090:9090
    Grafana: kubectl port-forward -n erp-telemetry svc/grafana 3000:3000
    Registry: kubectl port-forward -n erp-infra svc/docker-registry 5000:5000
 
-📁 Namespace Organization:
-
+📁 Namespace Organization:\n
        erp-infra: ns-dns, docker-registry
    erp-telemetry: prometheus, grafana, loki, otel-collector
     erp-security: ca-pki, vpn-wireguard, ias-auth

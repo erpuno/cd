@@ -87,27 +87,31 @@ for ns in erp-infra erp-telemetry erp-security erp-ai erp-services erp-apps; do
   echo "    $n: $running/$pod_count pods running"
 done
 
-echo -e "\n"
+echo
 echo "╔════════════════════════════════════════════════════════╗"
 echo "║           Multi-Namespace Deployment Done ✓            ║"
 echo "╚════════════════════════════════════════════════════════╝"
 
-echo -e "\n📊 Check Status:\n"
+echo
+echo "📊 Check Status:\n"
 echo "   All pods: kubectl get pods -A"
 echo "   All namespaces: kubectl get ns"
 
-echo -e "\n🌐 Access Services:\n"
+echo
+echo "🌐 Access Services:\n"
 echo "   UI (Nitro): kubectl port-forward -n erp-services svc/nitro-portal 8510:8510"
 echo "   Prometheus: kubectl port-forward -n erp-telemetry svc/prometheus 9090:9090"
 echo "   Grafana: kubectl port-forward -n erp-telemetry svc/grafana 3000:3000"
 echo "   Registry: kubectl port-forward -n erp-infra svc/docker-registry 5000:5000"
 
-echo -e "\n📁 Namespace Organization:\n"
+echo
+echo "📁 Namespace Organization:\n"
 echo "       erp-infra: ns-dns, docker-registry"
 echo "   erp-telemetry: prometheus, grafana, loki, otel-collector"
 echo "    erp-security: ca-pki, vpn-wireguard, ias-auth"
 echo "          erp-ai: ai-generation"
 echo "    erp-services: kvs-database, bpe-engine, rest-bpe, n2o-server, nitro-portal"
-echo "        erp-apps: lms-education, hl7-health, crm-documents, acc-accounting, wms-warehouse, cart-registers, pm-projects, itsm-incidents, chat-messenger"
+echo "        erp-apps: lms-education, hl7-health, acc-accounting, wms-warehouse, cart-registers"
+echo "        erp-apps: crm-documents, pm-projects, itsm-incidents, chat-messenger"
 
 echo ""
