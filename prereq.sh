@@ -2,7 +2,7 @@
 # Deployment Prerequisites Checklist
 
 echo "╔════════════════════════════════════════════════════════╗"
-echo "║        ERP.uno Deployment Prerequisites Check         ║"
+echo "║        ERP/1 Deployment Prerequisites Check            ║"
 echo "╚════════════════════════════════════════════════════════╝"
 
 PASS="✓"
@@ -20,7 +20,7 @@ else
 fi
 
 # Check 2: Helm installed
-echo -e "\n[2] Helm 3"
+echo -e "\n[2] Helm Charts"
 if command -v helm &> /dev/null; then
   helm_version=$(helm version --short)
   echo "    $PASS Helm $helm_version installed"
@@ -123,10 +123,10 @@ echo -e "\n╔══════════════════════
 echo "║                      Next Steps                        ║"
 echo "╚════════════════════════════════════════════════════════╝"
 
-echo -e "\nIf all checks pass (or only warnings), run:\n"
+echo -e "\nIf all checks pass, run K8S raw deploy:\n"
 echo "  bash deploy.sh"
 
-echo -e "\nOr deploy manually:\n"
+echo -e "\nOr deploy via helm:\n"
 echo "  cd helm"
 echo "  ./deploy.sh"
 

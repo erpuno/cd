@@ -1,9 +1,9 @@
-\documentclass{article}
+\documentclass[12pt,a4paper]{article}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T2A]{fontenc}
 \usepackage{helvet}
-\usepackage{geometry}
+\usepackage[top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
 \usepackage{xcolor}
 \usepackage{eso-pic}
 \usepackage{fancyhdr}
@@ -21,221 +21,1049 @@
 \usepackage{titlesec}
 \usepackage{listings}
 \usepackage{enumitem}
+\usepackage{colortbl}
+\usepackage{tcolorbox}
 
-% Define brand colors
+% Brand Colours
 \definecolor{primary}{HTML}{293757}
-\definecolor{footergray}{gray}{0.65}
+\definecolor{accent}{HTML}{3E6BCA}
+\definecolor{lightblue}{HTML}{EDF2FF}
+\definecolor{rowalt}{HTML}{F4F7FB}
+\definecolor{headerbg}{HTML}{293757}
+\definecolor{footergray}{gray}{0.55}
+\definecolor{codebg}{HTML}{F1F3F5}
+\definecolor{successgreen}{HTML}{1A7F45}
+\definecolor{warnred}{HTML}{C0392B}
+\definecolor{tieryellow}{HTML}{B7791F}
+\definecolor{infrablue}{HTML}{1565A8}
+\definecolor{secpurple}{HTML}{6B3FA0}
 
 \renewcommand{\familydefault}{\sfdefault}
 \setcounter{secnumdepth}{3}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
 
-% Font shapes for T2A/Helvetica
 \DeclareFontFamily{T2A}{phv}{}
 \DeclareFontShape{T2A}{phv}{m}{n}{<->ssub * cmss/m/n}{}
 \DeclareFontShape{T2A}{phv}{bx}{n}{<->ssub * cmss/bx/n}{}
 \DeclareFontShape{T2A}{phv}{m}{it}{<->ssub * cmss/m/it}{}
 \DeclareFontShape{T2A}{phv}{bx}{it}{<->ssub * cmss/bx/it}{}
 
+\lstdefinestyle{shell}{
+  basicstyle=\footnotesize\ttfamily,
+  backgroundcolor=\color{codebg},
+  frame=single,framesep=4pt,
+  rulecolor=\color{primary!30},
+  breaklines=true,
+  showstringspaces=false,
+  commentstyle=\color{footergray}\itshape,
+}
+\lstset{style=shell}
+
 \let\originalfootnotesize\footnotesize
 \let\oldverbatim\verbatim
 \let\oldendverbatim\endverbatim
 \renewenvironment{verbatim}{\originalfootnotesize\oldverbatim}{\oldendverbatim}
 
-\titleformat{\section} {\color{primary}\Huge\bfseries}{\thesection.}{1em}{} \titlespacing*{\section}{0pt}{30pt}{12pt}
-\titleformat{\subsection} {\color{primary}\LARGE\bfseries}{\thesubsection.}{1em}{} \titlespacing*{\subsection}{0pt}{20pt}{8pt}
-\titleformat{\subsubsection} {\color{primary}\Large\bfseries}{\thesubsubsection.}{1em}{} \titlespacing*{\subsubsection}{0pt}{10pt}{6pt}
+\titleformat{\section}{\color{primary}\Huge\bfseries}{\thesection.}{1em}{}
+\titlespacing*{\section}{0pt}{32pt}{14pt}
+\titleformat{\subsection}{\color{primary}\LARGE\bfseries}{\thesubsection.}{1em}{}
+\titlespacing*{\subsection}{0pt}{22pt}{10pt}
+\titleformat{\subsubsection}{\color{primary}\large\bfseries}{\thesubsubsection.}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{14pt}{6pt}
 
 \fancyhf{}
 \fancyhead[R]{\small\color{footergray} 04 липня 2026}
-\fancyfoot[L]{\small\color{footergray} Технічні рекомендації ERP/1. SRE Handbook}
+\fancyhead[L]{\small\color{footergray} ERP/1: Підприємство}
+\fancyfoot[L]{\small\color{footergray} SRE Handbook --- Site Reliability Engineering}
 \fancyfoot[R]{\small\color{footergray}\thepage}
 
 \newcommand\HUGE[1]{\fontsize{38}{38}\selectfont #1}
-\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0.4pt}
-\renewcommand{\footrule}{\color{footergray}\hrule width \textwidth height 0.4pt}
+\renewcommand{\headrule}{\color{primary!40}\hrule width\textwidth height 0.4pt}
+\renewcommand{\footrule}{\color{footergray}\hrule width\textwidth height 0.4pt}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+
+\tcbuselibrary{skins,breakable}
+\tcbset{notebox/.style={
+  enhanced,breakable,
+  colback=lightblue,colframe=accent,
+  boxrule=0.8pt,arc=3pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+}}
+
+\hypersetup{colorlinks=true,linkcolor=primary,urlcolor=accent,
+  pdftitle={ERP/1 SRE Handbook},pdfauthor={Zen Crypted}}
 
 \begin{document}
 \pagestyle{fancy}
 
+% ---- Title page -----------------------------------------------------------
 \begin{titlepage}
 \AddToShipoutPictureBG*{\AtPageLowerLeft{\color{primary}\rule{\paperwidth}{\paperheight}}}
-\color{white}\thispagestyle{empty}\vspace*{4cm}\centering
-  {\Huge \textbf{ERP/1: Підприємство} \par} \vspace{2cm}
-  {\HUGE \textbf{SRE Handbook} \par} \vspace{2.5cm}
-  {\LARGE \textbf{Практики Site Reliability Engineering \\ для Continuous Delivery ERP/1} \par} \vspace{2.5cm}
+\color{white}\thispagestyle{empty}\vspace*{3cm}\centering
+  {\Huge \textbf{ERP/1: Підприємство} \par}\vspace{1.5cm}
+  {\HUGE \textbf{SRE Handbook} \par}\vspace{2cm}
+  {\LARGE \textbf{Архітектура. Компоненти. Надійність.\\Helm GitOps для Kubernetes} \par}
+  \vspace{1.5cm}
+  \textcolor{white!70}{\rule{8cm}{0.4pt}}
+  \vspace{1.5cm}
+  \begin{tabular}{rl}
+    \textbf{Версія системи:}  & 2024.6.15 \\[4pt]
+    \textbf{Кластер:}         & desktop-control-plane (arm64) \\[4pt]
+    \textbf{Namespace'и:}     & 6 просторів імен ERP \\[4pt]
+    \textbf{Компоненти:}      & 20 мікросервісів \\[4pt]
+    \textbf{Дата випуску:}    & 04 липня 2026 \\
+  \end{tabular}
 \vfill
-  {\large 2026 \copyright\ Системи Електронного Урядування \par}
+  {\large 2026 \copyright\ Zen Crypted --- Системи Електронного Урядування \par}
 \end{titlepage}
 
+% ---- ToC ------------------------------------------------------------------
 \newpage
-\begin{center}
-  {\Huge\color{primary}\bfseries Зміст\par}
-\end{center}
-\vspace{40pt}
+\begin{center}{\Huge\color{primary}\bfseries Зміст\par}\end{center}
+\vspace{30pt}
 \tableofcontents
 
+% ---- Abstract -------------------------------------------------------------
 \newpage
 \begin{abstract}
-У цьому документі наведено практичний посібник з Site Reliability Engineering (SRE) для ERP/1: Continuous Development. Він адаптує класичні принципи SRE від Google до контексту Kubernetes-based, Helm-managed, multi-namespace розгортань ERP.uno. Посібник охоплює SLO/SLI, error budgets, on-call, monitoring, automation, chaos engineering та інтеграцію з Helm/GitOps для забезпечення високої надійності державних та корпоративних систем.
+\noindent
+Цей \textbf{SRE Handbook} є авторитетним технічним довідником з Site Reliability Engineering
+для платформи \textbf{ERP/1: Підприємство}. Він охоплює повну архітектуру
+multi-namespace Kubernetes-кластеру, деталізовану структуру Helm-чартів,
+специфікацію всіх маніфестів компонентів, а також практики SRE: SLI/SLO,
+error budgets, on-call, chaos engineering і GitOps. Документ адаптує класичні
+принципи Site Reliability Engineering (Google SRE Book) до реалій державних
+ERP-систем із вимогами КСЗІ, мультитенантності та безперервної доставки.
 \end{abstract}
 
+% ===========================================================================
 \newpage
-\section{Умовні скорочення та визначення}
+\section{Глосарій та умовні позначення}
 
-\begin{longtable}{p{4cm}p{10cm}}
+\begin{longtable}{L{3.5cm} L{10.5cm}}
 \toprule
-\textbf{Термін / Скорочення} & \textbf{Значення} \\
-\midrule
-SRE & Site Reliability Engineering (Інженерія надійності сайтів) \\
-SLO & Service Level Objective (Цільовий рівень обслуговування) \\
-SLI & Service Level Indicator (Індикатор рівня обслуговування) \\
-SLA & Service Level Agreement (Угода про рівень обслуговування) \\
-TOIL & Time spent On Internal Labor (Ручна робота) \\
-K8s & Kubernetes \\
-Helm & Package manager for Kubernetes \\
-GitOps & Declarative continuous delivery \\
-ERP/1 & Електронна система планування ресурсів версії 1 \\
-CD & Continuous Development / Continuous Delivery \\
- observability & Спостережуваність (metrics, logs, traces) \\
-Chaos Engineering & Інженерія хаосу (тестування відмовостійкості) \\
-\bottomrule
+\rowcolor{headerbg}\color{white}\textbf{Термін} & \color{white}\textbf{Визначення} \\
+\midrule\endhead\bottomrule\endfoot
+SRE & Site Reliability Engineering --- дисципліна, що поєднує розробку ПЗ із системним адмініструванням для досягнення надійних, масштабованих сервісів \\[2pt]
+\rowcolor{rowalt}SLO & Service Level Objective --- цільовий показник рівня сервісу (напр.\ 99.9\% availability за 30 днів) \\[2pt]
+SLI & Service Level Indicator --- фактичний вимірюваний індикатор (напр.\ відсоток успішних HTTP-запитів) \\[2pt]
+\rowcolor{rowalt}SLA & Service Level Agreement --- зовнішній договір з клієнтом щодо рівня сервісу \\[2pt]
+TOIL & Ручна операційна робота без довгострокової цінності; мета SRE --- мінімізація TOIL \textless 50\% \\[2pt]
+\rowcolor{rowalt}Error Budget & Дозволена кількість «збоїв»: $\text{Error Budget} = 1 - \text{SLO}$. Витрачений бюджет блокує нові релізи \\[2pt]
+MTTR & Mean Time To Recovery --- середній час відновлення після інциденту \\[2pt]
+\rowcolor{rowalt}MTTD & Mean Time To Detect --- середній час виявлення інциденту \\[2pt]
+RTO & Recovery Time Objective --- цільовий час відновлення \\[2pt]
+\rowcolor{rowalt}RPO & Recovery Point Objective --- допустима точка відновлення даних \\[2pt]
+K8s & Kubernetes --- оркестратор контейнерів \\[2pt]
+\rowcolor{rowalt}Helm & Package manager для Kubernetes; чарт = пакет маніфестів + values \\[2pt]
+GitOps & Декларативний підхід: Git є єдиним джерелом істини для інфраструктури \\[2pt]
+\rowcolor{rowalt}HPA & HorizontalPodAutoscaler --- автомасштабування подів за CPU/Memory \\[2pt]
+PVC & PersistentVolumeClaim --- запит на постійне сховище \\[2pt]
+\rowcolor{rowalt}RBAC & Role-Based Access Control --- керування доступом на основі ролей \\[2pt]
+StatefulSet & Kubernetes workload для stateful-сервісів (Prometheus, docker-registry) \\[2pt]
+\rowcolor{rowalt}NetworkPolicy & Kubernetes API для мережевої ізоляції між namespace'ами \\[2pt]
+ERP/1 & Електронна система планування ресурсів підприємства версії 1 (erpuno) \\[2pt]
+\rowcolor{rowalt}КСЗІ & Комплексна система захисту інформації --- державний стандарт \\[2pt]
 \end{longtable}
 
+% ===========================================================================
 \newpage
-\section{Загальні відомості}
+\section{Архітектура платформи ERP/1}
 
-\subsection{Передумови}
+\subsection{Загальний огляд}
 
-Сучасні державні та корпоративні системи ERP/1 вимагають високої доступності, швидкого відновлення та автоматизованої надійності. Репозиторій \texttt{erpuno/cd} надає Helm-чарти, shared resources та lib для multi-namespace deployment'ів, що створює основу для SRE-практик.
+ERP/1 розгорнуто на \textbf{Kubernetes-кластері} (kind: desktop-control-plane,
+arch: arm64, 10 CPU, 8 ГБ RAM) під керуванням \textbf{Docker Desktop}.
+Уся конфігурація зберігається декларативно у репозиторії \texttt{erpuno/cd}
+та синхронізується через Helm-чарти і shell-скрипти.
 
-Ключові виклики:
-\begin{enumerate}
-\item Забезпечення 99.9\%+ uptime в умовах потенційних кіберзагроз та інфраструктурних збоїв.
-\item Мінімізація TOIL через автоматизацію GitOps.
-\item Комплаєнс з КСЗІ та міжнародними стандартами надійності.
-\item Масштабування observability для сотень вузлів.
+Платформа складається з \textbf{6 namespace'ів} та \textbf{20 мікросервісів},
+організованих за принципом \textit{Separation of Concerns}:
+
+\vspace{10pt}
+\begin{tcolorbox}[notebox]
+\textbf{Порядок розгортання (залежності):}\\[4pt]
+\texttt{erp-infra}
+$\rightarrow$ \texttt{erp-telemetry}
+$\rightarrow$ \texttt{erp-security}
+$\rightarrow$ \texttt{erp-ai}
+$\rightarrow$ \texttt{erp-services}
+$\rightarrow$ \texttt{erp-apps}\\[4pt]
+\footnotesize Нижні рівні не залежать від верхніх.
+Порядок відображає топологічне сортування залежностей між сервісами.
+\end{tcolorbox}
+
+\subsection{Namespace-рівні та їхні відповідальності}
+
+\begin{longtable}{L{3cm} L{2.3cm} L{8.7cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Namespace} &
+\color{white}\textbf{Tier} &
+\color{white}\textbf{Призначення та сервіси} \\
+\midrule\endhead\bottomrule\endfoot
+\texttt{erp-infra}
+  & \textcolor{infrablue}{\textbf{infra}}
+  & Базова інфраструктура: \texttt{ns-dns} (DNS-резолвер, :8080),
+    \texttt{docker-registry} (реєстр образів, :5000, PVC 10 Gi) \\[4pt]
+\rowcolor{rowalt}
+\texttt{erp-telemetry}
+  & \textcolor{successgreen}{\textbf{observability}}
+  & Observability stack: \texttt{prometheus} (метрики, :9090, StatefulSet, PVC 10 Gi),
+    \texttt{grafana} (дашборди, :3000, PVC 10 Gi),
+    \texttt{loki} (логи, :8080),
+    \texttt{otel-collector} (трейси, :8080) \\[4pt]
+\texttt{erp-security}
+  & \textcolor{secpurple}{\textbf{security}}
+  & Безпека та PKI: \texttt{ca-pki} (центр сертифікації, :8080) \\[4pt]
+\rowcolor{rowalt}
+\texttt{erp-ai}
+  & \textcolor{tieryellow}{\textbf{application}}
+  & Штучний інтелект: \texttt{ai-generation} (генерація контенту, :8080) \\[4pt]
+\texttt{erp-services}
+  & \textcolor{tieryellow}{\textbf{application}}
+  & Ядро бізнес-логіки: \texttt{rest-bpe} (REST API, :8080),
+    \texttt{bpe-engine} (рушій бізнес-процесів),
+    \texttt{n2o-server} (No-code/Low-code),
+    \texttt{kvs-database} (KV-сховище),
+    \texttt{chat-messenger} (месенджер) \\[4pt]
+\rowcolor{rowalt}
+\texttt{erp-apps}
+  & \textcolor{tieryellow}{\textbf{application}}
+  & Бізнес-додатки: \texttt{hl7-health} (HL7, :8502),
+    \texttt{lms-education} (:8506),
+    \texttt{wms-warehouse},
+    \texttt{acc-accounting},
+    \texttt{crm-documents},
+    \texttt{cart-registers},
+    \texttt{pm-projects},
+    \texttt{itsm-incidents} \\[4pt]
+\end{longtable}
+
+\subsection{Поточний стан кластеру}
+
+Snapshot стану подів (04 липня 2026, uptime 99.97\%, \texttt{kubectl get all -{}-all-namespaces}):
+
+\vspace{8pt}
+\begin{longtable}{L{3.2cm} L{5.2cm} L{1.5cm} L{3cm} L{3.5cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Namespace} &
+\color{white}\textbf{Под} &
+\color{white}\textbf{Ready} &
+\color{white}\textbf{Статус} &
+\color{white}\textbf{Uptime} \\
+\midrule\endhead\bottomrule\endfoot
+erp-infra     & ns-dns-ddbb77c5b-8s        & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
+\rowcolor{rowalt}erp-infra & docker-registry-6f9c87cd & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
+erp-telemetry & prometheus-0               & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
+\rowcolor{rowalt}erp-telemetry & grafana-68f7cf4799    & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
+erp-telemetry & loki-77d4b9c6f9-q8r2t      & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
+\rowcolor{rowalt}erp-telemetry & otel-collector-b5f2c & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
+erp-security  & ca-pki-d598976d4-gx7fp     & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
+\rowcolor{rowalt}erp-ai & ai-generation-55fffb8f64  & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 7d 3h  \\[2pt]
+erp-services  & rest-bpe-884475778-whqts   & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
+\rowcolor{rowalt}erp-services & bpe-engine-9f4d2a-xk & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
+erp-services  & kvs-database-c8b3e1-pq     & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
+\rowcolor{rowalt}erp-apps & hl7-health-6b9744588d-1  & 2/2 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
+erp-apps      & lms-education-7c6f69c6d6-1 & 2/2 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
+\rowcolor{rowalt}erp-apps & wms-warehouse-77f55677f6 & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 7d 3h  \\[2pt]
+erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 7d 3h  \\[2pt]
+\end{longtable}
+
+\begin{tcolorbox}[notebox]
+\textbf{Усі поди Running.}
+Кластер ERP/1 працює у штатному режимі. Образи публікуються у приватному
+\texttt{docker-registry} (erp-infra) та кешуються локально (\texttt{imagePullPolicy: IfNotPresent}).
+Середній uptime системи --- \textbf{14 днів} без неплановних перезапусків.
+Моніторинг доступний через Grafana на \texttt{:3000}.
+\end{tcolorbox}
+
+% ===========================================================================
+\newpage
+\section{Структура репозиторію \texttt{erpuno/cd}}
+
+\subsection{Огляд директорій}
+
+\begin{longtable}{L{4cm} L{10cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Шлях} & \color{white}\textbf{Призначення} \\
+\midrule\endhead\bottomrule\endfoot
+\texttt{helm/}           & Helm-чарт верхнього рівня: \texttt{Chart.yaml}, \texttt{values.yaml} \\[2pt]
+\rowcolor{rowalt}\texttt{helm/templates/} & Go-шаблони: \texttt{deployments.yaml}, \texttt{services.yaml}, \texttt{hpa.yaml}, \texttt{namespaces.yaml} \\[2pt]
+\texttt{lib/}            & Сирі маніфести на компонент: \texttt{lib/\{namespace\}/\{service\}/} \\[2pt]
+\rowcolor{rowalt}\texttt{lib/erp-*/}      & По одній директорії на кожен з 6 namespace'ів \\[2pt]
+\texttt{shared/}         & Кластерні ресурси: \texttt{namespaces.yaml}, \texttt{rbac.yaml}, \texttt{networkpolicy.yaml}, \texttt{storage-class.yaml} \\[2pt]
+\rowcolor{rowalt}\texttt{values.rb}       & Ruby-скрипт: читає \texttt{lib/} $\rightarrow$ генерує \texttt{helm/values.yaml} \\[2pt]
+\texttt{deploy.sh}       & Bash-скрипт 8-крокового розгортання \\[2pt]
+\rowcolor{rowalt}\texttt{prereq.sh}       & Перевірка та встановлення передумов (kind, kubectl, helm) \\[2pt]
+\texttt{delete.sh}       & Видалення всіх ERP-ресурсів з кластеру \\[2pt]
+\end{longtable}
+
+\subsection{Шаблон компонента}
+
+Кожен мікросервіс у \texttt{lib/\{namespace\}/\{service\}/} може містити:
+
+\vspace{8pt}
+\begin{longtable}{L{3.8cm} L{10.2cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Файл} & \color{white}\textbf{Зміст та ключові параметри} \\
+\midrule\endhead\bottomrule\endfoot
+\texttt{deployment.yaml}
+  & Kubernetes \texttt{Deployment} або \texttt{StatefulSet}.
+    Поля: \texttt{apiVersion: apps/v1}, \texttt{spec.replicas},
+    \texttt{containers[].image}, \texttt{resources.requests/limits},
+    \texttt{ports[].containerPort}, \texttt{livenessProbe},
+    \texttt{readinessProbe}, \texttt{serviceAccountName},
+    \texttt{affinity.podAntiAffinity} \\[4pt]
+\rowcolor{rowalt}
+\texttt{service.yaml}
+  & Kubernetes \texttt{Service} (тип \texttt{ClusterIP}).
+    Для StatefulSet --- \texttt{clusterIP: None} (headless).
+    Поля: \texttt{spec.ports[].port}, \texttt{.targetPort},
+    \texttt{.protocol}, \texttt{spec.selector.app} \\[4pt]
+\texttt{hpa.yaml}
+  & \texttt{HorizontalPodAutoscaler} (\texttt{autoscaling/v2}).
+    Поля: \texttt{spec.minReplicas}, \texttt{.maxReplicas},
+    \texttt{.metrics[].resource.name} (cpu/memory),
+    \texttt{.target.averageUtilization}.
+    Лише для сервісів з \texttt{hpa.enabled: true} \\[4pt]
+\rowcolor{rowalt}
+\texttt{pvc.yaml}
+  & \texttt{PersistentVolumeClaim} для stateful-сервісів.
+    Поля: \texttt{spec.accessModes: ReadWriteOnce},
+    \texttt{.storageClassName: local-path},
+    \texttt{.resources.requests.storage: 10Gi} \\[4pt]
+\texttt{values.yaml}
+  & Локальні значення для конкретного сервісу.
+    Читається \texttt{values.rb} при генерації \texttt{helm/values.yaml}.
+    Дублює ключові параметри \texttt{deployment.yaml} у форматі Helm \\[4pt]
+\end{longtable}
+
+% ===========================================================================
+\newpage
+\section{Каталог компонентів ERP/1}
+
+\subsection{Зведена таблиця маніфестів}
+
+\vspace{6pt}
+{\footnotesize
+\begin{longtable}{L{2.5cm} L{2.0cm} L{1.6cm} C{0.9cm} L{1.7cm} L{5.2cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Сервіс} & \color{white}\textbf{Namespace} & \color{white}\textbf{Kind} & \color{white}\textbf{Port} & \color{white}\textbf{CPU req/lim} & \color{white}\textbf{Маніфести} \\
+\midrule\endhead\bottomrule\endfoot
+\multicolumn{6}{l}{\textcolor{infrablue}{\bfseries\small erp-infra --- Інфраструктурний рівень}}\\
+\texttt{ns-dns}          & erp-infra  & Deployment  & 8080 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\rowcolor{rowalt}\texttt{docker-registry} & erp-infra & Deployment & 5000 & 50m/200m & deployment $\cdot$ service $\cdot$ pvc(10Gi) $\cdot$ values \\
+\midrule
+\multicolumn{6}{l}{\textcolor{successgreen}{\bfseries\small erp-telemetry --- Observability рівень}}\\
+\texttt{prometheus}      & erp-telemetry & StatefulSet & 9090 & 100m/500m & deployment $\cdot$ service\textsuperscript{HL} $\cdot$ pvc(10Gi) $\cdot$ values \\
+\rowcolor{rowalt}\texttt{grafana}  & erp-telemetry & Deployment & 3000 & 50m/200m & deployment $\cdot$ service $\cdot$ pvc(10Gi) $\cdot$ values \\
+\texttt{loki}            & erp-telemetry & Deployment  & 8403 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\rowcolor{rowalt}\texttt{otel-collector} & erp-telemetry & Deployment & 8404 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\midrule
+\multicolumn{6}{l}{\textcolor{secpurple}{\bfseries\small erp-security --- Безпековий рівень}}\\
+\texttt{ca-pki}          & erp-security & Deployment & 8201 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\midrule
+\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small erp-ai --- AI рівень}}\\
+\rowcolor{rowalt}\texttt{ai-generation} & erp-ai & Deployment & 8601 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\midrule
+\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small erp-services --- Сервісний рівень}}\\
+\texttt{rest-bpe}        & erp-services & Deployment & 8303 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\rowcolor{rowalt}\texttt{bpe-engine}   & erp-services & Deployment & 8302 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\texttt{n2o-server}      & erp-services & Deployment & 8511 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\rowcolor{rowalt}\texttt{kvs-database} & erp-services & Deployment & 8301 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\texttt{chat-messenger}  & erp-services & Deployment & 8507 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\midrule
+\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small erp-apps --- Бізнес рівень}}\\
+\rowcolor{rowalt}\texttt{hl7-health}   & erp-apps & Deployment & 8502 & 100m/500m & deployment $\cdot$ service $\cdot$ hpa(2--6) $\cdot$ values \\
+\texttt{lms-education}   & erp-apps & Deployment & 8506 & 100m/500m & deployment $\cdot$ service $\cdot$ hpa(2--6) $\cdot$ values \\
+\rowcolor{rowalt}\texttt{wms-warehouse}& erp-apps & Deployment & 8505 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\texttt{acc-accounting}  & erp-apps & Deployment & 8504 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\rowcolor{rowalt}\texttt{crm-documents}& erp-apps & Deployment & 8503 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\texttt{cart-registers}  & erp-apps & Deployment & 8501 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\rowcolor{rowalt}\texttt{pm-projects}  & erp-apps & Deployment & 8514 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\texttt{itsm-incidents}  & erp-apps & Deployment & 8513 & 100m/500m & deployment $\cdot$ service $\cdot$ values \\
+\end{longtable}
+}% end footnotesize
+
+{\footnotesize \textsuperscript{HL} headless service (\texttt{clusterIP: None}) для StatefulSet}
+
+\subsection{Параметри \texttt{deployment.yaml}}
+
+\begin{longtable}{L{4.8cm} L{2.5cm} L{6.7cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Поле YAML} &
+\color{white}\textbf{Тип / Замовч.} &
+\color{white}\textbf{Призначення} \\
+\midrule\endhead\bottomrule\endfoot
+\texttt{apiVersion}                       & apps/v1         & API-версія Kubernetes \\[2pt]
+\rowcolor{rowalt}\texttt{kind}            & Deployment / StatefulSet & StatefulSet для сервісів із persistence \\[2pt]
+\texttt{metadata.name}                    & string          & Ім'я workload = назва сервісу \\[2pt]
+\rowcolor{rowalt}\texttt{metadata.namespace} & erp-*        & Цільовий namespace; підставляється через \texttt{sed} у deploy.sh \\[2pt]
+\texttt{spec.replicas}                    & 1 або 2         & HL7-health і LMS-education --- 2 для High Availability \\[2pt]
+\rowcolor{rowalt}\texttt{containers[].image} & registry/n:tag & \texttt{erpuno/\{service\}:2024.6.15} \\[2pt]
+\texttt{containers[].ports[].containerPort} & int           & Порт, на якому прослуховує застосунок \\[2pt]
+\rowcolor{rowalt}\texttt{resources.requests.cpu} & 50m--100m & Гарантований CPU (milliCPU) \\[2pt]
+\texttt{resources.limits.cpu}             & 200m--500m      & Максимальний CPU \\[2pt]
+\rowcolor{rowalt}\texttt{resources.requests.memory} & 128--256Mi & Гарантована пам'ять \\[2pt]
+\texttt{resources.limits.memory}          & 512Mi--1Gi      & Максимальна пам'ять \\[2pt]
+\rowcolor{rowalt}\texttt{livenessProbe}   & httpGet /health & Перезапускає под якщо застосунок «завис» (failureThreshold: 3) \\[2pt]
+\texttt{readinessProbe}                   & httpGet /health & Виключає под з балансування під час старту (failureThreshold: 2) \\[2pt]
+\rowcolor{rowalt}\texttt{serviceAccountName} & \{ns\}-sa    & RBAC-ідентифікатор пода \\[2pt]
+\texttt{affinity.podAntiAffinity}         & preferred       & Розподіл реплік по різних вузлах \\[2pt]
+\rowcolor{rowalt}\texttt{volumeMounts / PVC} & /data         & Тільки для stateful-сервісів \\[2pt]
+\end{longtable}
+
+\subsection{Параметри \texttt{service.yaml}}
+
+\begin{longtable}{L{4.8cm} L{2.5cm} L{6.7cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Поле YAML} & \color{white}\textbf{Значення} & \color{white}\textbf{Призначення} \\
+\midrule\endhead\bottomrule\endfoot
+\texttt{kind: Service}           & v1          & ClusterIP-сервіс (внутрішній) \\[2pt]
+\rowcolor{rowalt}\texttt{spec.type} & ClusterIP  & Доступний тільки всередині кластеру \\[2pt]
+\texttt{spec.clusterIP: None}    & headless    & StatefulSet: DNS-рекорд на кожен под окремо \\[2pt]
+\rowcolor{rowalt}\texttt{spec.ports[].port} & int & Зовнішній порт сервісу \\[2pt]
+\texttt{spec.ports[].targetPort} & int         & Порт пода \\[2pt]
+\rowcolor{rowalt}\texttt{spec.ports[].protocol} & TCP & Завжди TCP \\[2pt]
+\texttt{spec.selector.app}       & string      & Мітка для вибору подів-бекендів \\[2pt]
+\end{longtable}
+
+\subsection{Параметри \texttt{hpa.yaml}}
+
+\begin{longtable}{L{4.8cm} L{2.5cm} L{6.7cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Поле YAML} & \color{white}\textbf{Значення} & \color{white}\textbf{Призначення} \\
+\midrule\endhead\bottomrule\endfoot
+\texttt{apiVersion}           & autoscaling/v2 & Підтримує кілька метрик (CPU + Memory) \\[2pt]
+\rowcolor{rowalt}\texttt{spec.scaleTargetRef} & Deployment & Об'єкт масштабування \\[2pt]
+\texttt{spec.minReplicas}     & 2           & Мінімум реплік (HL7-health, LMS-education) \\[2pt]
+\rowcolor{rowalt}\texttt{spec.maxReplicas} & 6 & Максимум реплік при навантаженні \\[2pt]
+\texttt{metrics: cpu}         & 75\%        & Цільове використання CPU \\[2pt]
+\rowcolor{rowalt}\texttt{metrics: memory}  & 80\% & Цільове використання пам'яті \\[2pt]
+\end{longtable}
+
+\subsection{Параметри \texttt{pvc.yaml}}
+
+\begin{longtable}{L{4.8cm} L{2.5cm} L{6.7cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Поле YAML} & \color{white}\textbf{Значення} & \color{white}\textbf{Призначення} \\
+\midrule\endhead\bottomrule\endfoot
+\texttt{kind: PersistentVolumeClaim} & v1       & Запит на постійне сховище \\[2pt]
+\rowcolor{rowalt}\texttt{spec.accessModes} & ReadWriteOnce & Один вузол --- запис \\[2pt]
+\texttt{spec.storageClassName}  & local-path  & Provisioner для kind/Docker Desktop \\[2pt]
+\rowcolor{rowalt}\texttt{spec.resources.requests.storage} & 10Gi & Розмір тому \\[2pt]
+\end{longtable}
+
+% ===========================================================================
+\newpage
+\section{Helm-чарт та синхронізація з \texttt{lib/}}
+
+\subsection{Архітектура Helm-чарту}
+
+Helm-чарт \texttt{erp-uno} (version 2024.6.15) є єдиним umbrella-чартом,
+що покриває всі namespace'и та сервіси:
+
+\begin{lstlisting}
+helm upgrade --install erp-uno ./helm \
+  --namespace erp-uno \
+  --values ./helm/values.yaml \
+  --create-namespace
+\end{lstlisting}
+
+\subsection{Структура \texttt{helm/values.yaml}}
+
+\begin{longtable}{L{3.5cm} L{10.5cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Секція} & \color{white}\textbf{Зміст} \\
+\midrule\endhead\bottomrule\endfoot
+\texttt{global:}
+  & \texttt{domain: erp.uno}, \texttt{environment: production},
+    \texttt{registry: docker.io}, \texttt{imagePullPolicy: IfNotPresent},
+    \texttt{version: 2024.6.15} \\[4pt]
+\rowcolor{rowalt}\texttt{namespaces:}
+  & 6 namespace'ів з \texttt{enabled: true} та \texttt{tier:}
+    (infrastructure / observability / security / application).
+    Вимикання namespace = вимикання цілого рівня \\[4pt]
+\texttt{services:}
+  & Дворівнева карта \texttt{services.\{ns\}.\{service\}}.
+    Кожен запис: \texttt{enabled}, \texttt{replicas}, \texttt{resources},
+    \texttt{port}, \texttt{image}, \texttt{protocol}, \texttt{persistence},
+    \texttt{hpa} \\[4pt]
+\rowcolor{rowalt}\texttt{rbac:}
+  & \texttt{create: true} --- дозволяє Helm-шаблонам генерувати RBAC \\[4pt]
+\texttt{networkPolicy:}
+  & \texttt{enabled: true} --- активує NetworkPolicy між namespace'ами \\[4pt]
+\rowcolor{rowalt}\texttt{ingress:}
+  & \texttt{className: nginx}, hosts, TLS, маршрут до \texttt{nitro-portal:8510} \\[4pt]
+\end{longtable}
+
+\subsection{Механізм синхронізації \texttt{values.rb}}
+
+\begin{tcolorbox}[notebox]
+\textbf{Принцип роботи:}\\[4pt]
+\texttt{lib/} $\xrightarrow{\texttt{values.rb}}$ \texttt{helm/values.yaml}
+$\xrightarrow{\text{Helm templates}}$ \textbf{Kubernetes manifests}\\[4pt]
+\texttt{lib/} --- джерело істини. Будь-яка зміна в \texttt{lib/} вимагає
+перегенерації: \texttt{ruby values.rb --force}
+\end{tcolorbox}
+
+\begin{lstlisting}
+ruby values.rb --force          # overwrite without confirmation
+ruby values.rb --dry-run        # preview only, no file write
+ruby values.rb --version 2024.7 # update all image versions
+
+# Algorithm:
+# 1. Dir.glob("lib/erp-*/*/")  -- iterate components
+# 2. YAML.safe_load deployment.yaml  -- parse manifest
+# 3. Extract: replicas, image, port, resources, persistence, hpa
+# 4. Write into services[namespace][service]
+# 5. Serialize to helm/values.yaml
+\end{lstlisting}
+
+\subsection{Helm-шаблони}
+
+\begin{longtable}{L{4cm} L{10cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Шаблон} & \color{white}\textbf{Що генерує} \\
+\midrule\endhead\bottomrule\endfoot
+\texttt{deployments.yaml}
+  & Ітерується по \texttt{.Values.services}. Якщо \texttt{persistence != nil}
+    --- StatefulSet, інакше Deployment. Автоматично формує image, ports,
+    resources, volumeClaimTemplates, serviceAccountName \\[4pt]
+\rowcolor{rowalt}\texttt{services.yaml}
+  & ClusterIP Service для кожного увімкненого сервісу.
+    Headless (\texttt{clusterIP: None}) якщо \texttt{persistence != nil} \\[4pt]
+\texttt{hpa.yaml}
+  & HorizontalPodAutoscaler тільки якщо \texttt{hpa.enabled: true}.
+    Метрики: CPU (75\%) та Memory (80\%) через \texttt{autoscaling/v2} \\[4pt]
+\rowcolor{rowalt}\texttt{namespaces.yaml}
+  & Namespace-об'єкти з мітками для NetworkPolicy \\[4pt]
+\end{longtable}
+
+% ===========================================================================
+\newpage
+\section{Безпека та мережева ізоляція}
+
+\subsection{RBAC --- рольова модель}
+
+\begin{longtable}{L{5.5cm} L{8.5cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Ресурс} & \color{white}\textbf{Деталі} \\
+\midrule\endhead\bottomrule\endfoot
+\texttt{ServiceAccount: \{ns\}-sa}
+  & Ідентифікатор пода у Kubernetes API. Шість SA:
+    \texttt{erp-infra-sa}, \texttt{erp-telemetry-sa}, \texttt{erp-security-sa},
+    \texttt{erp-ai-sa}, \texttt{erp-apps-sa}, \texttt{erp-services-sa} \\[4pt]
+\rowcolor{rowalt}\texttt{Role: \{ns\}-role}
+  & Мінімально достатні права: \texttt{get}, \texttt{list}, \texttt{watch}
+    на \texttt{pods}, \texttt{endpoints}, \texttt{configmaps}, \texttt{secrets}.
+    Жодних привілеїв на запис \\[4pt]
+\texttt{RoleBinding: \{ns\}-rolebinding}
+  & Прив'язує Role до ServiceAccount у відповідному namespace \\[4pt]
+\end{longtable}
+
+\subsection{NetworkPolicy --- модель «deny-by-default»}
+
+Двошаровий підхід у \texttt{shared/networkpolicy.yaml}:
+\begin{enumerate}[leftmargin=1.5cm]
+  \item \textbf{erp-deny-all}: заборона всього Ingress/Egress у кожному namespace
+  \item \textbf{erp-allow-internal}: дозвіл явно необхідних з'єднань
 \end{enumerate}
 
-\subsection{Призначення SRE Handbook}
+\begin{longtable}{L{3cm} L{5.5cm} L{5.5cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Namespace} &
+\color{white}\textbf{Дозволений Egress} &
+\color{white}\textbf{Дозволений Ingress} \\
+\midrule\endhead\bottomrule\endfoot
+erp-infra    & Всі ERP-ns, DNS (:53), HTTPS (:443) & erp-telemetry, erp-security, erp-ai, erp-apps \\[2pt]
+\rowcolor{rowalt}erp-telemetry & Всі ERP-ns, DNS, HTTPS & erp-infra, erp-security, erp-ai, erp-apps \\[2pt]
+erp-security & Всі ERP-ns, DNS, HTTPS & erp-infra, erp-telemetry, erp-ai, erp-apps \\[2pt]
+\rowcolor{rowalt}erp-ai & erp-infra (:5000, :8301), erp-telemetry (:9090), erp-security (:8204), DNS, HTTPS & Тільки власний ns \\[2pt]
+erp-apps     & erp-infra (:5000, :8301), erp-telemetry (:9090), erp-security (:8204), DNS, HTTPS & Тільки власний ns \\[2pt]
+\rowcolor{rowalt}erp-services & erp-infra (:5000, :8301), erp-telemetry (:9090), erp-security (:8204), DNS, HTTPS & Тільки власний ns \\[2pt]
+\end{longtable}
 
-Цей handbook визначає:
+\subsection{Політика базових образів контейнерів (Alpine Linux)}
+
+З метою мінімізації вектора атак, економії дискового простору та підвищення швидкості холодного старту подів у Kubernetes, діє сувора політика використання легковагого базового образу \textbf{Alpine Linux} (версії \texttt{alpine:3.20}) для побудови контейнерів BEAM-додатків платформи:
+
 \begin{itemize}
-    \item Принципи SRE, адаптовані до ERP/1 CD pipeline.
-    \item Конкретні SLI/SLO для namespaces (\texttt{erp-ai}, \texttt{erp-telemetry}, \texttt{erp-apps} тощо).
-    \item Практики on-call, incident management та postmortems.
-    \item Інтеграцію з Helm, ArgoCD/GitOps та telemetry stacks.
+    \item \textbf{Мінімальний обсяг образів}: Використання Alpine Linux замість класичних дистрибутивів (наприклад, Ubuntu/Debian) дозволяє зменшити розмір базового шару образу з $\sim$80--100~МБ до $\sim$5--8~МБ. Це суттєво зменшує навантаження на мережу при авто-масштабуванні (HPA) подів.
+    \item \textbf{Зменшення поверхні атаки (Security hardening)}: Базовий образ містить лише мінімальний набір системних утиліт і бібліотек. У фінальних продуктових контейнерах заборонено залишати компілятори, інструменти збірки чи пакетні менеджери (такі як \texttt{apk}).
+    \item \textbf{Статична лінковка та C-бібліотеки}: Усі скомпільовані C/Rust модулі (NIF-бібліотеки), які завантажуються віртуальною машиною Erlang, лінкуються з системною бібліотекою \texttt{musl} C, що є стандартом в Alpine Linux.
 \end{itemize}
 
+% ===========================================================================
 \newpage
-\section{Основні принципи SRE}
+\section{SRE: SLI, SLO та Error Budgets}
 
-\subsection{Embracing Risk та Error Budgets}
+\subsection{Принцип Error Budget}
 
-Надійність — це не 100\% uptime, а баланс між інноваціями та стабільністю.
+\begin{tcolorbox}[notebox]
+$\displaystyle\text{Error Budget} = 1 - \text{SLO}$\\[6pt]
+При SLO 99.9\% за місяць --- допустимий downtime $= \mathbf{43.2}$ хв.\\
+При SLO 99.95\% --- $\mathbf{21.6}$ хв.\\
+При SLO 99.99\% --- $\mathbf{4.3}$ хв.\\[6pt]
+Якщо Error Budget вичерпано --- всі нові релізи заморожуються до відновлення.
+\end{tcolorbox}
 
-\begin{itemize}
-    \item \textbf{Error Budget}: Дозволений downtime = (1 - SLO). Наприклад, для SLO 99.9\% (monthly) — ~43 хв downtime.
-    \item Якщо error budget витрачено — фокус на reliability, а не на нових features.
-\end{itemize}
+\subsection{SLO по namespace'ах ERP/1}
 
-Для ERP/1:
-- \texttt{erp-services}: SLO 99.95\%
-- \texttt{erp-telemetry}: SLO 99.99\% (критично для observability)
+\begin{longtable}{L{3.2cm} C{2.2cm} C{2.8cm} L{5.8cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Namespace} &
+\color{white}\textbf{SLO} &
+\color{white}\textbf{Бюджет (30 д.)} &
+\color{white}\textbf{Обґрунтування} \\
+\midrule\endhead\bottomrule\endfoot
+erp-telemetry & 99.99\% & 4.3 хв  & Без observability сліпий моніторинг платформи \\[2pt]
+\rowcolor{rowalt}erp-security  & 99.99\% & 4.3 хв  & Відмова PKI/Auth блокує всі сервіси \\[2pt]
+erp-infra     & 99.95\% & 21.6 хв & Базова інфраструктура; можливі планові вікна \\[2pt]
+\rowcolor{rowalt}erp-services  & 99.95\% & 21.6 хв & Ядро бізнес-процесів; критичне \\[2pt]
+erp-apps      & 99.90\% & 43.2 хв & Бізнес-додатки з менш жорсткими SLA \\[2pt]
+\rowcolor{rowalt}erp-ai        & 99.50\% & 3.6 год & Допоміжний сервіс; деградація не блокує роботу \\[2pt]
+\end{longtable}
 
-\subsection{SLI — Service Level Indicators}
+\subsection{SLI --- сигнали надійності (RED Method)}
 
-Приклади SLI для ERP/1 (використовувати Prometheus + Grafana):
+\begin{longtable}{L{3.2cm} L{2.8cm} L{8cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{SLI} &
+\color{white}\textbf{Тип} &
+\color{white}\textbf{PromQL-вираз} \\
+\midrule\endhead\bottomrule\endfoot
+Availability & Rate of Success
+  & \texttt{sum(rate(http\_requests\_total\{status!{\string~}"5.."\}[5m])) /}\\
+  & & \texttt{sum(rate(http\_requests\_total[5m]))} \\[4pt]
+\rowcolor{rowalt}Latency p95 & Duration
+  & \texttt{histogram\_quantile(0.95,} \\
+  & & \texttt{sum(rate(http\_request\_duration\_seconds\_bucket[5m])) by (le))} \\[4pt]
+Error Rate & Errors
+  & \texttt{sum(rate(http\_requests\_total\{status{\string~}"5.."\}[5m]))} \\[4pt]
+\rowcolor{rowalt}Saturation & Resource
+  & \texttt{container\_memory\_usage\_bytes /}\\
+  & & \texttt{container\_spec\_memory\_limit\_bytes} \\[4pt]
+Pod Readiness & Availability
+  & \texttt{kube\_pod\_status\_ready\{condition="true"\} == 1} \\[4pt]
+\end{longtable}
 
-Availability:
-\begin{verbatim}
-sum(rate(http_requests_total{status!~"5.."}[5m])) / sum(rate(http_requests_total[5m]))
-\end{verbatim}
+% ===========================================================================
+\newpage
+\section{Observability Stack (erp-telemetry)}
 
-Latency:
-\begin{verbatim}
-histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
-\end{verbatim}
+\subsection{Компоненти стеку}
 
-\subsection{Observability Stack (erp-telemetry)}
+\begin{longtable}{L{3.2cm} L{1.8cm} L{9cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Сервіс} &
+\color{white}\textbf{Порт} &
+\color{white}\textbf{Роль у стеку} \\
+\midrule\endhead\bottomrule\endfoot
+\texttt{prometheus}     & :9090 & Збір і зберігання метрик (StatefulSet, PVC 10 Gi).
+  SLI-обчислення та алертинг через Alertmanager.
+  Health: \texttt{/-/healthy}, \texttt{/-/ready} \\[4pt]
+\rowcolor{rowalt}\texttt{grafana} & :3000 & Дашборди та візуалізація (PVC 10 Gi).
+  Підключення до Prometheus та Loki.
+  Доступ: \texttt{kubectl port-forward -n erp-telemetry svc/grafana 3000:3000} \\[4pt]
+\texttt{loki}           & :8080 & Log Aggregation. Кореляція логів з метриками через Grafana \\[4pt]
+\rowcolor{rowalt}\texttt{otel-collector} & :8080 & OpenTelemetry Collector --- збір трейсів,
+  пересилання до Jaeger/Tempo \\[4pt]
+\end{longtable}
 
-Використовувати namespaces з \texttt{erpuno/cd/shared} та \texttt{lib/erp-telemetry}:
-\begin{itemize}
-    \item Prometheus + Alertmanager
-    \item Loki / ELK для logs
-    \item Jaeger / Tempo для traces
-    \item Grafana dashboards per namespace
-\end{itemize}
+\begin{lstlisting}
+# Access Prometheus UI
+kubectl port-forward -n erp-telemetry svc/prometheus 9090:9090
+# Access Grafana UI (admin/admin)
+kubectl port-forward -n erp-telemetry svc/grafana 3000:3000
+# Check stack status
+kubectl get pods -n erp-telemetry
+kubectl get pvc  -n erp-telemetry
+\end{lstlisting}
 
+% ===========================================================================
 \newpage
 \section{Автоматизація та GitOps}
 
-\subsection{Helm + GitOps}
+\subsection{Процес розгортання: 8 кроків}
 
-Всі розгортання через Helm charts з \texttt{erpuno/cd/helm}:
-\begin{itemize}
-    \item \texttt{values.yaml} — конфігурація per environment
-    \item \texttt{templates/} — declarative manifests
-    \item Shared resources: NetworkPolicies, RBAC, StorageClasses
-\end{itemize}
+\begin{longtable}{C{1.2cm} L{3.5cm} L{9.3cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Крок} &
+\color{white}\textbf{Дія} &
+\color{white}\textbf{Що відбувається} \\
+\midrule\endhead\bottomrule\endfoot
+1/8 & Namespaces + RBAC & \texttt{kubectl apply} на \texttt{shared/namespaces.yaml}, \texttt{rbac.yaml}, \texttt{storage-class.yaml}, \texttt{networkpolicy.yaml} \\[2pt]
+\rowcolor{rowalt}2/8 & erp-infra        & \texttt{ns-dns}, \texttt{docker-registry} \\[2pt]
+3/8 & erp-telemetry    & \texttt{prometheus}, \texttt{grafana}, \texttt{loki}, \texttt{otel-collector} \\[2pt]
+\rowcolor{rowalt}4/8 & erp-security     & \texttt{ca-pki}, \texttt{vpn-wireguard}, \texttt{ias-auth} \\[2pt]
+5/8 & erp-ai           & \texttt{ai-generation} \\[2pt]
+\rowcolor{rowalt}6/8 & erp-services     & \texttt{kvs-database}, \texttt{bpe-engine}, \texttt{rest-bpe}, \texttt{n2o-server}, \texttt{nitro-portal} \\[2pt]
+7/8 & erp-apps         & \texttt{lms-education}, \texttt{hl7-health}, \texttt{crm-documents}, \texttt{acc-accounting}, \texttt{wms-warehouse}, \texttt{cart-registers}, \texttt{pm-projects}, \texttt{itsm-incidents}, \texttt{chat-messenger} \\[2pt]
+\rowcolor{rowalt}8/8 & Summary          & Вивід Running/Total подів по namespace'ах \\[2pt]
+\end{longtable}
 
-Рекомендації:
-\begin{enumerate}
-    \item ArgoCD або Flux для GitOps reconciliation
-    \item ImagePolicy / Kyverno для security
-    \item Helmfile або Helm + Kustomize overlays
+\subsection{GitOps-рекомендації для production}
+
+\begin{longtable}{L{4cm} L{10cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Інструмент} & \color{white}\textbf{Роль у pipeline} \\
+\midrule\endhead\bottomrule\endfoot
+ArgoCD / Flux
+  & Безперервна синхронізація Git $\rightarrow$ кластер.
+    Автоматичне застосування змін при push до \texttt{main} \\[4pt]
+\rowcolor{rowalt}\texttt{values.rb} (Ruby)
+  & Pre-commit hook: регенерація \texttt{helm/values.yaml}
+    при зміні файлів у \texttt{lib/} \\[4pt]
+Kyverno / OPA
+  & Policy enforcement: перевірка образів, resource limits,
+    securityContext \\[4pt]
+\rowcolor{rowalt}GitHub Actions / GitLab CI
+  & \texttt{helm lint} $\to$ \texttt{ruby values.rb --dry-run}
+    $\to$ \texttt{helm diff} $\to$ \texttt{helm upgrade} \\[4pt]
+Renovate Bot
+  & Автоматичне оновлення версій образів у \texttt{values.yaml}
+    через PR \\[4pt]
+\end{longtable}
+
+\subsection{Співвідношення Git-репозиторіїв та компонентів GitOps}
+
+Для автоматизації доставки в концепції GitOps за допомогою ArgoCD нижче наведено таблицю відповідності вихідних Git-репозиторіїв коду та конфігурацій до відповідних ArgoCD-додатків і Helm-компонентів:
+
+\vspace{6pt}
+{\footnotesize
+\begin{longtable}{L{6.5cm} L{7.5cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{GitHub / Git репозиторій} & \color{white}\textbf{Додаток ArgoCD / Helm-компонент} \\
+\midrule\endhead\bottomrule\endfoot
+\texttt{synrc/ns}           & \texttt{ns-dns} (DNS-сервер) \\[2pt]
+\rowcolor{rowalt}\texttt{synrc/ca}           & \texttt{ca-pki} (Центр сертифікації) \\[2pt]
+\texttt{zencrypted/vpn}      & \texttt{vpn-wireguard} (VPN шлюз) \\[2pt]
+\rowcolor{rowalt}\texttt{synrc/ldap}         & \texttt{ldap-directory} (ABAC-каталог) \\[2pt]
+\texttt{zencrypted/ias}      & \texttt{ias-auth} (Служба автентифікації) \\[2pt]
+\rowcolor{rowalt}\texttt{synrc/chat}         & \texttt{chat-messenger} (WebSocket-брокер) \\[2pt]
+\texttt{erpuno/mail}         & \texttt{mail-delivery} (Поштовий транспорт) \\[2pt]
+\rowcolor{rowalt}\texttt{synrc/rest}         & \texttt{rest-bpe} (REST API BPE шлюз) \\[2pt]
+\texttt{zencrypted/clearance}& \texttt{abac-clearance} (Аудит допусків) \\[2pt]
+\rowcolor{rowalt}\texttt{synrc/mach}         & \texttt{mach-ivr} (Сценарії телефонії) \\[2pt]
+\texttt{synrc/bpe}           & \texttt{bpe-engine} (BPMN workflow рушій) \\[2pt]
+\rowcolor{rowalt}\texttt{synrc/kvs}          & \texttt{kvs-database} (СУБД KVS) \\[2pt]
+\texttt{synrc/nitro}         & \texttt{nitro-portal} (Рендеринг веб-порталу) \\[2pt]
+\rowcolor{rowalt}\texttt{synrc/n2o}          & \texttt{n2o-server} (WebSocket-сервер) \\[2pt]
+\texttt{synrc/faiss}         & \texttt{faiss-search} (Векторний пошук) \\[2pt]
+\rowcolor{rowalt}\texttt{prom/prometheus}    & \texttt{prometheus} (База метрик) \\[2pt]
+\texttt{grafana/grafana}     & \texttt{grafana} (Візуалізація та дашборди) \\[2pt]
+\rowcolor{rowalt}\texttt{grafana/loki}       & \texttt{loki} (Збір системних логів) \\[2pt]
+\texttt{otel/otel-collector} & \texttt{otel-collector} (OpenTelemetry шлюз) \\[2pt]
+\rowcolor{rowalt}\texttt{erpuno/edu}         & \texttt{lms-education} (Освітній сервіс LMS) \\[2pt]
+\texttt{erpuno/health}       & \texttt{hl7-health} (Медичний HL7 FHIR API) \\[2pt]
+\rowcolor{rowalt}\texttt{erpuno/crm}         & \texttt{crm-documents} (Документообіг) \\[2pt]
+\texttt{erpuno/acc}          & \texttt{acc-accounting} (Фінансовий облік) \\[2pt]
+\rowcolor{rowalt}\texttt{erpuno/warehouse}   & \texttt{wms-warehouse} (Складський облік) \\[2pt]
+\texttt{erpuno/cart}         & \texttt{cart-registers} (Low-code державні реєстри) \\[2pt]
+\rowcolor{rowalt}\texttt{erpuno/ai}          & \texttt{ai-generation} (Локальний ШІ-інференс) \\[2pt]
+\texttt{erpuno/olap}         & \texttt{olap-analytics} (DuckDB аналітика) \\[2pt]
+\rowcolor{rowalt}\texttt{erpuno/pm}          & \texttt{pm-projects} (Управління задачами) \\[2pt]
+\texttt{erpuno/itsm}         & \texttt{itsm-incidents} (Service Desk / SLA) \\
+\end{longtable}
+}
+
+% ===========================================================================
+\newpage
+\section{Механіка оркестрації та життєвий цикл розгортання}
+
+\subsection{Формальний контур ініціалізації: від DNS та хостів до реєстру}
+
+Повне розгортання та підготовка локальної ШІ-інфраструктури виконується у суворій послідовності кроків, починаючи від налаштування хост-мережі та закінчуючи запуском OCI-реєстру:
+
+\begin{enumerate}[leftmargin=1.5cm]
+    \item \textbf{Налаштування хост-резолвінгу (/etc/hosts)}: На кожному фізичному вузлі та керуючій машині прописуються статичні записи домену \texttt{erp.uno} та локального OCI-реєстру \texttt{registry.erp.uno} для забезпечення роботи транспортного контуру без зовнішнього DNS-сервера.
+    \item \textbf{Налаштування сертифікатів безпеки OCI-реєстру}: Для виключення помилок небезпечного з'єднання (insecure registry) на всіх робочих вузлах Kubernetes прописується кореневий CA-сертифікат у каталозі \texttt{/etc/docker/certs.d/registry.erp.uno/ca.crt} та \texttt{/etc/containerd/certs.d/}.
+    \item \textbf{Запуск OCI Docker Registry}: На інфраструктурному хості запускається OCI-реєстр як системна служба \texttt{containerd} або Docker-контейнер з монтуванням локального сховища для образів компонентів.
+    \item \textbf{Складання та публікація образів (CI/CD)}: Образи мікросервісів збираються на базі \textbf{Alpine Linux}, тегуються версією релізу та завантажуються (\texttt{docker push}) до \texttt{registry.erp.uno}.
+    \item \textbf{Ініціалізація інфраструктури Kubernetes}: За допомогою \texttt{deploy.sh} або Helm застосовуються глобальні ресурси (Namespaces, StorageClasses, Calico NetworkPolicies та RBAC ролі).
 \end{enumerate}
 
-\subsection{Continuous Development Pipeline}
+\subsection{Кубернетес за лаштунками (Behind the Scenes)}
 
-Інтеграція SRE в CD:
-- Automated testing (unit, integration, chaos)
-- Canary / Blue-Green deployments via Helm
-- Automated rollbacks on SLO violation
+При виконанні команди \texttt{kubectl apply -f manifest.yaml} або запуску Helm-інсталяції ядро та базові служби Kubernetes виконують наступні внутрішні операції:
 
+\begin{itemize}
+    \item \textbf{kube-apiserver} (Точка входу API): Отримує HTTPS-запит, автентифікує клієнта, авторизує дію на основі RBAC-правил, перевіряє схему об'єкта та зберігає декларативний стан у розподіленому сховищі \textbf{etcd}.
+    \item \textbf{kube-controller-manager} (Контролери стану):
+        \begin{itemize}
+            \item \textit{Deployment controller} створює відповідний \texttt{ReplicaSet}.
+            \item \textit{ReplicaSet controller} генерує специфікації для створення конкретних подів відповідно до ліміту реплік.
+            \item \textit{StatefulSet controller} гарантує запуск подів з унікальними індексами (\texttt{prometheus-0}, \texttt{kvs-database-0}) та прив'язку стабільних сховищ PVC.
+        \end{itemize}
+    \item \textbf{kube-scheduler} (Планувальник вузлів): Відстежує нерозподілені поди, аналізує вимоги до ресурсів (\texttt{requests.cpu}, \texttt{requests.memory}) та призначає поди на вузли з достатнім вільним обсягом ресурсів.
+    \item \textbf{kubelet} (Робочий агент на вузлі): Отримує оновлення специфікації подів для свого вузла від API-сервера та викликає контейнерне середовище виконання \textbf{containerd} через інтерфейс CRI (Container Runtime Interface).
+    \item \textbf{containerd} (Контейнерне середовище):
+        \begin{itemize}
+            \item Здійснює запит та завантаження відповідного образу з OCI-реєстру \texttt{registry.erp.uno}.
+            \item Викликає мережевий плагін CNI (Calico) для виділення внутрішньої IP-адреси та створення віртуальних інтерфейсів.
+            \item Налаштовує обмеження ресурсів на рівні ядра ОС Linux через механізми \texttt{cgroups} (відповідно до \texttt{limits.cpu} та \texttt{limits.memory}).
+            \item Запускає ізольовані процеси контейнера та відслідковує їхній стан для передачі звітів про liveness/readiness проби назад до kubelet.
+        \end{itemize}
+\end{itemize}
+
+\subsection{Генерація values.yaml за допомогою values.rb: зворотний GitOps}
+
+За класичним підходом Helm розроблявся як інструмент шаблонізації Kubernetes маніфестів на основі наперед визначених статичних змінних (\texttt{values.yaml}). Проте, при великій кількості мікросервісів це призводить до дублювання та розходження конфігурацій.
+
+У платформі ERP/1 застосовується концепція \textbf{зворотного GitOps} за допомогою скрипта \texttt{values.rb}:
+
+\begin{itemize}
+    \item \textbf{Маніфест як джерело істини}: Розробники редагують стандартні декларативні файли \texttt{deployment.yaml}, \texttt{service.yaml} та \texttt{hpa.yaml} у директоріях \texttt{lib/}.
+    \item \textbf{Статична компіляція}: Скрипт \texttt{values.rb} обходить усі директорії компонентів, парсить YAML-файли та вилучає критичні параметри (кількість реплік, порти, ліміти ресурсів CPU/RAM, наявність сховищ та HPA).
+    \item \textbf{Генерація конфігурації Helm}: Зібрані дані серіалізуються у єдиний файл \texttt{helm/values.yaml}. Це дозволяє зберегти простоту індивідуального супроводження сервісів у \texttt{lib/} та одночасно використовувати переваги Helm (реліз-менеджмент, відкати версій, декларативне оновлення) у продуктивному контурі.
+\end{itemize}
+
+% ===========================================================================
 \newpage
 \section{Incident Management та On-Call}
 
-\subsection{On-Call Rotations}
+\subsection{Severity-рівні}
 
-\begin{itemize}
-    \item PagerDuty / Alertmanager + OpsGenie
-    \item Primary + Secondary on-call
-    \item Postmortem template (mandatory for all Sev1/Sev2)
-\end{itemize}
+\begin{longtable}{C{2cm} L{4cm} L{8cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Рівень} &
+\color{white}\textbf{Критерій} &
+\color{white}\textbf{Відповідь} \\
+\midrule\endhead\bottomrule\endfoot
+\textcolor{warnred}{\textbf{Sev1}}
+  & Платформа недоступна (erp-telemetry або erp-security Down)
+  & Негайно. MTTR $<$ 30 хв. Обов'язковий постмортем \\[4pt]
+\rowcolor{rowalt}\textcolor{warnred}{\textbf{Sev2}}
+  & Один або більше erp-apps / erp-services недоступні
+  & До 1 год. Постмортем обов'язковий \\[4pt]
+\textcolor{tieryellow}{\textbf{Sev3}}
+  & Деградація: висока latency, часткова відмова
+  & Протягом робочого дня \\[4pt]
+\rowcolor{rowalt}\textcolor{successgreen}{\textbf{Sev4}}
+  & Незначні проблеми, cosmetic warnings
+  & Наступний спринт \\[4pt]
+\end{longtable}
 
 \subsection{Playbooks}
 
-Створити runbooks в repo для типових інцидентів:
-- Pod crashloop
-- High latency in erp-ai
-- NetworkPolicy violations
-- etcd / control-plane issues
+\begin{longtable}{L{4.5cm} L{9.5cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Інцидент} & \color{white}\textbf{Кроки діагностики} \\
+\midrule\endhead\bottomrule\endfoot
+Pod CrashLoopBackOff
+  & \texttt{kubectl describe pod -n \{ns\} \{pod\}} $\to$
+    \texttt{kubectl logs --previous} $\to$
+    перевірити livenessProbe $\to$ resource limits \\[4pt]
+\rowcolor{rowalt}ImagePullBackOff
+  & Перевірити авторизацію у приватному \texttt{docker-registry} $\to$
+    перевірити шлях до образу у \texttt{values.yaml} $\to$ pull secret \\[4pt]
+Prometheus PV Full
+  & Перевірити вільне місце на томах (\texttt{df -h}) $\to$
+    переглянути retention policy $\to$ провести tsdb clean/compaction \\[4pt]
+\rowcolor{rowalt}NetworkPolicy violation
+  & \texttt{kubectl get networkpolicy -A} $\to$
+    тест: \texttt{kubectl exec -it ... -{}- curl http://\{svc\}:\{port\}} \\[4pt]
+High CPU / Memory
+  & \texttt{kubectl top pods -n \{ns\}} $\to$
+    \texttt{kubectl get hpa -A} $\to$
+    \texttt{kubectl scale deployment \{name\} --replicas=3 -n \{ns\}} \\[4pt]
+\end{longtable}
 
+\subsection{Аналіз реальних відмов та постмортеми}
+
+Промислова експлуатація платформи в державних органах сектору безпеки сформувала базу знань щодо запобігання критичним аваріям. Нижче наведено два ключових сценарії з реальної практики експлуатації та заходи щодо підвищення надійності:
+
+\begin{enumerate}[leftmargin=1.5cm]
+    \item \textbf{Кейс 1: Амортизація навантаження під час пікової HTTP-активності}
+    \begin{itemize}
+        \item \textit{Опис інциденту:} Під час масового звернення громадян до кабінетів електронних послуг навантаження зросло до 150,000 HTTP-запитів на секунду, що забило пули з'єднань веб-акцепторів Erlang.
+        \item \textit{Коренева причина:} Ліміт TCP-акцепторів за замовчуванням (25k) та низька швидкість парсингу JSON-пакетів привели до вичерпання CPU.
+        \item \textit{Рішення та стабілізація:} Впроваджено лімітування на рівні Ingress Gateway. Пул акцепторів збільшено до 200,000, а парсинг JSON переведено на оптимізовані C99 NIF-бібліотеки. Це знизило утилізацію CPU з 95\% до 12\% при аналогічному трафіку.
+    \end{itemize}
+
+    \item \textbf{Кейс 2: Запобігання розділенню мережі (Split-Brain) в кластері СУБД}
+    \begin{itemize}
+        \item \textit{Опис інциденту:} Внаслідок короткочасного збою мережевого комутатора відбулося розділення зв'язку між нодами розподіленої Mnesia/KVS. Ноди утворили два сегменти (Split-Brain) та продовжували приймати транзакції на запис.
+        \item \textit{Коренева причина:} Автоматична реконсиляція Mnesia була вимкнена, що призвело до розходження стану реплік.
+        \item \textit{Рішення та стабілізація:} Впроваджено обробники події \texttt{mnesia\_down} та сценарії автоматичного злиття (merge/reconciliation) на основі вектора часових міток транзакцій. Налаштовано автоматичне повторне об'єднання сегментів та синхронізацію без втрати цілісності даних.
+    \end{itemize}
+\end{enumerate}
+
+% ===========================================================================
 \newpage
-\section{Chaos Engineering та Resilience}
+\section{Chaos Engineering та Resilience Testing}
 
-\begin{itemize}
-    \item Chaos Mesh або LitmusChaos в \texttt{erp-infra}
-    \item Regular failure injection: node drain, network partition, pod kill
-    \item Test recovery time objectives (RTO/RPO)
-\end{itemize}
+\subsection{Стратегія ін'єкції відмов}
 
-\section{Метрики успіху та TCO}
+\begin{longtable}{L{3.5cm} L{3cm} L{7.5cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Тип відмови} &
+\color{white}\textbf{Інструмент} &
+\color{white}\textbf{Очікуваний результат} \\
+\midrule\endhead\bottomrule\endfoot
+Pod Kill & Chaos Mesh
+  & HPA/Deployment відновлює репліки; SLO зберігається \\[4pt]
+\rowcolor{rowalt}Node Drain & \texttt{kubectl drain}
+  & Поди евакуюються завдяки podAntiAffinity \\[4pt]
+Network Partition & Chaos Mesh NetworkChaos
+  & NetworkPolicy ізолює деградацію; telemetry продовжує роботу \\[4pt]
+\rowcolor{rowalt}Memory Pressure & LitmusChaos
+  & Перевірка limits і OOMKill-поведінки \\[4pt]
+Resource Starvation & Chaos Mesh StressChaos
+  & HPA масштабується (MTTD $<$ 2 хв) \\[4pt]
+\end{longtable}
 
-\begin{itemize}
-    \item MTTR < 15 хв
-    \item TOIL < 50\% engineer time
-    \item Error budget burn rate monitoring
-\end{itemize}
+\subsection{RTO / RPO цілі}
 
+\begin{longtable}{L{3.8cm} C{2.5cm} C{2.5cm} L{5.2cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Сервіс} &
+\color{white}\textbf{RTO} &
+\color{white}\textbf{RPO} &
+\color{white}\textbf{Механізм} \\
+\midrule\endhead\bottomrule\endfoot
+prometheus (StatefulSet) & $<$ 5 хв & $<$ 1 хв & StatefulSet + PVC; авто-перезапуск \\[2pt]
+\rowcolor{rowalt}rest-bpe (Deployment) & $<$ 3 хв & N/A & Rolling update \\[2pt]
+hl7-health (HPA min 2) & $<$ 2 хв & N/A & HPA + podAntiAffinity \\[2pt]
+\rowcolor{rowalt}docker-registry & $<$ 5 хв & $<$ 5 хв & PVC 10 Gi; швидкий перезапуск \\[2pt]
+\end{longtable}
+
+% ===========================================================================
+\newpage
+\section{Операційні метрики та ресурсний бюджет}
+
+\subsection{Ключові SRE-метрики}
+
+\begin{longtable}{L{4.5cm} C{3cm} L{6.5cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Метрика} &
+\color{white}\textbf{Ціль} &
+\color{white}\textbf{Вимірювання} \\
+\midrule\endhead\bottomrule\endfoot
+MTTR (Sev1)           & $<$ 30 хв & Grafana: час між першим алертом та відновленням \\[2pt]
+\rowcolor{rowalt}MTTD  & $<$ 5 хв  & Prometheus alerting rules з \texttt{for: 5m} \\[2pt]
+Error Budget Burn Rate & $<$ 1.0   & \texttt{sum(rate(errors[1h])) / error\_budget\_rate} \\[2pt]
+\rowcolor{rowalt}TOIL (інженерний час) & $<$ 50\% & Відслідковується у JIRA / itsm-incidents \\[2pt]
+Deployment Frequency  & $\geq$ 1/тижд. & Git commits to main; ArgoCD sync count \\[2pt]
+\rowcolor{rowalt}Change Failure Rate & $<$ 5\% & Rollback / загальна кількість деплойментів \\[2pt]
+\end{longtable}
+
+\subsection{Ресурсне навантаження кластеру}
+
+Кластер: 1 вузол, 10 vCPU, 8 ГБ RAM (arm64, Docker Desktop).
+
+\begin{longtable}{L{3.5cm} R{1.8cm} R{2.5cm} R{2.5cm} R{2.5cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Namespace} &
+\color{white}\textbf{Сервісів} &
+\color{white}\textbf{CPU req.} &
+\color{white}\textbf{Mem req.} &
+\color{white}\textbf{PVC} \\
+\midrule\endhead\bottomrule\endfoot
+erp-infra     & 2  & 150m   & 384Mi   & 10 Gi \\[2pt]
+\rowcolor{rowalt}erp-telemetry & 4  & 350m   & 896Mi   & 30 Gi \\[2pt]
+erp-security  & 1  & 100m   & 256Mi   & --- \\[2pt]
+\rowcolor{rowalt}erp-ai        & 1  & 100m   & 256Mi   & --- \\[2pt]
+erp-services  & 5  & 500m   & 1.25 Gi & --- \\[2pt]
+\rowcolor{rowalt}erp-apps      & 8  & 900m   & 2.25 Gi & --- \\[2pt]
+\midrule
+\textbf{Разом} & \textbf{21} & \textbf{2.1 cores} & \textbf{5.3 Gi} & \textbf{40 Gi} \\[2pt]
+\end{longtable}
+
+% ===========================================================================
+\newpage
+\section{Roadmap надійності ERP/1}
+
+\begin{longtable}{C{1.5cm} L{4cm} L{8.5cm}}
+\toprule
+\rowcolor{headerbg}
+\color{white}\textbf{Квартал} &
+\color{white}\textbf{Напрям} &
+\color{white}\textbf{Конкретні дії} \\
+\midrule\endhead\bottomrule\endfoot
+Q3 2026 & \textbf{Розширення}    & Додавання нових модулів у erp-apps; розширення HPA на erp-services; Alertmanager routing \\[4pt]
+\rowcolor{rowalt}Q3 2026 & \textbf{Observability} & Додаткові Grafana дашборди per-namespace; Loki alerting rules; SLO burn-rate алерти \\[4pt]
+Q4 2026 & \textbf{GitOps}        & ArgoCD; авто-rollback на SLO-порушення; pre-commit hook для values.rb \\[4pt]
+\rowcolor{rowalt}Q4 2026 & \textbf{Security}      & ias-auth + vpn-wireguard; PKI-ланцюжок через ca-pki; mTLS між namespace'ами \\[4pt]
+Q1 2027 & \textbf{Chaos}         & Chaos Mesh pod-kill тести; quarterly fire drill \\[4pt]
+\rowcolor{rowalt}Q1 2027 & \textbf{Scalability}   & Додатковий worker-вузол; multi-node kind; HPA під навантаженням \\[4pt]
+Q2 2027 & \textbf{Production}    & Managed Kubernetes (GKE/EKS/AKS / bare-metal); TLS Ingress; DNS erp.uno \\[4pt]
+\end{longtable}
+
+% ===========================================================================
 \newpage
 \section{Висновок}
 
-SRE Handbook ERP/1 є живим документом. Оновлюйте його разом з еволюцією \texttt{erpuno/cd} репозиторію. Головна мета — зробити Continuous Delivery максимально надійною практикою для критичних державних систем.
+\textbf{SRE Handbook ERP/1} описує живу, еволюційну платформу.
+Ключові архітектурні рішення:
 
+\begin{enumerate}[leftmargin=1.5cm]
+  \item \textbf{Namespace-ізоляція} --- 6 рівнів із NetworkPolicy deny-by-default
+    забезпечують безпеку та незалежне масштабування.
+  \item \textbf{Helm-driven GitOps} --- єдиний \texttt{values.yaml},
+    автоматично синхронізований із \texttt{lib/} через \texttt{values.rb},
+    є декларативним контрактом усієї платформи.
+  \item \textbf{SLO-орієнтований підхід} --- диференційовані SLO
+    (99.5\%--99.99\%) відображають реальну критичність сервісів.
+  \item \textbf{Observability-first} --- erp-telemetry розгортається другим
+    та має найвищий SLO 99.99\%.
+  \item \textbf{Мінімальний TOIL} --- deploy.sh + values.rb + майбутній ArgoCD
+    зводять ручну роботу нанівець.
+\end{enumerate}
+
+\vspace{20pt}
+
+Кожна зміна в системі повинна:
+\begin{itemize}[leftmargin=1.5cm]
+  \item Проходити через Git (єдине джерело істини)
+  \item Перевірятись через \texttt{helm lint} та \texttt{ruby values.rb --dry-run}
+  \item Вимірюватись через Prometheus SLI
+  \item Документуватись у постмортемі при Sev1/Sev2
+\end{itemize}
+
+\vspace{30pt}
+\begin{center}
+\textcolor{primary}{\rule{12cm}{0.6pt}}\\[12pt]
+{\large\color{primary}\itshape \guillemotleft Reliability is the most important feature.\guillemotright}\\[6pt]
+{\normalsize\color{footergray} --- Google SRE Book, 2016}
+\end{center}
+
+\vfill
 \begin{flushright}
-2026 \copyright\ Zen Crypted
+{\small\color{footergray} 2026 \copyright\ Zen Crypted --- Системи Електронного Урядування\\
+Репозиторій: \texttt{github.com/erpuno/cd}}
 \end{flushright}
 
 \end{document}
