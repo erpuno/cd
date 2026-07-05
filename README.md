@@ -1,13 +1,15 @@
 ERP/1: Continuous Delivery
 ==========================
 
-Крім шаблонів "ERP/1: Підприємство" (5K LOC) для K8S цей репозиторій містить 3 статті:
+Інфраструктура "ERP/1: Підприємство" (5K LOC) для K8S тестується на Windows, Linux і Mac
+через Docker Desktop і Kind Cluster Type для максимальної відтворюваності в продуктовому середовищі.
 
-* Архітектура ЦОД
-* SRE Handbook
-* The Kind of Kubernetes
+* [Архітектура ЦОД](deployment.pdf)
+* [SRE Handbook](sre.pdf)
+* [The Kind of Kubernetes](kind.pdf)
 
 ```sh
+$ git clone git@github.com:erpuno/cd && cd cd
 $ tree -L 3 .
 .
 ├── helm/
