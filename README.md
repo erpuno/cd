@@ -7,7 +7,7 @@ ERP/1: Continuous Delivery
 Статті
 ------
 
-* М. Сохацький, [The Kind of Kubernetes](kind.pdf), 2026 — The Kind of Kubernetes: Using Docker Desktop for Local Kubernetes Clusters
+* М. Сохацький, [The Kind of Kubernetes](kind.pdf), 2026 <br> The Kind of Kubernetes: Using Docker Desktop for Local Kubernetes Clusters
 * М. Сохацький, [Архітектура ЦОД](deployment.pdf), 2026 — Настанови системного архiтектора для проектування кластерiв ЦОД
 * М. Сохацький, [SRE Handbook](sre.pdf), 2026 — Настанови системного адмiнiстратора для розгортання, спостереження i обслуговування кластерiв ЦОД
 
