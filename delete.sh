@@ -1,2 +1,2 @@
 helm uninstall erp-uno --ignore-not-found 2>/dev/null || true
-kubectl delete ns local-path-storage erp-infra erp-telemetry erp-ai erp-infra erp-security erp-services erp-apps erp-uno --ignore-not-found --grace-period=0
+kubectl delete ns erp-infra erp-telemetry erp-ai erp-security erp-services erp-apps erp-uno --ignore-not-found --grace-period=0

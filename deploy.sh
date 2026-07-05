@@ -13,6 +13,13 @@ echo "╚═══════════════════════�
 echo -e "\n[1/8] Setting up namespaces..."
 kubectl apply -f "$SCRIPT_DIR/share/namespaces.yaml"
 kubectl apply -f "$SCRIPT_DIR/share/rbac.yaml"
+
+# Ensure local-path-provisioner is installed
+if ! kubectl get deployment -n local-path-storage local-path-provisioner &>/dev/null; then
+  echo "    local-path-provisioner not found, installing..."
+  kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.30/deploy/local-path-storage.yaml
+fi
+
 kubectl apply -f "$SCRIPT_DIR/share/storage-class.yaml"
 kubectl apply -f "$SCRIPT_DIR/share/networkpolicy.yaml"
 echo "    ✓ Namespaces, RBAC, and network policies created"
