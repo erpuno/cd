@@ -15,7 +15,7 @@ echo ""
 
 # Step 1: Apply manifests
 echo "[1] Applying Kubernetes manifests..."
-kubectl apply -f "$BACKUP_DIR/manifests.yaml" 2>&1 | grep -E "(created|configured|unchanged)" | head -20 || true
+kubectl apply -f "$BACKUP_DIR/manifests.yaml"
 echo "✅ Manifests applied"
 echo ""
 
@@ -23,8 +23,8 @@ echo ""
 echo "[2] Stopping pods (unmounting volumes for restore)..."
 
 # Get all StatefulSets
-STS_LIST=$(kubectl get statefulset --all-namespaces -o json 2>/dev/null | jq -r '.items[] | "\(.metadata.namespace) \(.metadata.name)"' || true)
-while read -r ns sts; do
+STS_LIST=$(kubectl get statefulset --all-namespaces -o json 2>/dev/null | jq -r '.items[] | "\(.metadata.namespace) \(.metadata.name) \(.spec.replicas // 1)"' || true)
+while read -r ns sts replicas; do
   if [ -n "$ns" ] && [ -n "$sts" ]; then
     echo "   Scaling down: $ns/$sts"
     kubectl scale statefulset -n "$ns" "$sts" --replicas=0 2>/dev/null || true
@@ -32,13 +32,14 @@ while read -r ns sts; do
 done <<< "$STS_LIST"
 
 # Get all Deployments with PVCs
-DEPLOY_WITH_PVC=$(kubectl get deployment --all-namespaces -o json 2>/dev/null | jq -r '.items[] | select(.spec.template.spec.volumes[]?.persistentVolumeClaim) | "\(.metadata.namespace) \(.metadata.name)"' || true)
-while read -r ns deploy; do
+DEPLOY_WITH_PVC=$(kubectl get deployment --all-namespaces -o json 2>/dev/null | jq -r '.items[] | select(.spec.template.spec.volumes != null) | select(any(.spec.template.spec.volumes[]; .persistentVolumeClaim != null)) | "\(.metadata.namespace) \(.metadata.name) \(.spec.replicas // 1)"' || true)
+while read -r ns deploy replicas; do
   if [ -n "$ns" ] && [ -n "$deploy" ]; then
     echo "   Scaling down: $ns/$deploy"
     kubectl scale deployment -n "$ns" "$deploy" --replicas=0 2>/dev/null || true
   fi
 done <<< "$DEPLOY_WITH_PVC"
+
 
 sleep 3
 echo "✅ Pods stopped"
@@ -55,9 +56,9 @@ for backup_file in "$BACKUP_DIR"/*.tar.gz; do
   basename=$(basename "$backup_file" .tar.gz)
   
   # Parse namespace and pvc name from backup filename
-  # Format: namespace-pvcname
-  ns=$(echo "$basename" | cut -d'-' -f1)
-  pvc=$(echo "$basename" | cut -d'-' -f2-)
+  # Format: namespace@pvcname
+  ns=$(echo "$basename" | cut -d'@' -f1)
+  pvc=$(echo "$basename" | cut -d'@' -f2)
   
   # Get PVC and its backing PV
   PV_NAME=$(kubectl get pvc -n "$ns" "$pvc" -o jsonpath='{.spec.volumeName}' 2>/dev/null || echo "")
@@ -79,13 +80,13 @@ for backup_file in "$BACKUP_DIR"/*.tar.gz; do
   docker exec synrc-control-plane mkdir -p "$(dirname "$HOSTPATH")" 2>/dev/null || true
   
   # Use stdin streaming for tar extraction
-  tar -xzf "$backup_file" -C "$(dirname "$HOSTPATH")" 2>/dev/null || {
+  docker exec -i synrc-control-plane tar -xzf - -C "$(dirname "$HOSTPATH")" < "$backup_file" 2>/dev/null || {
     echo "      ❌ Restore failed"
     continue
   }
   
-  SIZE=$(du -sh "$HOSTPATH" 2>/dev/null | cut -f1)
-  FILE_COUNT=$(find "$HOSTPATH" -type f 2>/dev/null | wc -l)
+  SIZE=$(docker exec synrc-control-plane du -sh "$HOSTPATH" 2>/dev/null | cut -f1 || echo "0")
+  FILE_COUNT=$(docker exec synrc-control-plane find "$HOSTPATH" -type f 2>/dev/null | wc -l | xargs || echo "0")
   echo "      ✅ Restored ($SIZE, $FILE_COUNT files)"
 done
 
@@ -95,22 +96,21 @@ echo ""
 echo "[4] Restarting pods..."
 
 # Restart StatefulSets
-while read -r ns sts; do
-  if [ -n "$ns" ] && [ -n "$sts" ]; then
-    REPLICAS=$(kubectl get statefulset -n "$ns" "$sts" -o jsonpath='{.spec.replicas}' 2>/dev/null || echo "1")
-    echo "   Scaling up: $ns/$sts to $REPLICAS replicas"
-    kubectl scale statefulset -n "$ns" "$sts" --replicas="$REPLICAS" 2>/dev/null || true
+while read -r ns sts replicas; do
+  if [ -n "$ns" ] && [ -n "$sts" ] && [ -n "$replicas" ]; then
+    echo "   Scaling up: $ns/$sts to $replicas replicas"
+    kubectl scale statefulset -n "$ns" "$sts" --replicas="$replicas" 2>/dev/null || true
   fi
 done <<< "$STS_LIST"
 
 # Restart Deployments
-while read -r ns deploy; do
-  if [ -n "$ns" ] && [ -n "$deploy" ]; then
-    REPLICAS=$(kubectl get deployment -n "$ns" "$deploy" -o jsonpath='{.spec.replicas}' 2>/dev/null || echo "1")
-    echo "   Scaling up: $ns/$deploy to $REPLICAS replicas"
-    kubectl scale deployment -n "$ns" "$deploy" --replicas="$REPLICAS" 2>/dev/null || true
+while read -r ns deploy replicas; do
+  if [ -n "$ns" ] && [ -n "$deploy" ] && [ -n "$replicas" ]; then
+    echo "   Scaling up: $ns/$deploy to $replicas replicas"
+    kubectl scale deployment -n "$ns" "$deploy" --replicas="$replicas" 2>/dev/null || true
   fi
 done <<< "$DEPLOY_WITH_PVC"
+
 
 sleep 5
 echo "✅ Pods restarted"

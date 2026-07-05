@@ -16,17 +16,17 @@ USAGE:
   ./view.sh -h, --help, help                   Show this help
 
 ARGUMENTS:
-  <backup_dir>  Path to backup directory (e.g., ./backups/20260705-234654)
+  <backup_dir>  Path to backup directory (e.g., ./priv/20260705-234654)
   <img>         Device image name without .tar.gz (e.g., monitoring-storage-prometheus-0)
   <out>         Output directory for extraction
   <file>        File path inside image (e.g., /prometheus/prometheus.yml)
 
 EXAMPLES:
-  ./view.sh ./backups/20260705-234654
-  ./view.sh ./backups/20260705-234654 list monitoring-storage-prometheus-0
-  ./view.sh ./backups/20260705-234654 tree monitoring-storage-grafana-0
-  ./view.sh ./backups/20260705-234654 extract monitoring-storage-grafana-0 ./restored-grafana
-  ./view.sh ./backups/20260705-234654 cat monitoring-storage-prometheus-0 /prometheus/prometheus.yml
+  ./view.sh ./priv/20260705-234654
+  ./view.sh ./priv/20260705-234654 list monitoring-storage-prometheus-0
+  ./view.sh ./priv/20260705-234654 tree monitoring-storage-grafana-0
+  ./view.sh ./priv/20260705-234654 extract monitoring-storage-grafana-0 ./restored-grafana
+  ./view.sh ./priv/20260705-234654 cat monitoring-storage-prometheus-0 /prometheus/prometheus.yml
 
 DEVICE IMAGE FORMAT:
   Each backup is a tar.gz (gzip-compressed tar archive):

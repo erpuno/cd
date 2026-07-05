@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-BACKUP_DIR="./backups/$(date +%Y%m%d-%H%M%S)"
+BACKUP_DIR="./priv/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$BACKUP_DIR"
 
 echo "📦 Complete Device-Level Backup (All PVCs & StatefulSets)"
@@ -10,8 +10,15 @@ echo ""
 
 # Step 1: Export all manifests
 echo "[1] Exporting all Kubernetes manifests..."
-kubectl get statefulset,deployment,pvc,pv,service,configmap --all-namespaces -o yaml > "$BACKUP_DIR/manifests.yaml"
-echo "✅ Manifests exported"
+NAMESPACES="erp-infra erp-telemetry erp-security erp-ai erp-services erp-apps"
+> "$BACKUP_DIR/manifests.yaml"
+for ns in $NAMESPACES; do
+  kubectl get statefulset,deployment,pvc,service,configmap -n "$ns" -o yaml 2>/dev/null >> "$BACKUP_DIR/manifests.yaml" || true
+  echo "---" >> "$BACKUP_DIR/manifests.yaml"
+done
+# Clean manifests metadata to avoid apply conflicts
+ruby "$(dirname "$0")/manifest.rb" "$BACKUP_DIR/manifests.yaml" "$BACKUP_DIR/manifests.yaml.tmp" && mv "$BACKUP_DIR/manifests.yaml.tmp" "$BACKUP_DIR/manifests.yaml"
+echo "✅ Manifests exported and cleaned"
 echo ""
 
 # Step 2: Get all PVCs and their backing PVs
@@ -29,8 +36,8 @@ echo ""
 echo "[3] Stopping pods (unmounting volumes)..."
 
 # Find and stop all StatefulSets
-STS_LIST=$(kubectl get statefulset --all-namespaces -o json | jq -r '.items[] | "\(.metadata.namespace) \(.metadata.name)"')
-while read -r ns sts; do
+STS_LIST=$(kubectl get statefulset --all-namespaces -o json | jq -r '.items[] | "\(.metadata.namespace) \(.metadata.name) \(.spec.replicas // 1)"')
+while read -r ns sts replicas; do
   if [ -n "$ns" ] && [ -n "$sts" ]; then
     echo "   Scaling down StatefulSet: $ns/$sts"
     kubectl scale statefulset -n "$ns" "$sts" --replicas=0 2>/dev/null || true
@@ -38,13 +45,14 @@ while read -r ns sts; do
 done <<< "$STS_LIST"
 
 # Find and stop all Deployments with PVCs
-DEPLOY_WITH_PVC=$(kubectl get deployment --all-namespaces -o json | jq -r '.items[] | select(.spec.template.spec.volumes[].persistentVolumeClaim) | "\(.metadata.namespace) \(.metadata.name)"')
-while read -r ns deploy; do
+DEPLOY_WITH_PVC=$(kubectl get deployment --all-namespaces -o json | jq -r '.items[] | select(.spec.template.spec.volumes != null) | select(any(.spec.template.spec.volumes[]; .persistentVolumeClaim != null)) | "\(.metadata.namespace) \(.metadata.name) \(.spec.replicas // 1)"')
+while read -r ns deploy replicas; do
   if [ -n "$ns" ] && [ -n "$deploy" ]; then
     echo "   Scaling down Deployment: $ns/$deploy"
     kubectl scale deployment -n "$ns" "$deploy" --replicas=0 2>/dev/null || true
   fi
 done <<< "$DEPLOY_WITH_PVC"
+
 
 sleep 3
 echo "✅ All pods stopped, volumes unmounted"
@@ -66,8 +74,8 @@ echo "$PVC_INFO" | jq -r '.items[] | "\(.metadata.namespace) \(.metadata.name) \
     continue
   fi
   
-  # Backup directory name: namespace-pvcname
-  SAFE_NAME=$(echo "${ns}-${pvc}" | sed 's/[^a-z0-9-]/-/g')
+  # Backup filename: namespace@pvcname
+  SAFE_NAME="${ns}@${pvc}"
   BACKUP_FILE="$BACKUP_DIR/${SAFE_NAME}.tar.gz"
   
   echo "   Backing up: $ns/$pvc (from $HOSTPATH)"
@@ -98,7 +106,7 @@ META
 
 echo "" >> "$BACKUP_DIR/BACKUP_INFO.txt"
 echo "PVCs Backed Up:" >> "$BACKUP_DIR/BACKUP_INFO.txt"
-echo "$PVC_INFO" | jq -r '.items[] | "  \(.metadata.namespace)/\(.metadata.name): \(.status.capacity.storage)"' >> "$BACKUP_DIR/BACKUP_INFO.txt"
+echo "$PVC_INFO" | jq -r '.items[] | "  \(.metadata.namespace)/\(.metadata.name): \(.status.capacity.storage // "Pending")"' >> "$BACKUP_DIR/BACKUP_INFO.txt"
 
 echo "" >> "$BACKUP_DIR/BACKUP_INFO.txt"
 echo "Files:" >> "$BACKUP_DIR/BACKUP_INFO.txt"
@@ -111,23 +119,21 @@ echo ""
 echo "[6] Restarting pods..."
 
 # Restart StatefulSets
-while read -r ns sts; do
-  if [ -n "$ns" ] && [ -n "$sts" ]; then
-    # Get original replica count from manifests
-    REPLICAS=$(kubectl get statefulset -n "$ns" "$sts" -o jsonpath='{.status.replicas}' 2>/dev/null || echo "1")
-    echo "   Scaling up StatefulSet: $ns/$sts to $REPLICAS replicas"
-    kubectl scale statefulset -n "$ns" "$sts" --replicas="$REPLICAS" 2>/dev/null || true
+while read -r ns sts replicas; do
+  if [ -n "$ns" ] && [ -n "$sts" ] && [ -n "$replicas" ]; then
+    echo "   Scaling up StatefulSet: $ns/$sts to $replicas replicas"
+    kubectl scale statefulset -n "$ns" "$sts" --replicas="$replicas" 2>/dev/null || true
   fi
 done <<< "$STS_LIST"
 
 # Restart Deployments
-while read -r ns deploy; do
-  if [ -n "$ns" ] && [ -n "$deploy" ]; then
-    REPLICAS=$(kubectl get deployment -n "$ns" "$deploy" -o jsonpath='{.status.replicas}' 2>/dev/null || echo "1")
-    echo "   Scaling up Deployment: $ns/$deploy to $REPLICAS replicas"
-    kubectl scale deployment -n "$ns" "$deploy" --replicas="$REPLICAS" 2>/dev/null || true
+while read -r ns deploy replicas; do
+  if [ -n "$ns" ] && [ -n "$deploy" ] && [ -n "$replicas" ]; then
+    echo "   Scaling up Deployment: $ns/$deploy to $replicas replicas"
+    kubectl scale deployment -n "$ns" "$deploy" --replicas="$replicas" 2>/dev/null || true
   fi
 done <<< "$DEPLOY_WITH_PVC"
+
 
 sleep 5
 echo "✅ Pods restarting"
@@ -142,4 +148,4 @@ du -sh "$BACKUP_DIR"
 ls -lh "$BACKUP_DIR" | tail -n +2 | wc -l | xargs echo "Total files:"
 echo ""
 echo "🔍 Explore backup: ./view.sh $BACKUP_DIR"
-echo "🔄 Restore backup: ./restore-all.sh $BACKUP_DIR"
+echo "🔄 Restore backup: ./restore.sh $BACKUP_DIR"

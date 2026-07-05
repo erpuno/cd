@@ -49,4 +49,6 @@ spec:
           mountPath: /prometheus
       volumes:
       - name: data
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: prometheus-data
+
