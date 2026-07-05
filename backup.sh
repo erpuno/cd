@@ -4,77 +4,142 @@ set -euo pipefail
 BACKUP_DIR="./backups/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$BACKUP_DIR"
 
-echo "📦 Backing up stateful data and StatefulSets..."
+echo "📦 Complete Device-Level Backup (All PVCs & StatefulSets)"
 echo "Backup directory: $BACKUP_DIR"
 echo ""
 
-# Backup all manifests (Deployments, StatefulSets, PVCs, etc.)
-echo "[1] Exporting manifests..."
-kubectl get statefulset,deployment,pvc,service,configmap --all-namespaces -o yaml > "$BACKUP_DIR/manifests.yaml" 2>/dev/null || {
-  echo "⚠️  Warning: Could not export some manifests"
-}
+# Step 1: Export all manifests
+echo "[1] Exporting all Kubernetes manifests..."
+kubectl get statefulset,deployment,pvc,pv,service,configmap --all-namespaces -o yaml > "$BACKUP_DIR/manifests.yaml"
+echo "✅ Manifests exported"
+echo ""
 
-# Backup persistent volume data via KinD container
-echo "[2] Backing up /var/local-path-provisioner from KinD..."
-if docker exec synrc-control-plane test -d /var/local-path-provisioner 2>/dev/null; then
-  echo "   Found /var/local-path-provisioner in KinD"
-  
-  if docker exec synrc-control-plane sh -c 'tar -czf /tmp/stateful.tgz -C /var/local-path-provisioner . 2>/dev/null' 2>/dev/null; then
-    echo "   Tar created, attempting copy..."
-    
-    # Primary: docker cp
-    if docker cp synrc-control-plane:/tmp/stateful.tgz "$BACKUP_DIR/all-stateful.tgz" 2>/dev/null; then
-      size=$(du -h "$BACKUP_DIR/all-stateful.tgz" | cut -f1)
-      echo "   ✅ Volume data backed up ($size)"
-    else
-      # Fallback: use tar inside container and stream via stdout
-      echo "   ⚠️  docker cp failed, attempting streaming..."
-      if docker exec synrc-control-plane cat /tmp/stateful.tgz > "$BACKUP_DIR/all-stateful.tgz" 2>/dev/null; then
-        echo "   ✅ Volume data backed up via streaming"
-      else
-        echo "   ⚠️  Could not copy volume backup (directory may be empty)"
-      fi
-    fi
-  else
-    echo "   ⚠️  Failed to create tar in container"
+# Step 2: Get all PVCs and their backing PVs
+echo "[2] Discovering PVCs ..."
+PVC_INFO=$(kubectl get pvc --all-namespaces -o json)
+PVC_COUNT=$(echo "$PVC_INFO" | jq '.items | length')
+
+echo "   Found $PVC_COUNT PVCs:"
+echo "$PVC_INFO" | jq -r '.items[] | "\(.metadata.namespace)/\(.metadata.name)"' | while read pvc; do
+  echo "   - $pvc"
+done
+echo ""
+
+# Step 3: Stop all pods with PVCs (scale StatefulSets to 0, scale Deployments with PVCs to 0)
+echo "[3] Stopping pods (unmounting volumes)..."
+
+# Find and stop all StatefulSets
+STS_LIST=$(kubectl get statefulset --all-namespaces -o json | jq -r '.items[] | "\(.metadata.namespace) \(.metadata.name)"')
+while read -r ns sts; do
+  if [ -n "$ns" ] && [ -n "$sts" ]; then
+    echo "   Scaling down StatefulSet: $ns/$sts"
+    kubectl scale statefulset -n "$ns" "$sts" --replicas=0 2>/dev/null || true
   fi
-else
-  echo "   ⚠️  /var/local-path-provisioner not found"
-fi
+done <<< "$STS_LIST"
 
-# Backup individual StatefulSet PVCs
-echo "[3] Backing up StatefulSet PVCs..."
-statefulset_count=0
-for namespace in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
-  for sts in $(kubectl get statefulset -n "$namespace" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null || true); do
-    statefulset_count=$((statefulset_count + 1))
-    echo "   StatefulSet: $namespace/$sts"
-    replica_count=$(kubectl get statefulset -n "$namespace" "$sts" -o jsonpath='{.spec.replicas}' 2>/dev/null || echo 0)
-    
-    if [ "$replica_count" -gt 0 ]; then
-      for i in $(seq 0 $((replica_count - 1))); do
-        pod_name="${sts}-${i}"
-        for data_path in /data /var/lib/data /var/lib/postgresql /var/lib/mysql /srv/data; do
-          if kubectl exec -n "$namespace" "$pod_name" -- test -d "$data_path" 2>/dev/null; then
-            echo "     Backing up $pod_name:$data_path"
-            if kubectl exec -n "$namespace" "$pod_name" -- tar -czf /tmp/pod-backup.tgz -C "$data_path" . 2>/dev/null; then
-              kubectl cp "$namespace/$pod_name:/tmp/pod-backup.tgz" "$BACKUP_DIR/${namespace}-${sts}-${i}-data.tar.gz" 2>/dev/null || true
-            fi
-            break
-          fi
-        done
-      done
-    fi
-  done
+# Find and stop all Deployments with PVCs
+DEPLOY_WITH_PVC=$(kubectl get deployment --all-namespaces -o json | jq -r '.items[] | select(.spec.template.spec.volumes[].persistentVolumeClaim) | "\(.metadata.namespace) \(.metadata.name)"')
+while read -r ns deploy; do
+  if [ -n "$ns" ] && [ -n "$deploy" ]; then
+    echo "   Scaling down Deployment: $ns/$deploy"
+    kubectl scale deployment -n "$ns" "$deploy" --replicas=0 2>/dev/null || true
+  fi
+done <<< "$DEPLOY_WITH_PVC"
+
+sleep 3
+echo "✅ All pods stopped, volumes unmounted"
+echo ""
+
+# Step 4: Backup each PVC as device image
+echo "[4] Creating device image snapshots..."
+
+echo "$PVC_INFO" | jq -r '.items[] | "\(.metadata.namespace) \(.metadata.name) \(.spec.volumeName)"' | while read ns pvc pv; do
+  if [ -z "$ns" ] || [ -z "$pvc" ] || [ -z "$pv" ]; then
+    continue
+  fi
+  
+  # Get HostPath for this PV
+  HOSTPATH=$(kubectl get pv "$pv" -o jsonpath='{.spec.hostPath.path}' 2>/dev/null || echo "")
+  
+  if [ -z "$HOSTPATH" ]; then
+    echo "   ⚠️  $ns/$pvc: Could not find backing path"
+    continue
+  fi
+  
+  # Backup directory name: namespace-pvcname
+  SAFE_NAME=$(echo "${ns}-${pvc}" | sed 's/[^a-z0-9-]/-/g')
+  BACKUP_FILE="$BACKUP_DIR/${SAFE_NAME}.tar.gz"
+  
+  echo "   Backing up: $ns/$pvc (from $HOSTPATH)"
+  docker exec synrc-control-plane tar -czf - -C "$(dirname "$HOSTPATH")" "$(basename "$HOSTPATH")" > "$BACKUP_FILE" 2>/dev/null || {
+    echo "   ❌ Failed to backup $ns/$pvc"
+    continue
+  }
+  
+  SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
+  FILE_COUNT=$(tar -tzf "$BACKUP_FILE" 2>/dev/null | wc -l)
+  echo "   ✅ $SAFE_NAME.tar.gz ($SIZE, $FILE_COUNT items)"
 done
 
-if [ $statefulset_count -eq 0 ]; then
-  echo "   (No StatefulSets found)"
-fi
-
 echo ""
-echo "✅ Backup completed!"
-echo "Backup location: $BACKUP_DIR"
-echo "Files:"
-ls -lh "$BACKUP_DIR"
-echo "Total size: $(du -sh "$BACKUP_DIR" | cut -f1)"
+
+# Step 5: Create metadata file
+echo "[5] Creating backup metadata..."
+cat > "$BACKUP_DIR/BACKUP_INFO.txt" <<'META'
+Device-Level Backup - All PVCs & StatefulSets
+==============================================
+
+Created: $(date)
+Backup Type: Complete filesystem snapshots (tar.gz)
+Format: Raw device images (mountable after extraction)
+
+Contents:
+META
+
+echo "" >> "$BACKUP_DIR/BACKUP_INFO.txt"
+echo "PVCs Backed Up:" >> "$BACKUP_DIR/BACKUP_INFO.txt"
+echo "$PVC_INFO" | jq -r '.items[] | "  \(.metadata.namespace)/\(.metadata.name): \(.status.capacity.storage)"' >> "$BACKUP_DIR/BACKUP_INFO.txt"
+
+echo "" >> "$BACKUP_DIR/BACKUP_INFO.txt"
+echo "Files:" >> "$BACKUP_DIR/BACKUP_INFO.txt"
+ls -lh "$BACKUP_DIR" | tail -n +2 | awk '{print "  " $9 " (" $5 ")"}' >> "$BACKUP_DIR/BACKUP_INFO.txt"
+
+echo "✅ Metadata created"
+echo ""
+
+# Step 6: Restart all pods
+echo "[6] Restarting pods..."
+
+# Restart StatefulSets
+while read -r ns sts; do
+  if [ -n "$ns" ] && [ -n "$sts" ]; then
+    # Get original replica count from manifests
+    REPLICAS=$(kubectl get statefulset -n "$ns" "$sts" -o jsonpath='{.status.replicas}' 2>/dev/null || echo "1")
+    echo "   Scaling up StatefulSet: $ns/$sts to $REPLICAS replicas"
+    kubectl scale statefulset -n "$ns" "$sts" --replicas="$REPLICAS" 2>/dev/null || true
+  fi
+done <<< "$STS_LIST"
+
+# Restart Deployments
+while read -r ns deploy; do
+  if [ -n "$ns" ] && [ -n "$deploy" ]; then
+    REPLICAS=$(kubectl get deployment -n "$ns" "$deploy" -o jsonpath='{.status.replicas}' 2>/dev/null || echo "1")
+    echo "   Scaling up Deployment: $ns/$deploy to $REPLICAS replicas"
+    kubectl scale deployment -n "$ns" "$deploy" --replicas="$REPLICAS" 2>/dev/null || true
+  fi
+done <<< "$DEPLOY_WITH_PVC"
+
+sleep 5
+echo "✅ Pods restarting"
+echo ""
+
+echo "✅ Complete backup finished!"
+echo ""
+echo "📁 Backup location: $BACKUP_DIR"
+echo ""
+echo "📊 Backup summary:"
+du -sh "$BACKUP_DIR"
+ls -lh "$BACKUP_DIR" | tail -n +2 | wc -l | xargs echo "Total files:"
+echo ""
+echo "🔍 Explore backup: ./view.sh $BACKUP_DIR"
+echo "🔄 Restore backup: ./restore-all.sh $BACKUP_DIR"
