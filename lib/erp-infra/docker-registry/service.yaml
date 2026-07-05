@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: docker-registry
-  namespace: erp-core
+  namespace: erp-infra
   labels:
     app: docker-registry
 spec:

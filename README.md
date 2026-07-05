@@ -41,13 +41,11 @@ $ git clone git@github.com:erpuno/cd
 Далі для кожного компоненту запусткається цикл по його файлам.
 
 ```sh
-    for kind in pvc.yaml deployment.yaml service.yaml hpa.yaml ingress.yaml; do
-      if [ -f "$service_path/$kind" ]; then
-        sed "s/namespace: .*/namespace: $namespace/" "$service_path/$kind" | \
-        kubectl apply -f -
-      fi
-    done
+for kind in pvc.yaml deployment.yaml service.yaml hpa.yaml ingress.yaml; do
+    if [ -f "$service_path/$kind" ]; then kubectl apply -f "$service_path/$kind" ; fi
+done
 ```
+
 Перелік компонент секретний для кожного підприємства, тут надається типова конфігурація.
 Кожен компонент може мати наступні файли, цей перелік можна доповнювати.
 
