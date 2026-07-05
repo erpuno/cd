@@ -14,8 +14,10 @@ ERP/1: Continuous Delivery
 Розповсюдження
 --------------
 
+Постійна адреса твору:
+
 ```
-$ git clone git@github.com:erpuno/cd && cd cd
+$ git clone git@github.com:erpuno/cd
 ```
 
 Структура
