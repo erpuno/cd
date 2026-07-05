@@ -53,7 +53,6 @@ while read -r ns deploy replicas; do
   fi
 done <<< "$DEPLOY_WITH_PVC"
 
-
 sleep 3
 echo "✅ All pods stopped, volumes unmounted"
 echo ""
@@ -65,25 +64,25 @@ echo "$PVC_INFO" | jq -r '.items[] | "\(.metadata.namespace) \(.metadata.name) \
   if [ -z "$ns" ] || [ -z "$pvc" ] || [ -z "$pv" ]; then
     continue
   fi
-  
+
   # Get HostPath for this PV
   HOSTPATH=$(kubectl get pv "$pv" -o jsonpath='{.spec.hostPath.path}' 2>/dev/null || echo "")
-  
+
   if [ -z "$HOSTPATH" ]; then
     echo "   ⚠️  $ns/$pvc: Could not find backing path"
     continue
   fi
-  
+
   # Backup filename: namespace@pvcname
   SAFE_NAME="${ns}@${pvc}"
   BACKUP_FILE="$BACKUP_DIR/${SAFE_NAME}.tar.gz"
-  
+
   echo "   Backing up: $ns/$pvc (from $HOSTPATH)"
   docker exec synrc-control-plane tar -czf - -C "$(dirname "$HOSTPATH")" "$(basename "$HOSTPATH")" > "$BACKUP_FILE" 2>/dev/null || {
     echo "   ❌ Failed to backup $ns/$pvc"
     continue
   }
-  
+
   SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
   FILE_COUNT=$(tar -tzf "$BACKUP_FILE" 2>/dev/null | wc -l)
   echo "   ✅ $SAFE_NAME.tar.gz ($SIZE, $FILE_COUNT items)"

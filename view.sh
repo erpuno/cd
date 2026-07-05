@@ -5,7 +5,6 @@ BACKUP_DIR="${1:-.}"
 # Show help if no arguments or help requested
 if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ] || [ "$1" = "help" ]; then
   cat <<'HELP'
-🔍 Backup Explorer - PVC Viewer
 
 USAGE:
   ./view.sh <backup_dir>                       Show backup summary
@@ -52,9 +51,6 @@ fi
 
 # If called with just backup_dir, show summary
 if [ $# -eq 1 ]; then
-  echo "🔍 Backup Explorer"
-  echo "================="
-  echo ""
 
   # Show backup info
   if [ -f "$BACKUP_DIR/BACKUP_INFO.txt" ]; then
@@ -70,35 +66,21 @@ if [ $# -eq 1 ]; then
     if [ ! -f "$img" ]; then
       continue
     fi
-    
     basename=$(basename "$img" .tar.gz)
     size=$(du -h "$img" | cut -f1)
     file_count=$(tar -tzf "$img" 2>/dev/null | wc -l)
-    
-    echo "  📄 $basename"
-    echo "     Size: $size"
-    echo "     Files: $file_count"
-    echo ""
+    echo "  📄 $basename (Size: $size; Files: $file_count)"
   done
+  echo
 
   # Show manifests
   echo "📝 Kubernetes Manifests:"
   if [ -f "$BACKUP_DIR/manifests.yaml" ]; then
     echo ""
-    echo "  StatefulSets:"
-    grep -c "kind: StatefulSet" "$BACKUP_DIR/manifests.yaml" 2>/dev/null | xargs echo "    Count:" || echo "    Count: 0"
-    
-    echo ""
-    echo "  Deployments:"
-    grep -c "kind: Deployment" "$BACKUP_DIR/manifests.yaml" 2>/dev/null | xargs echo "    Count:" || echo "    Count: 0"
-    
-    echo ""
-    echo "  PVCs:"
-    grep -c "kind: PersistentVolumeClaim" "$BACKUP_DIR/manifests.yaml" 2>/dev/null | xargs echo "    Count:" || echo "    Count: 0"
-    
-    echo ""
-    echo "  Services:"
-    grep -c "kind: Service" "$BACKUP_DIR/manifests.yaml" 2>/dev/null | xargs echo "    Count:" || echo "    Count: 0"
+    echo "StatefulSets: $(grep -c "kind: StatefulSet" "$BACKUP_DIR/manifests.yaml" 2>/dev/null || echo 0)"
+    echo "Deployments: $(grep -c "kind: Deployment" "$BACKUP_DIR/manifests.yaml" 2>/dev/null || echo 0)"
+    echo "PVCs: $(grep -c "kind: PersistentVolumeClaim" "$BACKUP_DIR/manifests.yaml" 2>/dev/null || echo 0)"
+    echo "Services: $(grep -c "kind: Service" "$BACKUP_DIR/manifests.yaml" 2>/dev/null || echo 0)"
   fi
 
   echo ""

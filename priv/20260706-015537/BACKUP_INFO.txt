@@ -1,9 +1,7 @@
-Device-Level Backup - All PVCs & StatefulSets
-==============================================
 
-Created: $(date)
-Backup Type: Complete filesystem snapshots (tar.gz)
-Format: Raw device images (mountable after extraction)
+  Created: $(date)
+  Backup Type: Complete filesystem snapshots (tar.gz)
+  Format: Raw device images (mountable after extraction)
 
 Contents:
 

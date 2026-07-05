@@ -42,12 +42,6 @@
 ║                      Next Steps                        ║
 ╚════════════════════════════════════════════════════════╝
 
-If all checks pass, run K8S raw deploy:
-
-  bash deploy.sh
-
-Or deploy via helm:
-
-  cd helm
-  ./deploy.sh
+If all checks pass, run K8S raw deploy: bash deploy.sh
+Or deploy via helm: cd heml && ./deploy.sh
 
