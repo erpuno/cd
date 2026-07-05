@@ -24,6 +24,39 @@ ERP/1: Continuous Delivery
 $ git clone git@github.com:erpuno/cd
 ```
 
+Загальні файли
+--------------
+
+* `namespaces.yaml`
+* `networkpolicy.yaml`
+* `rbac.yaml`
+* `storage-class.yaml`
+
+Файли компонент
+---------------
+
+* `deployment.yaml`
+* `service.yaml`
+* `hpa.yaml`
+* `pvc.yaml`
+* `ingress.yaml`
+* `values.yaml`
+* `.yaml`
+
+Пакетування
+-----------
+
+* `Chart.yaml`
+* `values.yaml`
+* `templates/`
+* `deploy.sh` — Helm розгортання
+* `path.sh` — Додавання прав для Helm тулчейну в будь який кластер
+* `cleanup.sh` — видалення пакетів і кластера
+* `validate.sh` — ваділація згенерованого уніфікованого ERP/1 чарта
+* `values.rb` – скрипт генерації уніфікованого ERP/1 чарта
+
+В каталозі `templates/` імена файли повторюють номенклатуру файлів компонент.
+
 Структура
 ---------
 
