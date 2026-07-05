@@ -4,9 +4,9 @@ ERP/1: Continuous Delivery
 Інфраструктура "ERP/1: Підприємство" (5K LOC) для K8S тестується на Windows, Linux і Mac
 через Docker Desktop і Kind Cluster Type для максимальної відтворюваності в продуктовому середовищі.
 
-* [Архітектура ЦОД](deployment.pdf)
-* [SRE Handbook](sre.pdf)
-* [The Kind of Kubernetes](kind.pdf)
+* [Архітектура ЦОД](deployment.pdf) — Настанови системного архiтектора для проектування кластерiв ЦОД
+* [SRE Handbook](sre.pdf) — Настанови системного адмiнiстратора для розгортання, спостереження i обслуговування кластерiв ЦОД
+* [The Kind of Kubernetes](kind.pdf) — The Kind of Kubernetes: Using Docker Desktop for Local Kubernetes Clusters
 
 ```sh
 $ git clone git@github.com:erpuno/cd && cd cd
