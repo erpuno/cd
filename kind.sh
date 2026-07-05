@@ -35,9 +35,17 @@ merge_kubeconfig() {
 
 create() {
   echo "Creating KinD cluster: ${KIND_CLUSTER_NAME}"
+
   # Create kind cluster
-  kind create cluster --name "${KIND_CLUSTER_NAME}" 2>&1 | grep -v "^WARNING: IPv4 forwarding" || true
+  if [ -f kind-config.yaml ]; then
+    kind create cluster --name "${KIND_CLUSTER_NAME}" --config kind-config.yaml \
+      2>&1 | grep -v "^WARNING: IPv4 forwarding" || true
+  else
+    kind create cluster --name "${KIND_CLUSTER_NAME}" \
+      2>&1 | grep -v "^WARNING: IPv4 forwarding" || true
+  fi
   echo "✓ KinD cluster created"
+
   # Merge kubeconfig into ~/.kube/config
   merge_kubeconfig
   echo "✓ Context merged into ~/.kube/config"

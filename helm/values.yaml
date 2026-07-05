@@ -188,6 +188,19 @@ services:
       image: erpuno/ns
       tag: 2024.6.15
       port: 8080
+    traefik-ingress:
+      enabled: true
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      image: erpuno/traefik-ingress
+      tag: 2024.6.15
+      port: 8080
   erp-security:
     ca-pki:
       enabled: true
