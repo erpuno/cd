@@ -41,7 +41,6 @@ $ git clone git@github.com:erpuno/cd
 * `pvc.yaml`
 * `ingress.yaml`
 * `values.yaml`
-* `.yaml`
 
 Пакетування
 -----------
