@@ -1,16 +1,25 @@
 ERP/1: Continuous Delivery
 ==========================
 
-Інфраструктура "ERP/1: Підприємство" (5K LOC) для K8S тестується на Windows, Linux і Mac
+Політики інфраструктури і адміністрування "ERP/1: Підприємство" (5K LOC) для K8S тестується на Windows, Linux і Mac
 через Docker Desktop і Kind Cluster Type для максимальної відтворюваності в продуктовому середовищі.
 
-* [The Kind of Kubernetes](kind.pdf) — The Kind of Kubernetes: Using Docker Desktop for Local Kubernetes Clusters
-* [Архітектура ЦОД](deployment.pdf) — Настанови системного архiтектора для проектування кластерiв ЦОД
-* [SRE Handbook](sre.pdf) — Настанови системного адмiнiстратора для розгортання, спостереження i обслуговування кластерiв ЦОД
+Статті
+------
+
+* М. Сохацький, [The Kind of Kubernetes](kind.pdf), 2026 — The Kind of Kubernetes: Using Docker Desktop for Local Kubernetes Clusters
+* М. Сохацький, [Архітектура ЦОД](deployment.pdf), 2026 — Настанови системного архiтектора для проектування кластерiв ЦОД
+* М. Сохацький, [SRE Handbook](sre.pdf), 2026 — Настанови системного адмiнiстратора для розгортання, спостереження i обслуговування кластерiв ЦОД
+
+Розповсюдження
+--------------
 
 ```
 $ git clone git@github.com:erpuno/cd && cd cd
 ```
+
+Структура
+---------
 
 ```
 ├── helm/
@@ -48,7 +57,8 @@ $ git clone git@github.com:erpuno/cd && cd cd
 └── values.rn
 ```
 
-Credits
--------
+Автор
+-----
 
-* 5HT
+* Максим Сохацький
+
