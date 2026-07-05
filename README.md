@@ -8,10 +8,11 @@ ERP/1: Continuous Delivery
 * [Архітектура ЦОД](deployment.pdf) — Настанови системного архiтектора для проектування кластерiв ЦОД
 * [SRE Handbook](sre.pdf) — Настанови системного адмiнiстратора для розгортання, спостереження i обслуговування кластерiв ЦОД
 
-```sh
+```
 $ git clone git@github.com:erpuno/cd && cd cd
-$ tree -L 3 .
-.
+```
+
+```
 ├── helm/
 │   ├── templates/
 │   │   ├── deployments.yaml
