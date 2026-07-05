@@ -136,10 +136,18 @@ def extract_service_config(service_dir, service_name)
 
       # Persistence (volumeMounts or volumeClaimTemplates → StatefulSet)
       if container['volumeMounts'] || spec['volumeClaimTemplates']
+        # Extract actual mount path from volumeMounts
+        mount_path = '/data'
+        if (mounts = container['volumeMounts'])
+          main_mount = mounts.first
+          mount_path = main_mount['mountPath'] if main_mount && main_mount['mountPath']
+        end
+        
         config['persistence'] = {
-          'enabled'   => true,
-          'size'      => '10Gi',
-          'mountPath' => '/data'
+          'enabled'        => true,
+          'size'           => '10Gi',
+          'storageClassName' => 'standard',
+          'mountPath'      => mount_path
         }
       end
     rescue => e

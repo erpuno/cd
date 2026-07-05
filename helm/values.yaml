@@ -174,7 +174,8 @@ services:
       persistence:
         enabled: true
         size: 10Gi
-        mountPath: "/data"
+        storageClassName: standard
+        mountPath: "/var/lib/registry"
     ns-dns:
       enabled: true
       replicas: 1
@@ -299,7 +300,8 @@ services:
       persistence:
         enabled: true
         size: 10Gi
-        mountPath: "/data"
+        storageClassName: standard
+        mountPath: "/var/lib/grafana"
     loki:
       enabled: true
       replicas: 1
@@ -343,7 +345,8 @@ services:
       persistence:
         enabled: true
         size: 10Gi
-        mountPath: "/data"
+        storageClassName: standard
+        mountPath: "/prometheus"
 rbac:
   create: true
 networkPolicy:

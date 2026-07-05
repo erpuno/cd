@@ -28,7 +28,7 @@ spec:
       serviceAccountName: {{ $namespace }}-sa
       containers:
       - name: {{ $serviceName }}
-        image: {{ $.Values.global.registry }}/{{ $service.image }}
+        image: {{ $.Values.global.registry }}/{{ $service.image }}:{{ $service.tag }}
         imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
         {{- if $service.port }}
         ports:
@@ -53,13 +53,13 @@ spec:
         - name: data
           mountPath: {{ $service.persistence.mountPath }}
         {{- end }}
-      {{- if $service.persistence }}
+  {{- if $service.persistence }}
   volumeClaimTemplates:
   - metadata:
       name: data
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: local-path
+      storageClassName: {{ $service.persistence.storageClassName | default "standard" }}
       resources:
         requests:
           storage: {{ $service.persistence.size }}
