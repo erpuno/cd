@@ -9,7 +9,7 @@ ERP/1: Continuous Delivery
 ------
 
 * М. Сохацький, [The Kind of Kubernetes](kind.pdf), 2026 <br>
-     The Kind of Kubernetes: Using Docker Desktop for Reproducable Kubernetes Clusters
+     The Kind of Kubernetes: Using Docker Desktop for Reproducible Kubernetes Clusters
 * М. Сохацький, [Архітектура ЦОД](deployment.pdf), 2026 <br>
      Настанови системного архiтектора для проектування кластерiв ЦОД
 * М. Сохацький, [SRE Handbook](sre.pdf), 2026 <br>
