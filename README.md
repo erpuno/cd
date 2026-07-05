@@ -27,6 +27,9 @@ $ git clone git@github.com:erpuno/cd
 Загальні файли
 --------------
 
+Загальні файли інфраструктури K8S відповідають за цементування фундаменту ERP/1.
+Вони запускаються першими перед чистими або пакетованими компонентами через `kubectl apply`.
+
 * `namespaces.yaml`
 * `networkpolicy.yaml`
 * `rbac.yaml`
@@ -34,6 +37,19 @@ $ git clone git@github.com:erpuno/cd
 
 Файли компонент
 ---------------
+
+Далі для кожного компоненту запусткається цикл по його файлам.
+
+```sh
+    for kind in pvc.yaml deployment.yaml service.yaml hpa.yaml ingress.yaml; do
+      if [ -f "$service_path/$kind" ]; then
+        sed "s/namespace: .*/namespace: $namespace/" "$service_path/$kind" | \
+        kubectl apply -f -
+      fi
+    done
+```
+Перелік компонент секретний для кожного підприємства, тут надається типова конфігурація.
+Кожен компонент може мати наступні файли, цей перелік можна доповнювати.
 
 * `deployment.yaml`
 * `service.yaml`
