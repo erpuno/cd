@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ca-pki
+  namespace: erp-security
+  labels:
+    app: ca-pki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ca-pki
+  template:
+    metadata:
+      labels:
+        app: ca-pki
+    spec:
+      serviceAccountName: erp-security-sa
+      containers:
+      - name: ca-pki
+        image: erpuno/ca-pki:latest
+        command: ["bin/ca"]
+        args: ["start"]
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: est
+          containerPort: 8047
+        - name: cmp
+          containerPort: 8829
+        - name: cmc
+          containerPort: 5318
+        env:
+        - name: ERL_AFLAGS
+          value: "+S 1 +SDcpu 1 +SDio 1 +MMscs 0 +JMsingle true"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 512Mi
+          limits:
+            cpu: 200m
+            memory: 3Gi
+        volumeMounts:
+        - name: keys
+          mountPath: /app/synrc
+      volumes:
+      - name: keys
+        persistentVolumeClaim:
+          claimName: ca-pki-data

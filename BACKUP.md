@@ -5,7 +5,7 @@
 Three scripts for backing up and restoring ALL PVCs and StatefulSets as device-level snapshots:
 
 * `backup.sh` - Creates device snapshots (tar.gz) for all PVCs, stops pods during backup
-* `restore.sh` - Restores all device snapshots, stops pods during restore  
+* `restore.sh` - Restores all device snapshots, stops pods during restore
 * `view.sh` - Explore and inspect backup contents without extraction
 
 ## Backup Process
@@ -21,23 +21,23 @@ Steps:
 3. Create device image for each PVC via `tar -czf` (filesystem snapshot)
 4. Create backup metadata (PVC list, file counts, sizes)
 5. Restart all pods
-6. Output: `./backups/YYYYMMDD-HHMMSS/`
+6. Output: `./priv/YYYYMMDD-HHMMSS/`
 
 Output Structure:
 
 ```
-backups/20260705-234654/
+priv/20260706-004359/
 ├── BACKUP_INFO.txt                           # Metadata
 ├── manifests.yaml                            # All K8s resources
-├── erp-infra-registry-data.tar.gz            # Docker registry device snapshot (4KB)
-├── monitoring-storage-grafana-0.tar.gz       # Grafana data device snapshot (20MB)
-└── monitoring-storage-prometheus-0.tar.gz    # Prometheus data device snapshot (16KB)
+├── erp-infra@registry-data.tar.gz            # Docker registry device snapshot (4KB)
+├── erp-telemetry@grafana-data.tar.gz         # Grafana data device snapshot (1MB)
+└── erp-telemetry@prometheus-data.tar.gz      # Prometheus data device snapshot (16KB)
 ```
 
 ## Restore Process
 
 ```bash
-./restore.sh ./backups/YYYYMMDD-HHMMSS
+./restore.sh ./priv/YYYYMMDD-HHMMSS
 ```
 
 Steps:
@@ -52,7 +52,7 @@ Steps:
 ## Explore Backups
 
 ```bash
-view.sh ./backups/YYYYMMDD-HHMMSS
+view.sh ./priv/YYYYMMDD-HHMMSS
 ```
 
 Shows:
@@ -64,10 +64,10 @@ Shows:
 Subcommands:
 
 ```bash
-view.sh ./backups/20260705-234654 list monitoring-storage-prometheus-0
-view.sh ./backups/20260705-234654 tree monitoring-storage-grafana-0
-view.sh ./backups/20260705-234654 extract monitoring-storage-grafana-0 ./restored-grafana
-view.sh ./backups/20260705-234654 cat monitoring-storage-prometheus-0 /prometheus/prometheus.yml
+view.sh ./priv/20260706-004359 list erp-telemetry@prometheus-data
+view.sh ./priv/20260706-004359 tree erp-telemetry@grafana-data
+view.sh ./priv/20260706-004359 extract erp-telemetry@grafana-data ./restored-grafana
+view.sh ./priv/20260706-004359 cat erp-telemetry@prometheus-data queries.active
 ```
 
 ## Device Image Format

@@ -1,0 +1,22 @@
+Device-Level Backup - All PVCs & StatefulSets
+==============================================
+
+Created: $(date)
+Backup Type: Complete filesystem snapshots (tar.gz)
+Format: Raw device images (mountable after extraction)
+
+Contents:
+
+PVCs Backed Up:
+  erp-infra/registry-data: 5Gi
+  erp-security/ca-pki-data: 5Gi
+  erp-telemetry/grafana-data: 5Gi
+  erp-telemetry/prometheus-data: 5Gi
+
+Files:
+  BACKUP_INFO.txt (388B)
+  erp-infra@registry-data.tar.gz (159B)
+  erp-security@ca-pki-data.tar.gz (2.3K)
+  erp-telemetry@grafana-data.tar.gz (38K)
+  erp-telemetry@prometheus-data.tar.gz (202K)
+  manifests.yaml (49K)

@@ -5,7 +5,7 @@ BACKUP_DIR="${1:-.}"
 # Show help if no arguments or help requested
 if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ] || [ "$1" = "help" ]; then
   cat <<'HELP'
-🔍 Backup Explorer - STS Viewer
+🔍 Backup Explorer - PVC Viewer
 
 USAGE:
   ./view.sh <backup_dir>                       Show backup summary
@@ -16,17 +16,18 @@ USAGE:
   ./view.sh -h, --help, help                   Show this help
 
 ARGUMENTS:
-  <backup_dir>  Path to backup directory (e.g., ./priv/20260705-234654)
-  <img>         Device image name without .tar.gz (e.g., monitoring-storage-prometheus-0)
+  <backup_dir>  Path to backup directory (e.g., ./priv/20260706-004359)
+  <img>         Device image name without .tar.gz (e.g., erp-telemetry@prometheus-data)
   <out>         Output directory for extraction
-  <file>        File path inside image (e.g., /prometheus/prometheus.yml)
+  <file>        File path inside image (e.g., wal/00000002)
 
 EXAMPLES:
-  ./view.sh ./priv/20260705-234654
-  ./view.sh ./priv/20260705-234654 list monitoring-storage-prometheus-0
-  ./view.sh ./priv/20260705-234654 tree monitoring-storage-grafana-0
-  ./view.sh ./priv/20260705-234654 extract monitoring-storage-grafana-0 ./restored-grafana
-  ./view.sh ./priv/20260705-234654 cat monitoring-storage-prometheus-0 /prometheus/prometheus.yml
+  ./view.sh ./priv/20260706-004359
+  ./view.sh ./priv/20260706-004359 list erp-telemetry@prometheus-data
+  ./view.sh ./priv/20260706-004359 tree erp-telemetry@grafana-data
+  ./view.sh ./priv/20260706-004359 extract erp-telemetry@grafana-data ./restored-grafana
+  ./view.sh ./priv/20260706-004359 cat erp-telemetry@prometheus-data queries.active
+
 
 DEVICE IMAGE FORMAT:
   Each backup is a tar.gz (gzip-compressed tar archive):
@@ -176,6 +177,8 @@ case "$COMMAND" in
       exit 1
     fi
     echo "📄 Extracting: $FILE_PATH"
+    # Try matching by subpath first (e.g., *wal/00000002), then fallback to basename
+    tar -xzOf "$IMAGE_FILE" "*$FILE_PATH" 2>/dev/null | head -50 || \
     tar -xzOf "$IMAGE_FILE" "*/$(basename "$FILE_PATH")" 2>/dev/null | head -50 || {
       echo "❌ File not found or could not extract"
       exit 1

@@ -25,7 +25,13 @@ deploy_service() {
   if [ -d "$service_path" ]; then
     echo "    Deploying $service to $namespace..."
     for kind in pvc.yaml deployment.yaml service.yaml hpa.yaml ingress.yaml; do
-      if [ -f "$service_path/$kind" ]; then kubectl apply -f "$service_path/$kind" ; fi
+      if [ -f "$service_path/$kind" ]; then
+        if [ "$kind" = "pvc.yaml" ]; then
+          kubectl apply -f "$service_path/$kind" || true
+        else
+          kubectl apply -f "$service_path/$kind"
+        fi
+      fi
     done
   fi
 }
