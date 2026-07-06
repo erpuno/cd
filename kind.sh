@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-# kind.sh - KinD cluster management without breaking docker-desktop context
-# Merges KinD contexts into ~/.kube/config so they appear in kubectl and macOS tray
+# kind.sh - KinD cluster management and kubeconfig context helpers
+# Merges KinD contexts into ~/.kube/config so they are available to kubectl
 
 CLUSTER_NAME="${2:-synrc}"
 KIND_CLUSTER_NAME="${CLUSTER_NAME}"
@@ -51,7 +51,7 @@ create() {
   echo "✓ Context merged into ~/.kube/config"
   echo ""
   echo "To switch to KinD context:"
-  echo "  kubectl config use-context ${KIND_CLUSTER_NAME}"
+  echo "  kubectl config use-context kind-${KIND_CLUSTER_NAME}"
   echo ""
   echo "To return to docker-desktop:"
   echo "  kubectl config use-context docker-desktop"
@@ -112,7 +112,7 @@ case "${1:-help}" in
   merge) merge_existing ;;
   *)
     cat << 'EOF'
-kind.sh - KinD cluster management with macOS tray visibility
+kind.sh - KinD cluster management and kubeconfig context helpers
 
 USAGE:
   ./kind.sh [COMMAND]
@@ -127,7 +127,7 @@ COMMANDS:
   help            Show this message
 
 ENVIRONMENT:
-  CLUSTER_NAME    Name of the cluster (default: kind)
+  CLUSTER_NAME    Name of the cluster (default: synrc)
 
 EXAMPLES:
   ./kind.sh merge

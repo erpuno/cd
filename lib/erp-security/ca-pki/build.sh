@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 IMAGE_NAME="erpuno/ca-pki:latest"
-CLUSTER_NAME="synrc"
+CLUSTER_NAME="${CLUSTER_NAME:-synrc}"
 
 echo "🔨 Building Docker image: $IMAGE_NAME..."
 docker build -t "$IMAGE_NAME" .

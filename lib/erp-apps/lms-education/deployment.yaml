@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: lms-education
-  namespace: erp-services
+  namespace: erp-apps
   labels:
     app: lms-education
 spec:
@@ -15,7 +15,7 @@ spec:
       labels:
         app: lms-education
     spec:
-      serviceAccountName: erp-services-sa
+      serviceAccountName: erp-apps-sa
       containers:
       - name: lms-education
         image: erpuno/lms-education:2024.6.15

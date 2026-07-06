@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hl7-health
-  namespace: erp-services
+  namespace: erp-apps
   labels:
     app: hl7-health
 spec:
@@ -15,7 +15,7 @@ spec:
       labels:
         app: hl7-health
     spec:
-      serviceAccountName: erp-services-sa
+      serviceAccountName: erp-apps-sa
       containers:
       - name: hl7-health
         image: erpuno/hl7-health:2024.6.15

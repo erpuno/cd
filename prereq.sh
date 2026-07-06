@@ -12,7 +12,7 @@ WARN="⚠"
 # Check 1: kubectl installed
 echo -e "\n[1] kubectl CLI"
 if command -v kubectl &> /dev/null; then
-  kubectl_version=$(kubectl version --client --short 2>/dev/null | grep "Client" | awk '{print $3}')
+  kubectl_version=$(kubectl version --client -o json 2>/dev/null | jq -r '.clientVersion.gitVersion // empty')
   echo "    $PASS kubectl $kubectl_version installed"
 else
   echo "    $FAIL kubectl NOT found"
@@ -32,14 +32,14 @@ fi
 # Check 3: Kubernetes cluster accessible
 echo -e "\n[3] Kubernetes Cluster"
 if kubectl cluster-info &>/dev/null; then
-  k8s_version=$(kubectl version --short 2>/dev/null | grep "Server" | awk '{print $3}')
+  k8s_version=$(kubectl version -o json 2>/dev/null | jq -r '.serverVersion.gitVersion // empty')
   node_count=$(kubectl get nodes --no-headers 2>/dev/null | wc -l)
   echo "    $PASS Cluster accessible"
   echo "       Version: $k8s_version"
   echo "       Nodes: $node_count"
   
   # Check node capacity
-  total_cpu=$(kubectl get nodes -o json 2>/dev/null | jq '.items[].status.allocatable.cpu' | sed 's/"//g' | sed 's/m$//' | awk '{s+=$1} END {print s}')
+  total_cpu=$(kubectl get nodes -o json 2>/dev/null | jq '[.items[].status.allocatable.cpu | if endswith("m") then sub("m$"; "") | tonumber else tonumber * 1000 end] | add')
   total_mem=$(kubectl get nodes -o json 2>/dev/null | jq '.items[].status.allocatable.memory' | sed 's/"//g' | sed 's/Ki$//' | awk '{s+=$1} END {print s}')
   total_mem_gb=$((total_mem / 1024 / 1024))
   
@@ -122,6 +122,6 @@ echo "║                      Next Steps                        ║"
 echo "╚════════════════════════════════════════════════════════╝"
 
 echo -e "\nIf all checks pass, run K8S raw deploy: bash deploy.sh"
-echo -e "Or deploy via helm: cd heml && ./deploy.sh"
+echo -e "Or deploy via helm: cd helm && ./deploy.sh"
 
 echo ""
