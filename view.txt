@@ -1,0 +1,45 @@
+📋 Backup Information:
+Device-Level Backup - All PVCs & StatefulSets
+==============================================
+
+Created: $(date)
+Backup Type: Complete filesystem snapshots (tar.gz)
+Format: Raw device images (mountable after extraction)
+
+Contents:
+
+PVCs Backed Up:
+  erp-infra/registry-data: 5Gi
+  erp-security/ca-pki-data: 5Gi
+  erp-telemetry/grafana-data: 5Gi
+  erp-telemetry/prometheus-data: 5Gi
+
+Files:
+  BACKUP_INFO.txt (388B)
+  erp-infra@registry-data.tar.gz (160B)
+  erp-security@ca-pki-data.tar.gz (158B)
+  erp-telemetry@grafana-data.tar.gz (38K)
+  erp-telemetry@prometheus-data.tar.gz (44K)
+  manifests.yaml (38K)
+
+📦 Device Images (PVC Backups):
+
+  📄 erp-infra@registry-data (Size: 4.0K; Files:        1)
+  📄 erp-security@ca-pki-data (Size: 4.0K; Files:        1)
+  📄 erp-telemetry@grafana-data (Size:  40K; Files:        6)
+  📄 erp-telemetry@prometheus-data (Size:  48K; Files:        8)
+
+📝 Kubernetes Manifests:
+
+StatefulSets: 1
+Deployments: 6
+PVCs: 4
+Services: 6
+
+ℹ️  For detailed exploration:
+   ./view.sh ./priv/20260706-031023 list <image>
+   ./view.sh ./priv/20260706-031023 tree <image>
+   ./view.sh ./priv/20260706-031023 extract <image> <output>
+
+   Use './view.sh -h' for full help
+
