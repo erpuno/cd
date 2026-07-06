@@ -8,6 +8,16 @@ Three scripts for backing up and restoring ALL PVCs and StatefulSets as device-l
 * `restore.sh` - Restores all device snapshots, stops pods during restore
 * `view.sh` - Explore and inspect backup contents without extraction
 
+## Prerequisites
+
+Make sure you use synrc-control-plane and `synrc` cluster and chose `kind` control plane instead of built-in Docker Desktop control plane.
+
+```
+$ brew intall kind
+$ ./kind.sh create synrc
+$ ./kind.sh kind
+```
+
 ## Backup Process
 
 ```bash
