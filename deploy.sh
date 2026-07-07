@@ -53,14 +53,13 @@ deploy_service "erp-infra" "docker-registry"
 echo -e "\n[3/8] Deploying erp-telemetry..."
 deploy_service "erp-telemetry" "prometheus"
 deploy_service "erp-telemetry" "grafana"
-deploy_service "erp-telemetry" "loki"
 deploy_service "erp-telemetry" "otel-collector"
 
 # Step 4: Deploy erp-security
 echo -e "\n[4/8] Deploying erp-security..."
 deploy_service "erp-security" "ca-pki"
 deploy_service "erp-security" "vpn-wireguard"
-deploy_service "erp-security" "ias-auth"
+deploy_service "erp-security" "ldap-directory"
 
 # Step 5: Deploy erp-ai
 echo -e "\n[5/8] Deploying erp-ai..."
@@ -117,8 +116,8 @@ echo "   Registry: kubectl port-forward -n erp-infra svc/docker-registry 5000:50
 echo
 echo "📁 Namespace Organization:\n"
 echo "       erp-infra: ns-dns, docker-registry"
-echo "   erp-telemetry: prometheus, grafana, loki, otel-collector"
-echo "    erp-security: ca-pki, vpn-wireguard, ias-auth"
+echo "   erp-telemetry: prometheus, grafana, otel-collector"
+echo "    erp-security: ca-pki, vpn-wireguard, ias-auth, ldap-directory"
 echo "          erp-ai: ai-generation"
 echo "    erp-services: kvs-database, bpe-engine, rest-bpe, n2o-server, nitro-portal"
 echo "        erp-apps: lms-education, hl7-health, acc-accounting, wms-warehouse, cart-registers"

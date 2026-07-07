@@ -236,7 +236,6 @@ $\rightarrow$ \texttt{apps}\\[4pt]
   & \textcolor{successgreen}{\textbf{observability}}
   & Observability stack: \texttt{prometheus} (метрики, :9090, StatefulSet, PVC 10 Gi),
     \texttt{grafana} (дашборди, :3000, PVC 10 Gi),
-    \texttt{loki} (логи, :8080),
     \texttt{otel-collector} (трейси, :8080) \\[4pt]
 \texttt{erp-security}
   & \textcolor{secpurple}{\textbf{security}}
@@ -283,9 +282,8 @@ erp-infra     & ns-dns-ddbb77c5b-8s        & 1/1 & \textcolor{successgreen}{\tex
 \rowcolor{rowalt}erp-infra & docker-registry-6f9c87cd & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
 erp-telemetry & prometheus-0               & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
 \rowcolor{rowalt}erp-telemetry & grafana-68f7cf4799    & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
-erp-telemetry & loki-77d4b9c6f9-q8r2t      & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
-\rowcolor{rowalt}erp-telemetry & otel-collector-b5f2c & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
-erp-security  & ca-pki-d598976d4-gx7fp     & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
+erp-telemetry & otel-collector-b5f2c & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
+\rowcolor{rowalt}erp-security  & ca-pki-d598976d4-gx7fp     & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
 \rowcolor{rowalt}erp-ai & ai-generation-55fffb8f64  & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 7d 3h  \\[2pt]
 erp-services  & rest-bpe-884475778-whqts   & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
 \rowcolor{rowalt}erp-services & bpe-engine-9f4d2a-xk & 1/1 & \textcolor{successgreen}{\textbf{Running}} & 14d 6h \\[2pt]
@@ -387,8 +385,7 @@ erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\tex
 \multicolumn{6}{l}{\textcolor{successgreen}{\bfseries\small erp-telemetry --- Observability рівень}}\\
 \texttt{prometheus}      & erp-telemetry & StatefulSet & 9090 & 100m/500m & deployment, service, pvc, values \\
 \rowcolor{rowalt}\texttt{grafana}  & erp-telemetry & Deployment & 3000 & 50m/200m & deployment, service,  pvc, values \\
-\texttt{loki}            & erp-telemetry & Deployment  & 8403 & 100m/500m & deployment, service, values \\
-\rowcolor{rowalt}\texttt{otel-collector} & erp-telemetry & Deployment & 8404 & 100m/500m & deployment, service, values \\
+\texttt{otel-collector} & erp-telemetry & Deployment & 8404 & 100m/500m & deployment, service, values \\
 \midrule
 \multicolumn{6}{l}{\textcolor{secpurple}{\bfseries\small erp-security --- Безпековий рівень}}\\
 \texttt{ca-pki}          & erp-security & Deployment & 8201 & 100m/500m & deployment, service, values \\
@@ -710,10 +707,9 @@ Pod Readiness & Availability
   SLI-обчислення та алертинг через Alertmanager.
   Health: \texttt{/-/healthy}, \texttt{/-/ready} \\[4pt]
 \rowcolor{rowalt}\texttt{grafana} & :3000 & Дашборди та візуалізація (PVC 10 Gi).
-  Підключення до Prometheus та Loki.
+  Підключення до Prometheus.
   Доступ: \texttt{kubectl port-forward -n erp-telemetry svc/grafana 3000:3000} \\[4pt]
-\texttt{loki}           & :8080 & Log Aggregation. Кореляція логів з метриками через Grafana \\[4pt]
-\rowcolor{rowalt}\texttt{otel-collector} & :8080 & OpenTelemetry Collector --- збір трейсів,
+\texttt{otel-collector} & :8080 & OpenTelemetry Collector --- збір трейсів,
   пересилання до Jaeger/Tempo \\[4pt]
 \end{longtable}
 
@@ -742,7 +738,7 @@ kubectl get pvc  -n erp-telemetry
 \midrule\endhead\bottomrule\endfoot
 1/8 & Namespaces + RBAC & \texttt{kubectl apply} на \texttt{share/namespaces.yaml}, \texttt{rbac.yaml}, \texttt{storage-class.yaml}, \texttt{networkpolicy.yaml} \\[2pt]
 \rowcolor{rowalt}2/8 & erp-infra        & \texttt{ns-dns}, \texttt{docker-registry} \\[2pt]
-3/8 & erp-telemetry    & \texttt{prometheus}, \texttt{grafana}, \texttt{loki}, \texttt{otel-collector} \\[2pt]
+3/8 & erp-telemetry    & \texttt{prometheus}, \texttt{grafana}, \texttt{otel-collector} \\[2pt]
 \rowcolor{rowalt}4/8 & erp-security     & \texttt{ca-pki}, \texttt{vpn-wireguard}, \texttt{ias-auth} \\[2pt]
 5/8 & erp-ai           & \texttt{ai-generation} \\[2pt]
 \rowcolor{rowalt}6/8 & erp-services     & \texttt{kvs-database}, \texttt{bpe-engine}, \texttt{rest-bpe}, \texttt{n2o-server}, \texttt{nitro-portal} \\[2pt]
@@ -802,8 +798,7 @@ Renovate Bot
 \texttt{synrc/faiss}         & \texttt{faiss-search} (Векторний пошук) \\[2pt]
 \rowcolor{rowalt}\texttt{prom/prometheus}    & \texttt{prometheus} (База метрик) \\[2pt]
 \texttt{grafana/grafana}     & \texttt{grafana} (Візуалізація та дашборди) \\[2pt]
-\rowcolor{rowalt}\texttt{grafana/loki}       & \texttt{loki} (Збір системних логів) \\[2pt]
-\texttt{otel/otel-collector} & \texttt{otel-collector} (OpenTelemetry шлюз) \\[2pt]
+\rowcolor{rowalt}\texttt{otel/otel-collector} & \texttt{otel-collector} (OpenTelemetry шлюз) \\[2pt]
 \rowcolor{rowalt}\texttt{erpuno/edu}         & \texttt{lms-education} (Освітній сервіс LMS) \\[2pt]
 \texttt{erpuno/health}       & \texttt{hl7-health} (Медичний HL7 FHIR API) \\[2pt]
 \rowcolor{rowalt}\texttt{erpuno/crm}         & \texttt{crm-documents} (Документообіг) \\[2pt]
@@ -1165,7 +1160,6 @@ service/prometheus unchanged
     Deploying grafana to erp-telemetry...
 deployment.apps/grafana unchanged
 service/grafana unchanged
-    Deploying loki to erp-telemetry...
     Deploying otel-collector to erp-telemetry...
 
 [4/8] Deploying erp-security...
@@ -1225,7 +1219,7 @@ horizontalpodautoscaler.autoscaling/hl7-health unchanged
 
 📁 Namespace Organization:\n
        erp-infra: ns-dns, docker-registry
-   erp-telemetry: prometheus, grafana, loki, otel-collector
+   erp-telemetry: prometheus, grafana, otel-collector
     erp-security: ca-pki, vpn-wireguard, ias-auth
           erp-ai: ai-generation
     erp-services: kvs-database, bpe-engine, rest-bpe, n2o-server, nitro-portal
@@ -1396,7 +1390,7 @@ namespace "erp-telemetry" deleted
 \color{white}\textbf{Конкретні дії} \\
 \midrule\endhead\bottomrule\endfoot
 Q3 2026 & \textbf{Розширення}    & Додавання нових модулів у erp-apps; розширення HPA на erp-services; Alertmanager routing \\[4pt]
-\rowcolor{rowalt}Q3 2026 & \textbf{Observability} & Додаткові Grafana дашборди per-namespace; Loki alerting rules; SLO burn-rate алерти \\[4pt]
+\rowcolor{rowalt}Q3 2026 & \textbf{Observability} & Додаткові Grafana дашборди per-namespace; SLO burn-rate алерти \\[4pt]
 Q4 2026 & \textbf{GitOps}        & ArgoCD; авто-rollback на SLO-порушення; pre-commit hook для values.rb \\[4pt]
 \rowcolor{rowalt}Q4 2026 & \textbf{Security}      & ias-auth + vpn-wireguard; PKI-ланцюжок через ca-pki; mTLS між namespace'ами \\[4pt]
 Q1 2027 & \textbf{Chaos}         & Chaos Mesh pod-kill тести; quarterly fire drill \\[4pt]

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ldap-directory
+  namespace: erp-security
+  labels:
+    app: ldap-directory
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ldap-directory
+  template:
+    metadata:
+      labels:
+        app: ldap-directory
+    spec:
+      serviceAccountName: erp-security-sa
+      containers:
+      - name: ldap-directory
+        image: erpuno/ldap:latest
+        command: ["bin/ldap"]
+        args: ["start"]
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: ldap
+          containerPort: 389
+        env:
+        - name: ERL_AFLAGS
+          value: "+S 1 +SDcpu 1 +SDio 1 +MMscs 0 +JMsingle true"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 512Mi
+          limits:
+            cpu: 200m
+            memory: 3Gi
+        volumeMounts:
+        - name: ldap-db
+          mountPath: /app/db
+      volumes:
+      - name: ldap-db
+        persistentVolumeClaim:
+          claimName: ldap-directory-data

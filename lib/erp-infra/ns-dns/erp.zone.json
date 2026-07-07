@@ -1,0 +1,93 @@
+[
+    {
+        "name": "erp.uno",
+        "records": [
+            {
+                "name": "erp.uno",
+                "type": "SOA",
+                "ttl": 3600,
+                "data": {
+                    "mname": "ns1.erp.uno",
+                    "rname": "admin.erp.uno",
+                    "serial": 2026070701,
+                    "refresh": 86400,
+                    "retry": 7200,
+                    "expire": 604800,
+                    "minimum": 300
+                }
+            },
+            {
+                "name": "erp.uno",
+                "type": "NS",
+                "ttl": 3600,
+                "data": {
+                    "dname": "ns1.erp.uno"
+                }
+            },
+            {
+                "name": "ns1.erp.uno",
+                "type": "A",
+                "ttl": 3600,
+                "data": {
+                    "ip": "172.18.0.2"
+                }
+            },
+            {
+                "name": "erp.uno",
+                "type": "A",
+                "ttl": 3600,
+                "data": {
+                    "ip": "172.18.0.2"
+                }
+            },
+            {
+                "name": "registry.erp.uno",
+                "type": "A",
+                "ttl": 3600,
+                "data": {
+                    "ip": "172.18.0.2"
+                }
+            },
+            {
+                "name": "ca.erp.uno",
+                "type": "A",
+                "ttl": 3600,
+                "data": {
+                    "ip": "172.18.0.2"
+                }
+            },
+            {
+                "name": "prometheus.erp.uno",
+                "type": "A",
+                "ttl": 3600,
+                "data": {
+                    "ip": "172.18.0.2"
+                }
+            },
+            {
+                "name": "grafana.erp.uno",
+                "type": "A",
+                "ttl": 3600,
+                "data": {
+                    "ip": "172.18.0.2"
+                }
+            },
+            {
+                "name": "lms.erp.uno",
+                "type": "A",
+                "ttl": 3600,
+                "data": {
+                    "ip": "172.18.0.2"
+                }
+            },
+            {
+                "name": "hl7.erp.uno",
+                "type": "A",
+                "ttl": 3600,
+                "data": {
+                    "ip": "172.18.0.2"
+                }
+            }
+        ]
+    }
+]

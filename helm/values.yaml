@@ -181,14 +181,15 @@ services:
       replicas: 1
       resources:
         requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
+          cpu: 50m
           memory: 512Mi
+        limits:
+          cpu: 200m
+          memory: 3Gi
       image: erpuno/ns
-      tag: 2024.6.15
-      port: 8080
+      port: 53
+      tag: latest
+      protocol: UDP
     traefik-ingress:
       enabled: true
       replicas: 1
@@ -222,6 +223,25 @@ services:
         size: 10Gi
         storageClassName: standard
         mountPath: "/app/synrc"
+    ldap-directory:
+      enabled: true
+      replicas: 1
+      resources:
+        requests:
+          cpu: 50m
+          memory: 512Mi
+        limits:
+          cpu: 200m
+          memory: 3Gi
+      image: erpuno/ldap
+      port: 389
+      tag: latest
+      protocol: TCP
+      persistence:
+        enabled: true
+        size: 10Gi
+        storageClassName: standard
+        mountPath: "/app/db"
   erp-services:
     bpe-engine:
       enabled: true
@@ -308,19 +328,6 @@ services:
         size: 10Gi
         storageClassName: standard
         mountPath: "/var/lib/grafana"
-    loki:
-      enabled: true
-      replicas: 1
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-      image: grafana/loki
-      tag: 3.1.0
-      port: 8080
     otel-collector:
       enabled: true
       replicas: 1

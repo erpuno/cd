@@ -1,18 +1,14 @@
 #!/bin/bash
 set -euo pipefail
 
-# build.sh - Build ca-pki Docker image and deploy locally
-# Supports direct KinD loading (recommended/simplest) or internal registry push.
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-IMAGE_NAME="erpuno/ca-pki:latest"
+IMAGE_NAME="erpuno/ldap:latest"
 CLUSTER_NAME="synrc"
 
 echo "🔨 Building Docker image: $IMAGE_NAME..."
 docker build --no-cache -t "$IMAGE_NAME" .
-
 
 USE_REGISTRY=false
 if [ $# -gt 0 ] && [ "$1" = "--registry" ]; then
@@ -20,7 +16,7 @@ if [ $# -gt 0 ] && [ "$1" = "--registry" ]; then
 fi
 
 if [ "$USE_REGISTRY" = true ]; then
-  REGISTRY_IMAGE="127.0.0.1:5000/ca-pki:latest"
+  REGISTRY_IMAGE="127.0.0.1:5000/ldap:latest"
   echo "🏷️  Tagging for internal registry: $REGISTRY_IMAGE..."
   docker tag "$IMAGE_NAME" "$REGISTRY_IMAGE"
   
@@ -40,7 +36,7 @@ if [ "$USE_REGISTRY" = true ]; then
     kill "$PORT_FORWARD_PID"
   fi
   echo "✅ Image successfully pushed to internal registry!"
-  echo "ℹ️  Update deployment.yaml image to: docker-registry.erp-infra.svc.cluster.local:5000/ca-pki:latest"
+  echo "ℹ️  Update deployment.yaml image to: docker-registry.erp-infra.svc.cluster.local:5000/ldap:latest"
 else
   echo "📦 Loading image directly into KinD cluster: $CLUSTER_NAME..."
   kind load docker-image "$IMAGE_NAME" --name "$CLUSTER_NAME"

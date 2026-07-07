@@ -211,7 +211,6 @@ config :libcluster,
     \item \texttt{faiss-search} --- векторний пошуковий рушій для інтелектуальних сервісів штучного інтелекту.
     \item \texttt{prometheus} --- збір та збереження часових рядів метрик додатків.
     \item \texttt{grafana} --- візуалізація метрик та побудова оперативних дашбордів моніторингу.
-    \item \texttt{loki} --- збір та горизонтальне зберігання журналів логування (logs) BEAM-вузлів.
     \item \texttt{otel-collector} --- OpenTelemetry шлюз збору уніфікованих метрик, логів та трасувань.
 \end{itemize}
 
@@ -238,7 +237,6 @@ config :libcluster,
 \texttt{n2o-server}        & \texttt{web}       & WebSocket-сервер додатків (n2o)   & 8511 & Нема \\ \hline
 \texttt{prometheus}        & \texttt{telemetry} & Моніторинг та збір метрик         & 8401 & Є \\ \hline
 \texttt{grafana}           & \texttt{telemetry} & Візуалізація та дашборди метрик   & 8402 & Нема \\ \hline
-\texttt{loki}              & \texttt{telemetry} & Збір та зберігання логів BEAM     & 8403 & Є \\ \hline
 \texttt{open-telemetry}    & \texttt{telemetry} & OpenTelemetry шлюз збору OTLP     & 8404:8405:8406 & Нема \\ \hline
 \hline
 \multicolumn{5}{|c|}{\textbf{Прикладні інформаційно-комунікаційні системи (ІКС)}} \\ \hline
@@ -357,7 +355,6 @@ ca-pki:
 \texttt{synrc/faiss} & \texttt{faiss-search} \\ \hline
 \texttt{prom/prometheus} & \texttt{prometheus} \\ \hline
 \texttt{grafana/grafana} & \texttt{grafana} \\ \hline
-\texttt{grafana/loki} & \texttt{loki} \\ \hline
 \texttt{otel/otel-collector} & \texttt{otel-collector} \\ \hline
 \texttt{erpuno/edu} & \texttt{lms-education} \\ \hline
 \texttt{erpuno/health} & \texttt{hl7-health} \\ \hline

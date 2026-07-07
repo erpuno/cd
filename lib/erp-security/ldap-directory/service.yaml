@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ldap-directory
+  namespace: erp-security
+  labels:
+    app: ldap-directory
+spec:
+  type: ClusterIP
+  ports:
+  - name: ldap
+    port: 389
+    targetPort: 389
+  selector:
+    app: ldap-directory

@@ -1,0 +1,2 @@
+image: erpuno/ldap
+port: 389

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ns-dns
+  namespace: erp-infra
+  labels:
+    app: ns-dns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ns-dns
+  template:
+    metadata:
+      labels:
+        app: ns-dns
+    spec:
+      serviceAccountName: erp-infra-sa
+      containers:
+      - name: ns-dns
+        image: erpuno/ns:latest
+        command: ["bin/ns"]
+        args: ["start"]
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: dns-udp
+          containerPort: 53
+          protocol: UDP
+        - name: dns-tcp
+          containerPort: 53
+          protocol: TCP
+        env:
+        - name: ERL_AFLAGS
+          value: "+S 1 +SDcpu 1 +SDio 1 +MMscs 0 +JMsingle true"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 512Mi
+          limits:
+            cpu: 200m
+            memory: 3Gi
