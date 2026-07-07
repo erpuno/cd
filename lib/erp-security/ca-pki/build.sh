@@ -23,7 +23,7 @@ if [ "$USE_REGISTRY" = true ]; then
   REGISTRY_IMAGE="127.0.0.1:5000/ca-pki:latest"
   echo "🏷️  Tagging for internal registry: $REGISTRY_IMAGE..."
   docker tag "$IMAGE_NAME" "$REGISTRY_IMAGE"
-  
+
   # Ensure port-forward is running on host port 5000
   if ! nc -z 127.0.0.1 5000 2>/dev/null; then
     echo "🌐 Starting registry port-forward on host..."
@@ -31,10 +31,10 @@ if [ "$USE_REGISTRY" = true ]; then
     PORT_FORWARD_PID=$!
     sleep 2
   fi
-  
+
   echo "🚀 Pushing image to internal registry..."
   docker push "$REGISTRY_IMAGE"
-  
+
   if [ -n "${PORT_FORWARD_PID:-}" ]; then
     echo "🛑 Stopping port-forward..."
     kill "$PORT_FORWARD_PID"

@@ -8,7 +8,7 @@ ENV MIX_ENV=prod
 RUN mix deps.get && mix deps.compile && mix release
 
 FROM alpine:3.20
-RUN apk add --no-cache openssl ncurses
+RUN apk add --no-cache openssl ncurses libstdc++ libgcc
 WORKDIR /app
 COPY --from=builder /app/_build/prod/rel/ldap ./
 ENV HOME=/app
