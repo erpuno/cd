@@ -44,24 +44,37 @@ networkpolicy.networking.k8s.io/erp-deny-all unchanged
 
 [2/8] Deploying erp-infra...
     Deploying ns-dns to erp-infra...
+deployment.apps/ns-dns configured
+service/ns-dns configured
+    Deploying traefik-ingress to erp-infra...
+serviceaccount/traefik unchanged
+clusterrole.rbac.authorization.k8s.io/traefik-ingress-controller unchanged
+clusterrolebinding.rbac.authorization.k8s.io/traefik-ingress-controller unchanged
+deployment.apps/traefik configured
+ingress.networking.k8s.io/erp-uno-ingress unchanged
     Deploying docker-registry to erp-infra...
-persistentvolumeclaim/registry-data unchanged
-deployment.apps/docker-registry unchanged
-service/docker-registry unchanged
+deployment.apps/docker-registry configured
+service/docker-registry configured
 
 [3/8] Deploying erp-telemetry...
     Deploying prometheus to erp-telemetry...
-persistentvolumeclaim/prometheus-data unchanged
-statefulset.apps/prometheus unchanged
-service/prometheus unchanged
+statefulset.apps/prometheus configured
+service/prometheus configured
     Deploying grafana to erp-telemetry...
-deployment.apps/grafana unchanged
-service/grafana unchanged
-    Deploying loki to erp-telemetry...
+deployment.apps/grafana configured
+service/grafana configured
     Deploying otel-collector to erp-telemetry...
+deployment.apps/otel-collector configured
+configmap/otel-collector-config unchanged
+service/otel-collector configured
 
 [4/8] Deploying erp-security...
     Deploying ca-pki to erp-security...
+deployment.apps/ca-pki configured
+service/ca-pki configured
+    Deploying ldap-directory to erp-security...
+deployment.apps/ldap-directory configured
+service/ldap-directory configured
 
 [5/8] Deploying erp-ai...
     Deploying ai-generation to erp-ai...
@@ -74,12 +87,12 @@ service/grafana unchanged
 
 [7/8] Deploying erp-apps...
     Deploying lms-education to erp-apps...
-deployment.apps/lms-education unchanged
-service/lms-education unchanged
+deployment.apps/lms-education configured
+service/lms-education configured
 horizontalpodautoscaler.autoscaling/lms-education unchanged
     Deploying hl7-health to erp-apps...
-deployment.apps/hl7-health unchanged
-service/hl7-health unchanged
+deployment.apps/hl7-health configured
+service/hl7-health configured
 horizontalpodautoscaler.autoscaling/hl7-health unchanged
     Deploying crm-documents to erp-apps...
     Deploying acc-accounting to erp-apps...
@@ -90,12 +103,12 @@ horizontalpodautoscaler.autoscaling/hl7-health unchanged
 
 [8/8] Deployment Summary
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-               erp-infra:        0/       0 pods running
-           erp-telemetry:        1/       2 pods running
-            erp-security:        0/       0 pods running
-                  erp-ai:        0/       0 pods running
-            erp-services:        0/       0 pods running
-                erp-apps:        0/       0 pods running
+               erp-infra: 3/3 pods running
+           erp-telemetry: 3/3 pods running
+            erp-security: 2/2 pods running
+                  erp-ai: 0/0 pods running
+            erp-services: 0/4 pods running
+                erp-apps: 0/0 pods running
 
 ╔════════════════════════════════════════════════════════╗
 ║           Multi-Namespace Deployment Done ✓            ║
@@ -113,9 +126,10 @@ horizontalpodautoscaler.autoscaling/hl7-health unchanged
 
 📁 Namespace Organization:\n
        erp-infra: ns-dns, docker-registry
-   erp-telemetry: prometheus, grafana, loki, otel-collector
-    erp-security: ca-pki, vpn-wireguard, ias-auth
+   erp-telemetry: prometheus, grafana, otel-collector
+    erp-security: ca-pki, vpn-wireguard, ias-auth, ldap-directory
           erp-ai: ai-generation
     erp-services: kvs-database, bpe-engine, rest-bpe, n2o-server, nitro-portal
-        erp-apps: lms-education, hl7-health, crm-documents, acc-accounting, wms-warehouse, cart-registers, pm-projects, itsm-incidents, chat-messenger
+        erp-apps: lms-education, hl7-health, acc-accounting, wms-warehouse, cart-registers
+        erp-apps: crm-documents, pm-projects, itsm-incidents, chat-messenger
 

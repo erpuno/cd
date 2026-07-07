@@ -32,7 +32,7 @@ while IFS= read -r build_script; do
   (
     cd "$dir_path"
     chmod +x build.sh
-    ./build.sh --registry
+    ./build.sh
   )
 done < <(find lib -type f -name "build.sh" | sort)
 
