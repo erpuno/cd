@@ -6,6 +6,7 @@ Three scripts for backing up and restoring ALL PVCs and StatefulSets as device-l
 
 * `backup.sh` - Creates device snapshots (tar.gz) for all PVCs, stops pods during backup
 * `restore.sh` - Restores all device snapshots, stops pods during restore
+* `delete-pvc.sh` — Imitate lost of PVC and their GUIDs
 * `view.sh` - Explore and inspect backup contents without extraction
 
 ## Prerequisites
