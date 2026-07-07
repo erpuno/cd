@@ -208,14 +208,20 @@ services:
       replicas: 1
       resources:
         requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
+          cpu: 50m
           memory: 512Mi
-      image: erpuno/ca
-      tag: 2024.6.15
-      port: 8080
+        limits:
+          cpu: 200m
+          memory: 3Gi
+      image: erpuno/ca-pki
+      tag: latest
+      port: 8047
+      protocol: TCP
+      persistence:
+        enabled: true
+        size: 10Gi
+        storageClassName: standard
+        mountPath: "/app/synrc"
   erp-services:
     bpe-engine:
       enabled: true
@@ -320,14 +326,15 @@ services:
       replicas: 1
       resources:
         requests:
-          cpu: 100m
-          memory: 256Mi
+          cpu: 50m
+          memory: 128Mi
         limits:
-          cpu: 500m
+          cpu: 200m
           memory: 512Mi
       image: otel/opentelemetry-collector-contrib
+      port: 4317
       tag: 0.102.0
-      port: 8080
+      protocol: TCP
     prometheus:
       enabled: true
       replicas: 1

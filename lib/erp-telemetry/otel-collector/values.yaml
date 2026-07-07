@@ -1,0 +1,2 @@
+image: otel/opentelemetry-collector-contrib
+port: 4317

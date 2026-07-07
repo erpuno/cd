@@ -134,20 +134,31 @@ def extract_service_config(service_dir, service_name)
         }
       end
 
-      # Persistence (volumeMounts or volumeClaimTemplates → StatefulSet)
-      if container['volumeMounts'] || spec['volumeClaimTemplates']
-        # Extract actual mount path from volumeMounts
-        mount_path = '/data'
-        if (mounts = container['volumeMounts'])
-          main_mount = mounts.first
-          mount_path = main_mount['mountPath'] if main_mount && main_mount['mountPath']
-        end
+      # Persistence (volumeMounts pointing to PVC, or volumeClaimTemplates)
+      has_pvc = false
+      pvc_mount_path = nil
+      
+      if spec['volumeClaimTemplates']
+        has_pvc = true
+        pvc_mount_path = '/data'
+      elsif template['volumes'] && container['volumeMounts']
+        pvc_vol_names = template['volumes']
+          .select { |v| v['persistentVolumeClaim'] }
+          .map { |v| v['name'] }
         
+        matching_mount = container['volumeMounts'].find { |m| pvc_vol_names.include?(m['name']) }
+        if matching_mount
+          has_pvc = true
+          pvc_mount_path = matching_mount['mountPath']
+        end
+      end
+
+      if has_pvc
         config['persistence'] = {
           'enabled'        => true,
           'size'           => '10Gi',
           'storageClassName' => 'standard',
-          'mountPath'      => mount_path
+          'mountPath'      => pvc_mount_path || '/data'
         }
       end
     rescue => e
