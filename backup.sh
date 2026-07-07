@@ -16,6 +16,7 @@ for ns in $NAMESPACES; do
   kubectl get statefulset,deployment,pvc,service,configmap -n "$ns" -o yaml 2>/dev/null >> "$BACKUP_DIR/manifests.yaml" || true
   echo "---" >> "$BACKUP_DIR/manifests.yaml"
 done
+
 # Clean manifests metadata to avoid apply conflicts
 ruby "$(dirname "$0")/manifest.rb" "$BACKUP_DIR/manifests.yaml" "$BACKUP_DIR/manifests.yaml.tmp" && mv "$BACKUP_DIR/manifests.yaml.tmp" "$BACKUP_DIR/manifests.yaml"
 echo "✅ Manifests exported and cleaned"

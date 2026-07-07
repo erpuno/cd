@@ -1,47 +1,62 @@
 #!/usr/bin/env ruby
+require 'yaml'
 
-def clean_yaml(input_path, output_path)
-  lines = File.readlines(input_path)
-  out_lines = []
-  skip_until_indent = -1
+def clean_resource(doc)
+  return nil if doc.nil?
+  return doc unless doc.is_a?(Hash)
 
-  lines.each do |line|
-    stripped = line.lstrip
-    if stripped.empty?
-      out_lines.push(line)
-      next
-    end
-    indent = line.length - stripped.length
-
-    # If in skip mode
-    if skip_until_indent >= 0
-      if indent > skip_until_indent
-        next
-      else
-        skip_until_indent = -1
-      end
-    end
-
-    # Check for block to skip (status or managedFields)
-    if stripped.start_with?('status:') || stripped.start_with?('managedFields:')
-      if ['status: {}', 'status: null', 'managedFields: []', 'managedFields: {}'].include?(stripped.strip)
-        next
-      else
-        skip_until_indent = indent
-        next
-      end
-    end
-
-    # Check for metadata fields to skip
-    if stripped =~ /^(resourceVersion|uid|creationTimestamp|generation|selfLink):\s/
-      next
-    end
-
-    out_lines.push(line)
+  if doc['kind'] == 'List' && doc['items'].is_a?(Array)
+    doc['items'] = doc['items'].map { |item| clean_resource(item) }.compact
+    return doc
   end
 
+  # General metadata cleanup
+  if doc['metadata']
+    m = doc['metadata']
+    m.delete('resourceVersion')
+    m.delete('uid')
+    m.delete('creationTimestamp')
+    m.delete('generation')
+    m.delete('selfLink')
+    m.delete('managedFields')
+    
+    if m['annotations']
+      a = m['annotations']
+      a.delete('kubectl.kubernetes.io/last-applied-configuration')
+      a.delete('pv.kubernetes.io/bind-completed')
+      a.delete('pv.kubernetes.io/bound-by-controller')
+      a.delete('volume.kubernetes.io/selected-node')
+      a.delete('volume.kubernetes.io/storage-provisioner')
+      a.delete('volume.beta.kubernetes.io/storage-provisioner')
+      m.delete('annotations') if a.empty?
+    end
+
+    if doc['kind'] == 'PersistentVolumeClaim'
+      m.delete('finalizers')
+    end
+  end
+
+  doc.delete('status')
+
+  if doc['kind'] == 'PersistentVolumeClaim' && doc['spec']
+    doc['spec'].delete('volumeName')
+  end
+
+  doc
+end
+
+def clean_yaml(input_path, output_path)
+  content = File.read(input_path)
+  docs = YAML.load_stream(content)
+  cleaned_docs = docs.map do |doc|
+    next nil if doc.nil? || doc.empty?
+    clean_resource(doc)
+  end.compact
+
   File.open(output_path, 'w') do |f|
-    f.write(out_lines.join)
+    cleaned_docs.each do |doc|
+      f.write(YAML.dump(doc))
+    end
   end
 end
 

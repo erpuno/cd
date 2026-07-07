@@ -1,31 +1,51 @@
 📦 Complete Restore (All PVCs & StatefulSets)
-Backup: priv/20260706-015537
+Backup: priv/20260708-020021
 
 [1] Applying Kubernetes manifests...
-deployment.apps/docker-registry configured
-deployment.apps/traefik configured
-persistentvolumeclaim/registry-data configured
-service/docker-registry configured
-configmap/kube-root-ca.crt configured
-statefulset.apps/prometheus configured
-deployment.apps/grafana configured
-persistentvolumeclaim/grafana-data configured
-persistentvolumeclaim/prometheus-data configured
-service/grafana configured
-service/prometheus configured
-configmap/kube-root-ca.crt configured
-deployment.apps/ca-pki configured
-persistentvolumeclaim/ca-pki-data configured
-service/ca-pki configured
-configmap/kube-root-ca.crt configured
-configmap/kube-root-ca.crt configured
-deployment.apps/hl7-health configured
-deployment.apps/lms-education configured
-service/hl7-health configured
-service/lms-education configured
-configmap/kube-root-ca.crt configured
-configmap/kube-root-ca.crt configured
+deployment.apps/docker-registry serverside-applied
+deployment.apps/ns-dns serverside-applied
+deployment.apps/traefik serverside-applied
+persistentvolumeclaim/registry-data serverside-applied
+service/docker-registry serverside-applied
+service/ns-dns serverside-applied
+configmap/kube-root-ca.crt serverside-applied
+statefulset.apps/prometheus serverside-applied
+deployment.apps/grafana serverside-applied
+deployment.apps/otel-collector serverside-applied
+persistentvolumeclaim/grafana-data serverside-applied
+persistentvolumeclaim/prometheus-data serverside-applied
+service/grafana serverside-applied
+service/otel-collector serverside-applied
+service/prometheus serverside-applied
+configmap/kube-root-ca.crt serverside-applied
+configmap/otel-collector-config serverside-applied
+deployment.apps/ca-pki serverside-applied
+deployment.apps/ldap-directory serverside-applied
+persistentvolumeclaim/ca-pki-data serverside-applied
+persistentvolumeclaim/ldap-directory-data serverside-applied
+service/ca-pki serverside-applied
+service/ldap-directory serverside-applied
+configmap/kube-root-ca.crt serverside-applied
+configmap/kube-root-ca.crt serverside-applied
+deployment.apps/hl7-health serverside-applied
+deployment.apps/lms-education serverside-applied
+service/hl7-health serverside-applied
+service/lms-education serverside-applied
+configmap/kube-root-ca.crt serverside-applied
+configmap/kube-root-ca.crt serverside-applied
 ✅ Manifests applied
+
+[1.5] Waiting for PVCs to be Bound...
+   Waiting for PVC: erp-infra/registry-data to be Bound...
+      Bound!
+   Waiting for PVC: erp-security/ca-pki-data to be Bound...
+      Bound!
+   Waiting for PVC: erp-security/ldap-directory-data to be Bound...
+      Bound!
+   Waiting for PVC: erp-telemetry/grafana-data to be Bound...
+      Bound!
+   Waiting for PVC: erp-telemetry/prometheus-data to be Bound...
+      Bound!
 
 [2] Stopping pods (unmounting volumes for restore)...
    Scaling down: erp-telemetry/prometheus
@@ -34,27 +54,34 @@ statefulset.apps/prometheus scaled
 deployment.apps/docker-registry scaled
    Scaling down: erp-security/ca-pki
 deployment.apps/ca-pki scaled
+   Scaling down: erp-security/ldap-directory
+deployment.apps/ldap-directory scaled
    Scaling down: erp-telemetry/grafana
 deployment.apps/grafana scaled
+   Waiting for pods to terminate completely (unmount volumes)...
 ✅ Pods stopped
 
 [3] Restoring PVC device images...
    Restoring: erp-infra/registry-data
       Backup: erp-infra@registry-data.tar.gz
-      Target: /opt/local-path-provisioner/pvc-bd403599-1ecc-4849-8293-b75a404b042f_erp-infra_registry-data
-      ✅ Restored (4.0K, 0 files)
+      Target: /var/local-path-provisioner/pvc-238dc567-6544-4e8e-9fa7-b26f39476f8e_erp-infra_registry-data
+      ✅ Restored (0, 0 files)
    Restoring: erp-security/ca-pki-data
       Backup: erp-security@ca-pki-data.tar.gz
-      Target: /opt/local-path-provisioner/pvc-e5a417a2-7538-4779-9c55-8fe5632e2f01_erp-security_ca-pki-data
-      ✅ Restored (56K, 6 files)
+      Target: /var/local-path-provisioner/pvc-c271d72d-1b7e-45c6-946d-01146d0e479f_erp-security_ca-pki-data
+      ✅ Restored (24K, 6 files)
+   Restoring: erp-security/ldap-directory-data
+      Backup: erp-security@ldap-directory-data.tar.gz
+      Target: /var/local-path-provisioner/pvc-50bedd21-c2ae-4f4c-bb62-a3bd506b8d0c_erp-security_ldap-directory-data
+      ✅ Restored (8.0K, 1 files)
    Restoring: erp-telemetry/grafana-data
       Backup: erp-telemetry@grafana-data.tar.gz
-      Target: /opt/local-path-provisioner/pvc-30f8fbc5-cc31-4d8b-82ba-a9149dd3afb1_erp-telemetry_grafana-data
-      ✅ Restored (1016K, 1 files)
+      Target: /var/local-path-provisioner/pvc-6ab70a60-4cca-4ff6-bbe0-0a1971e9078f_erp-telemetry_grafana-data
+      ✅ Restored (996K, 1 files)
    Restoring: erp-telemetry/prometheus-data
       Backup: erp-telemetry@prometheus-data.tar.gz
-      Target: /opt/local-path-provisioner/pvc-4fc670eb-730a-4fe1-8953-e4625c0a2ebb_erp-telemetry_prometheus-data
-      ✅ Restored (128K, 4 files)
+      Target: /var/local-path-provisioner/pvc-0bb5b57e-63ec-42a8-9672-99c991520194_erp-telemetry_prometheus-data
+      ✅ Restored (692K, 14 files)
 
 [4] Restarting pods...
    Scaling up: erp-telemetry/prometheus to 1 replicas
@@ -63,6 +90,8 @@ statefulset.apps/prometheus scaled
 deployment.apps/docker-registry scaled
    Scaling up: erp-security/ca-pki to 1 replicas
 deployment.apps/ca-pki scaled
+   Scaling up: erp-security/ldap-directory to 1 replicas
+deployment.apps/ldap-directory scaled
    Scaling up: erp-telemetry/grafana to 1 replicas
 deployment.apps/grafana scaled
 ✅ Pods restarted
@@ -70,31 +99,33 @@ deployment.apps/grafana scaled
 [5] Verifying restoration...
 
 PVC Status:
-NAMESPACE       NAME              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-erp-infra       registry-data     Bound    pvc-bd403599-1ecc-4849-8293-b75a404b042f   5Gi        RWO            local-path     <unset>                 114s
-erp-security    ca-pki-data       Bound    pvc-e5a417a2-7538-4779-9c55-8fe5632e2f01   5Gi        RWO            local-path     <unset>                 114s
-erp-telemetry   grafana-data      Bound    pvc-30f8fbc5-cc31-4d8b-82ba-a9149dd3afb1   5Gi        RWO            local-path     <unset>                 114s
-erp-telemetry   prometheus-data   Bound    pvc-4fc670eb-730a-4fe1-8953-e4625c0a2ebb   5Gi        RWO            local-path     <unset>                 114s
+NAMESPACE       NAME                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+erp-infra       registry-data         Bound    pvc-238dc567-6544-4e8e-9fa7-b26f39476f8e   5Gi        RWO            local-path     <unset>                 35m
+erp-security    ca-pki-data           Bound    pvc-c271d72d-1b7e-45c6-946d-01146d0e479f   5Gi        RWO            local-path     <unset>                 42s
+erp-security    ldap-directory-data   Bound    pvc-50bedd21-c2ae-4f4c-bb62-a3bd506b8d0c   5Gi        RWO            local-path     <unset>                 42s
+erp-telemetry   grafana-data          Bound    pvc-6ab70a60-4cca-4ff6-bbe0-0a1971e9078f   5Gi        RWO            local-path     <unset>                 35m
+erp-telemetry   prometheus-data       Bound    pvc-0bb5b57e-63ec-42a8-9672-99c991520194   5Gi        RWO            local-path     <unset>                 35m
 
 Pod Status:
-erp-infra            docker-registry-66cd8649fb-dsn84              1/1     Running        0          5s
-erp-infra            traefik-6849d7f4b-vxl9q                       1/1     Running        0          114s
-erp-security         ca-pki-5dc59449fc-2c48h                       1/1     Running        0          5s
-erp-telemetry        grafana-5cb48fbf7f-x4scw                      0/1     Running        0          5s
-erp-telemetry        prometheus-0                                  0/1     Running        0          5s
-kube-system          coredns-589f44dc88-4qkqs                      1/1     Running        0          134m
-kube-system          coredns-589f44dc88-v4g5g                      1/1     Running        0          134m
-kube-system          etcd-synrc-control-plane                      1/1     Running        0          134m
-kube-system          kindnet-hksbh                                 1/1     Running        0          134m
-kube-system          kube-apiserver-synrc-control-plane            1/1     Running        0          134m
-kube-system          kube-controller-manager-synrc-control-plane   1/1     Running        0          134m
-kube-system          kube-proxy-pmxr2                              1/1     Running        0          134m
-kube-system          kube-scheduler-synrc-control-plane            1/1     Running        0          134m
-local-path-storage   local-path-provisioner-5f584dbd7d-gjqfh       1/1     Running        0          3m48s
+erp-infra            docker-registry-66cd8649fb-wh689              1/1     Running            0               5s
+erp-infra            ns-dns-7dc66dbf87-v8f87                       1/1     Running            2 (6m14s ago)   35m
+erp-infra            traefik-6849d7f4b-v2frh                       1/1     Running            0               35m
+erp-security         ca-pki-5dc59449fc-25sw6                       1/1     Running            0               5s
+erp-security         ldap-directory-cd687b64d-ffd76                1/1     Running            0               5s
+erp-telemetry        grafana-5cb48fbf7f-h6ttf                      0/1     Running            0               5s
+erp-telemetry        otel-collector-575bcb6d65-5spwk               1/1     Running            0               35m
+erp-telemetry        prometheus-0                                  0/1     Running            0               5s
+kube-system          coredns-589f44dc88-b7l7j                      1/1     Running            0               132m
+kube-system          coredns-589f44dc88-cnhfr                      1/1     Running            0               132m
+kube-system          etcd-synrc-control-plane                      1/1     Running            0               132m
+kube-system          kindnet-p6mg2                                 1/1     Running            0               132m
+kube-system          kube-apiserver-synrc-control-plane            1/1     Running            0               132m
+kube-system          kube-controller-manager-synrc-control-plane   1/1     Running            0               132m
+kube-system          kube-proxy-q592m                              1/1     Running            0               132m
 
 ✅ Complete restore finished!
 
 Next steps:
   kubectl get pods -A          # Check pod status
   kubectl logs <pod> -n <ns>   # Check pod logs
-  ./view.sh priv/20260706-015537         # Verify backup contents
+  ./view.sh priv/20260708-020021         # Verify backup contents

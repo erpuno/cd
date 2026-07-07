@@ -15,8 +15,35 @@ echo ""
 
 # Step 1: Apply manifests
 echo "[1] Applying Kubernetes manifests..."
-kubectl apply -f "$BACKUP_DIR/manifests.yaml"
+kubectl apply --server-side --force-conflicts -f "$BACKUP_DIR/manifests.yaml"
 echo "✅ Manifests applied"
+echo ""
+
+# Step 1.5: Wait for PVCs to bind (triggers dynamic volume provisioning)
+echo "[1.5] Waiting for PVCs to be Bound..."
+for backup_file in "$BACKUP_DIR"/*.tar.gz; do
+  if [ ! -f "$backup_file" ]; then
+    continue
+  fi
+  basename=$(basename "$backup_file" .tar.gz)
+  ns=$(echo "$basename" | cut -d'@' -f1)
+  pvc=$(echo "$basename" | cut -d'@' -f2)
+  
+  echo "   Waiting for PVC: $ns/$pvc to be Bound..."
+  for i in {1..60}; do
+    STATUS=$(kubectl get pvc -n "$ns" "$pvc" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Pending")
+    if [ "$STATUS" = "Bound" ]; then
+      echo "      Bound!"
+      break
+    fi
+    sleep 1
+  done
+  
+  FINAL_STATUS=$(kubectl get pvc -n "$ns" "$pvc" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Pending")
+  if [ "$FINAL_STATUS" != "Bound" ]; then
+    echo "   ⚠️  Warning: PVC $ns/$pvc is still $FINAL_STATUS after 60s"
+  fi
+done
 echo ""
 
 # Step 2: Stop pods for PVC restore
@@ -41,7 +68,25 @@ while read -r ns deploy replicas; do
 done <<< "$DEPLOY_WITH_PVC"
 
 
-sleep 3
+echo "   Waiting for pods to terminate completely (unmount volumes)..."
+NAMESPACES="erp-infra erp-telemetry erp-security erp-ai erp-services erp-apps"
+for i in {1..45}; do
+  ACTIVE_PODS=""
+  for ns in $NAMESPACES; do
+    NS_PODS=$(kubectl get pods -n "$ns" -o json 2>/dev/null | jq -r '.items[] | select(.spec.volumes != null) | select(any(.spec.volumes[]; .persistentVolumeClaim != null)) | "\(.metadata.namespace)/\(.metadata.name)"' 2>/dev/null || true)
+    if [ -n "$NS_PODS" ]; then
+      ACTIVE_PODS="${ACTIVE_PODS}${NS_PODS}"$'\n'
+    fi
+  done
+  ACTIVE_PODS=$(echo "$ACTIVE_PODS" | sed '/^$/d' || true)
+  
+  if [ -z "$ACTIVE_PODS" ]; then
+    break
+  fi
+  
+  echo "      Still waiting for pods to terminate..."
+  sleep 1
+done
 echo "✅ Pods stopped"
 echo ""
 
@@ -73,14 +118,12 @@ for backup_file in "$BACKUP_DIR"/*.tar.gz; do
   echo "      Backup: $basename.tar.gz"
   echo "      Target: $HOSTPATH"
   
-  # Clear existing data
-  docker exec synrc-control-plane rm -rf "$HOSTPATH"/* 2>/dev/null || true
+  # Clear and recreate target directory to ensure it is clean
+  docker exec synrc-control-plane rm -rf "$HOSTPATH" 2>/dev/null || true
+  docker exec synrc-control-plane mkdir -p "$HOSTPATH" 2>/dev/null || true
   
-  # Extract device image
-  docker exec synrc-control-plane mkdir -p "$(dirname "$HOSTPATH")" 2>/dev/null || true
-  
-  # Use stdin streaming for tar extraction
-  docker exec -i synrc-control-plane tar -xzf - -C "$(dirname "$HOSTPATH")" < "$backup_file" 2>/dev/null || {
+  # Use stdin streaming for tar extraction directly into HOSTPATH stripping the old directory name
+  docker exec -i synrc-control-plane tar -xzf - --strip-components=1 -C "$HOSTPATH" < "$backup_file" 2>/dev/null || {
     echo "      ❌ Restore failed"
     continue
   }
