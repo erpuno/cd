@@ -3,6 +3,8 @@ set -euo pipefail
 
 SHOW_LOCAL=false
 
+# docker exec synrc-control-plane crictl images
+
 # Parse command-line options
 while [[ $# -gt 0 ]]; do
   case $1 in
