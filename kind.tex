@@ -227,10 +227,179 @@ esac
 This script allows clean management of multiple environments:
 
 \begin{verbatim}
-./kind.sh create neo
+./kind.sh create synrc
+./kind.sh kind
 ./kind.sh list
-./kind.sh delete neo
+./kind.sh delete synrc
+./kind.sh docker
 \end{verbatim}
+
+\section{Backup and Restore}
+
+\subsection{Backup and Restore with Device-Level Snapshots}
+
+A core mission of ERP/1 infrastructure is complete reproducibility and stateful resilience.
+Local Kind clusters must support not only rapid iteration but also faithful simulation of
+production disaster-recovery and data-migration workflows. The repository delivers this
+through a set of purpose-built shell scripts that perform device-level filesystem
+snapshots of all PersistentVolumeClaims (PVCs) and associated StatefulSets.
+
+\begin{verbatim}
+./backup.sh          # Full device-level backup
+./restore.sh <dir>   # Targeted restore from backup
+./view.sh <dir>      # Inspect without extraction
+\end{verbatim}
+
+These tools operate directly against the Kind control-plane container (typically \texttt{synrc-control-plane}),
+leveraging the \texttt{hostPath} volumes exposed by Docker Desktop/Kind for bit-exact data capture.
+
+\subsubsection{Technical Architecture of backup.sh}
+
+The backup process follows a rigorously safe, atomic sequence:
+
+\begin{enumerate}
+
+\item \textbf{Manifest Export \& Sanitization}
+
+  Exports \texttt{statefulset}, \texttt{deployment}, \texttt{pvc}, \texttt{service}, and \texttt{configmap}
+  resources across ERP/1 namespaces (\texttt{erp-infra}, \texttt{erp-telemetry}, \texttt{erp-security} etc.).
+  A Ruby filter \texttt{manifest.rb} strips transient metadata (UIDs, resourceVersions, creationTimestamps)
+  to produce clean, re-applicable YAML.
+
+\item \textbf{Graceful Pod Quiescence}
+
+  Scales all StatefulSets and PVC-attached Deployments to 0 replicas.
+  This guarantees volumes are unmounted, eliminating filesystem inconsistency during snapshotting.
+
+\item \textbf{Device-Level Snapshotting}
+
+  For each PVC:
+  \begin{itemize}
+  \item Resolves the backing \texttt{PersistentVolume} \texttt{hostPath}.
+  \item Executes \texttt{docker exec synrc-control-plane tar -czf - ...} directly inside the Kind node.
+  \item Stores compressed tarballs named \texttt{<namespace>@<pvc-name>.tar.gz}.
+  \end{itemize}
+  This produces portable, mountable filesystem images preserving ownership, permissions, extended attributes, and directory structure.
+
+\item \textbf{Metadata \& Verification}
+
+  Generates \texttt{BACKUP\_INFO.txt} with timestamps,
+  PVC capacities, file counts, and sizes. Restarts pods to their original replica counts.
+\end{enumerate}
+
+Output resides in \texttt{./priv/YYYYMMDD-HHMMSS/} — a timestamped, self-contained backup bundle.
+
+\subsubsection{Restore Semantics (restore.sh)}
+
+Restore mirrors backup in reverse, with additional safety guarantees:
+
+\begin{enumerate}
+\item Apply sanitized manifests (force-conflicts to overwrite cleanly).
+\item Wait for dynamic PVC provisioning and binding.
+\item Scale down pods again.
+\item For each backup tarball:
+  \begin{itemize}
+  \item Parse \texttt{namespace@pvc} naming convention.
+  \item Clear target \texttt{hostPath} directory.
+  \item Stream-extract with \texttt{tar -xzf --strip-components=1} directly into the volume.
+  \end{itemize}
+\item Scale pods back up and provide verification (\texttt{kubectl get pvc,pods}).
+\end{enumerate}
+
+\subsubsection{Interactive Exploration via view.sh}
+
+The companion viewer supports non-destructive inspection:
+
+\begin{itemize}
+\item Summary of backup metadata and PVC inventory.
+\item \texttt{list <image>} — contents of a tarball.
+\item \texttt{tree <image>} — hierarchical directory visualization.
+\item \texttt{cat <image> <path>} — peek at individual files.
+\item \texttt{extract <image> <outdir>} — targeted filesystem extraction.
+\end{itemize}
+
+This capability is invaluable for debugging data corruption, auditing persisted state, or performing selective recovery.
+
+\subsubsection{Mission Alignment \& Production Fidelity}
+
+By operating at the raw device/filesystem layer (rather than application-level export), these tools achieve near-perfect fidelity to bare-metal or cloud CSI-based backups. They eliminate the semantic gap between development and production storage behavior — a foundational requirement for ERP/1's "develop once, deploy anywhere" philosophy. Combined with `kind.sh` cluster lifecycle management, they enable reproducible testing of backup windows, restore drills, and data-migration scenarios with zero external dependencies.
+
+Recommended workflow for ERP/1 developers:
+
+\begin{verbatim}
+./prereq.sh && ./kind.sh create synrc && ./kind.sh kind
+./deploy.sh
+./backup.sh
+./delete-pvc.sh
+./restore.sh ./priv/20260708-002817/
+\end{verbatim}
+
+\section{Image Management}
+
+Maintaining reproducible container images is fundamental to ERP/1's "develop once, deploy anywhere" mission. The tooling supports two complementary strategies that work seamlessly with Docker Desktop + Kind:
+
+\begin{itemize}
+\item \textbf{In-cluster Docker Registry} (production-like, via \texttt{docker-registry} service)
+\item \textbf{Local Docker Builder} (fast, registry-free development workflow)
+\end{itemize}
+
+\subsection{Local Docker Desktop Builder (\texttt{images.sh --local})}
+
+The script \texttt{images.sh --local} provides deep visibility into the Docker Desktop environment:
+
+\begin{verbatim}
+./images.sh --local
+\end{verbatim}
+
+It reports:
+\begin{itemize}
+\item Active \texttt{buildx} builders (including default Linux builder)
+\item Local \texttt{erpuno/*} images in the Docker daemon
+\item Images loaded into Kind nodes via \texttt{crictl}
+\end{itemize}
+
+This mode is ideal for developers who prefer building directly with Docker's native builder (leveraging BuildKit) and loading images into Kind without pushing to a registry.
+
+\textbf{Workflow for registry-free development:}
+\begin{verbatim}
+docker buildx build --load -t erpuno/my-service:latest ./path
+kind load docker-image erpuno/my-service:latest --name erp1-local
+\end{verbatim}
+
+This approach offers maximum speed and simplicity for local iteration while remaining fully reproducible across Linux/macOS/Windows via Docker Desktop.
+
+\subsection{Building with In-Cluster Registry (\texttt{--registry})}
+
+Component-level \texttt{build.sh} scripts (invoked via \texttt{rebuild.sh}) support a \texttt{--registry} flag (or equivalent) to push images to the in-cluster \texttt{docker-registry:5000} service.
+
+Typical pattern inside component \texttt{build.sh}:
+\begin{verbatim}
+REGISTRY="docker-registry.erp-infra.svc.cluster.local:5000"
+docker buildx build \
+  --push \
+  --platform linux/amd64 \
+  -t ${REGISTRY}/erpuno/my-service:${TAG} .
+\end{verbatim}
+
+\textbf{Full rebuild cycle:}
+\begin{verbatim}
+./rebuild.sh          # resets registry + rebuilds + deploys
+./images.sh           # inspect registry catalog
+\end{verbatim}
+
+The in-cluster registry (exposed on port 5000) mirrors production image distribution practices and enables multi-node Kind clusters to pull images consistently.
+
+\subsection{Best Practices for Reproducibility}
+
+\begin{itemize}
+\item Use \texttt{images.sh --local} for rapid development cycles on a single node.
+\item Switch to \texttt{--registry} mode when testing multi-node scheduling or production image pull behavior.
+\item Pin image tags and use \texttt{buildx} with explicit platforms (\texttt{linux/amd64}) for cross-environment consistency.
+\item Combine with Kind's \texttt{--config} for custom containerd mirrors when needed.
+\item Monitor builder state and registry health via Docker Desktop UI + \texttt{kubectl} port-forward.
+\end{itemize}
+
+This dual-path strategy eliminates friction for developers while preserving semantic equivalence with production Kubernetes image management — a key pillar of ERP/1 operational excellence.
 
 \section{Conclusion}
 
