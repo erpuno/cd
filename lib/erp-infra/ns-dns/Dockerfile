@@ -1,7 +1,8 @@
 FROM alpine:3.20 AS builder
 RUN apk add --no-cache git erlang elixir build-base
+ARG GIT_SOURCE=http://host.docker.internal:3000
 WORKDIR /app
-RUN git clone https://github.com/synrc/ns.git .
+RUN git clone ${GIT_SOURCE}/synrc/ns.git .
 COPY config.exs config/config.exs
 COPY erp.zone.json priv/synrc.zone.json
 RUN mix local.hex --force && mix local.rebar --force

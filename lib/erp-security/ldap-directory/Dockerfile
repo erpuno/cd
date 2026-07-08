@@ -1,7 +1,8 @@
 FROM alpine:3.20 AS builder
 RUN apk add --no-cache git erlang elixir build-base
+ARG GIT_SOURCE=http://host.docker.internal:3000
 WORKDIR /app
-RUN git clone https://github.com/synrc/ldap.git .
+RUN git clone ${GIT_SOURCE}/synrc/ldap.git .
 COPY config.exs config/config.exs
 RUN mix local.hex --force && mix local.rebar --force
 ENV MIX_ENV=prod

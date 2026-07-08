@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  gitea:
+    image: gitea/gitea:latest   # Official multi-arch image (excellent ARM64 support on M1)
+    container_name: gitea
+    restart: always
+    ports:
+      - "3000:3000"    # Web UI
+      - "2222:22"      # SSH (optional, can be removed)
+    volumes:
+      - ./gitea/data:/data          # All Gitea data (repos, config, etc.)
+      - ./gitea/ssh:/data/ssh       # SSH keys (if using SSH)
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=sqlite3   # SQLite is perfect for MacBook (lightweight)
+      - GITEA__database__PATH=/data/gitea.db
+      - GITEA__security__INSTALL_LOCK=true
+      - GITEA__server__DOMAIN=localhost
+      - GITEA__server__SSH_DOMAIN=localhost
+      - GITEA__server__SSH_PORT=2222
+      - GITEA__server__ROOT_URL=http://localhost:3000/
+    shm_size: '128m'
