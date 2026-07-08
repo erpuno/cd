@@ -14,7 +14,22 @@
 \maketitle
 
 \begin{abstract}
-Local replication of production-grade cloud-native environments is a critical prerequisite for the deterministic validation and continuous delivery of complex enterprise applications. However, existing local development models often suffer from a semantic gap concerning stateful storage persistence, multi-node network scheduling, and dependency resolution reproducibility. This paper presents a formal framework for instantiating reproducible, multi-node Kubernetes clusters on developer workstations using Kubernetes-in-Docker (Kind) and Docker Desktop. The proposed architecture introduces three distinct operational primitives: (i) device-level volume snapshotting via containerized filesystem synchronization to eliminate state loss during cluster reconfiguration; (ii) out-of-cluster dependency isolation using a localized, SQLite-backed Gitea service to enable offline, rate-limit-resistant builds; and (iii) a dual-path container image lifecycle manager matching production registry and local builder semantics. We validate this framework using the ERP/1 enterprise application suite. Evaluation results demonstrate that the proposed framework achieves bit-exact reproducibility for multi-namespace topologies while reducing Git repository setup and volume restore latency by up to 90\% compared to cloud-hosted continuous integration environments. This framework establishes a robust foundation for offline GitOps verification and local container registry optimization.
+Local replication of production-grade cloud-native environments is a critical prerequisite
+for the deterministic validation and continuous delivery of complex enterprise applications.
+However, existing local development models often suffer from a semantic gap concerning stateful
+storage persistence, multi-node network scheduling, and dependency resolution reproducibility.
+This paper presents a formal framework for instantiating reproducible, multi-node Kubernetes
+clusters on developer workstations using Kubernetes-in-Docker (Kind) and Docker Desktop.
+The proposed architecture introduces three distinct operational primitives: (i) device-level
+volume snapshotting via containerized filesystem synchronization to eliminate state loss
+during cluster reconfiguration; (ii) out-of-cluster dependency isolation using a localized,
+SQLite-backed Gitea service to enable offline, rate-limit-resistant builds; and (iii)
+a dual-path container image lifecycle manager matching production registry and local
+builder semantics. We validate this framework using the ERP/1 enterprise application suite.
+Evaluation results demonstrate that the proposed framework achieves bit-exact reproducibility
+for multi-namespace topologies while reducing Git repository setup and volume restore latency
+by up to 90\% compared to cloud-hosted continuous integration environments. This framework
+establishes a robust foundation for offline GitOps verification and local container registry optimization.
 \end{abstract}
 
 \newpage
@@ -78,7 +93,8 @@ sudo mv ./kind /usr/local/bin/kind
 
 \subsection{Using Kind with Docker Desktop}
 
-Docker Desktop implements Kind as a native provisioner. For reproducible deployments, the command-line interface with an explicit configuration file is preferred.
+Docker Desktop implements Kind as a native provisioner.
+For reproducible deployments, the command-line interface with an explicit configuration file is preferred.
 A recommended configuration for ERP/1 workloads is as follows:
 
 \begin{enumerate}
@@ -91,7 +107,8 @@ Alternatively, use the CLI for more control:
 
 \subsection{Cluster Provisioning via Docker Desktop and CLI}
 
-Docker Desktop implements Kind as a native provisioner. For reproducible deployments, the command-line interface with an explicit configuration file is preferred.
+Docker Desktop implements Kind as a native provisioner.
+For reproducible deployments, the command-line interface with an explicit configuration file is preferred.
 A recommended configuration for ERP/1 workloads is as follows:
 
 \begin{verbatim}
@@ -137,10 +154,14 @@ The multi-node topology permits accurate modeling of pod scheduling, inter-servi
 
 \subsection{Verified Cluster Resource Status}
 
-Upon successful execution of \texttt{./deploy.sh}, the state of the KinD cluster resources across all namespaces is verified. The following diagnostic outputs present the target configuration of pods, services, persistent volume claims, and deployments.
+Upon successful execution of \texttt{./deploy.sh}, the state of the KinD cluster resources
+across all namespaces is verified. The following diagnostic outputs present the target
+configuration of pods, services, persistent volume claims, and deployments.
 
 \subsubsection{Active Pods}
-Table~\ref{tab:pods} lists the status of running pods within the cluster, showing complete initialization of all infrastructure, security, and telemetry workloads.
+
+Table~\ref{tab:pods} lists the status of running pods within the cluster,
+showing complete initialization of all infrastructure, security, and telemetry workloads.
 
 \begin{table}[H]
 \centering
@@ -166,7 +187,8 @@ local-path-storage & local-path-provisioner-855c7b7774-jzvft & 1/1 & Running & 8
 \end{table}
 
 \subsubsection{Active Services}
-Table~\ref{tab:services} summarizes the cluster IP allocation and exposed port bindings for active service discovery in the multi-namespace topology.
+Table~\ref{tab:services} summarizes the cluster IP allocation and exposed port
+bindings for active service discovery in the multi-namespace topology.
 
 \begin{table}[H]
 \centering
@@ -190,7 +212,8 @@ erp-telemetry & prometheus & None & 9090/TCP \\
 \end{table}
 
 \subsubsection{Persistent Volume Claims (PVCs)}
-Table~\ref{tab:pvcs} presents the storage allocation across all stateful components, utilizing the dynamic \texttt{local-path} provisioner.
+Table~\ref{tab:pvcs} presents the storage allocation across all stateful components,
+utilizing the dynamic \texttt{local-path} provisioner.
 
 \begin{table}[H]
 \centering
@@ -237,7 +260,8 @@ erp-telemetry & otel-collector & 1/1 & 1 \\
 
 \subsection{Verified GitOps and Build Integration Status}
 
-To verify local code reproduction integrity, Gitea server logs, migration state, and subsequent Docker builds are monitored.
+To verify local code reproduction integrity, Gitea server logs, migration state,
+and subsequent Docker builds are monitored.
 
 \begin{verbatim}
 tonpa@Sky-M4 cd % ./gitops.sh status
@@ -254,7 +278,8 @@ Checking Repository Status in Gitea:
   - synrc/ldap: [READY]
 \end{verbatim}
 
-During the subsequent local Docker build execution (e.g. for the CA PKI module), the image builder successfully redirects references and pulls sources from Gitea:
+During the subsequent local Docker build execution (e.g. for the CA PKI module),
+the image builder successfully redirects references and pulls sources from Gitea:
 \begin{verbatim}
 #10 [builder 4/6] RUN git clone http://host.docker.internal:3000/synrc/ca.git .
 #10 0.108 Cloning into '.'...
@@ -266,7 +291,8 @@ During the subsequent local Docker build execution (e.g. for the CA PKI module),
 
 \subsection{Node Specialization}
 
-Critical services such as \texttt{ns-dns} and \texttt{ca-pki} benefit from explicit node dedication. Labeling and affinity rules are applied as follows:
+Critical services such as \texttt{ns-dns} and \texttt{ca-pki} benefit from explicit
+node dedication. Labeling and affinity rules are applied as follows:
 
 \begin{verbatim}
 kubectl label node <worker-name> dedicated=dns
@@ -297,12 +323,15 @@ Key advantages for ERP/1:
 
 \subsection{Migration to Production Environments}
 
-Owing to Kind's use of unmodified Kubernetes components, the transition of manifests to production clusters requires only localized modifications,
-primarily concerning persistent storage (replacement of \texttt{hostPath} with CSI volumes) and ingress/load-balancing configuration.
+Owing to Kind's use of unmodified Kubernetes components, the transition of manifests
+to production clusters requires only localized modifications, primarily concerning
+persistent storage (replacement of \texttt{hostPath} with CSI volumes) and
+ingress/load-balancing configuration.
 
 \subsection{Managing Clusters with kind.sh}
 
-For convenient management of multiple local clusters alongside Docker Desktop, we provide a custom wrapper script \texttt{kind.sh}.
+For convenient management of multiple local clusters alongside Docker Desktop,
+we provide a custom wrapper script \texttt{kind.sh}.
 
 \begin{verbatim}
 #!/bin/bash
@@ -347,7 +376,6 @@ case "${1:-list}" in
   *) echo "Usage: ./kind.sh <create|delete|list> [name]" ;;
 esac
 \end{verbatim}
-
 
 \newpage
 \section{Backup and Restore}
@@ -462,7 +490,12 @@ This capability is invaluable for debugging data corruption, auditing persisted 
 
 \subsubsection{Mission Alignment \& Production Fidelity}
 
-By operating at the raw device/filesystem layer (rather than application-level export), these tools achieve near-perfect fidelity to bare-metal or cloud CSI-based backups. They eliminate the semantic gap between development and production storage behavior — a foundational requirement for ERP/1's "develop once, deploy anywhere" philosophy. Combined with `kind.sh` cluster lifecycle management, they enable reproducible testing of backup windows, restore drills, and data-migration scenarios with zero external dependencies.
+By operating at the raw device/filesystem layer (rather than application-level export),
+these tools achieve near-perfect fidelity to bare-metal or cloud CSI-based backups.
+They eliminate the semantic gap between development and production storage behavior —
+a foundational requirement for ERP/1's "develop once, deploy anywhere" philosophy.
+Combined with `kind.sh` cluster lifecycle management, they enable reproducible testing
+of backup windows, restore drills, and data-migration scenarios with zero external dependencies.
 
 Recommended workflow for ERP/1 developers:
 
@@ -479,7 +512,9 @@ Recommended workflow for ERP/1 developers:
 \newpage
 \section{Image Management}
 
-Maintaining reproducible container images is fundamental to ERP/1's "develop once, deploy anywhere" mission. The tooling supports two complementary strategies that work seamlessly with Docker Desktop + Kind:
+Maintaining reproducible container images is fundamental to ERP/1's "develop once,
+deploy anywhere" mission. The tooling supports two complementary strategies
+that work seamlessly with Docker Desktop + Kind:
 
 \begin{itemize}
 \item \textbf{In-cluster Docker Registry} (production-like, via \texttt{docker-registry} service)
@@ -501,7 +536,8 @@ It reports:
 \item Images loaded into Kind nodes via \texttt{crictl}
 \end{itemize}
 
-This mode is ideal for developers who prefer building directly with Docker's native builder (leveraging BuildKit) and loading images into Kind without pushing to a registry.
+This mode is ideal for developers who prefer building directly with Docker's native
+builder (leveraging BuildKit) and loading images into Kind without pushing to a registry.
 
 \textbf{Workflow for registry-free development:}
 \begin{verbatim}
@@ -509,19 +545,20 @@ docker buildx build --load -t erpuno/my-service:latest ./path
 kind load docker-image erpuno/my-service:latest --name erp1-local
 \end{verbatim}
 
-This approach offers maximum speed and simplicity for local iteration while remaining fully reproducible across Linux/macOS/Windows via Docker Desktop.
+This approach offers maximum speed and simplicity for local iteration while remaining
+fully reproducible across Linux/macOS/Windows via Docker Desktop.
 
 \subsection{Building with In-Cluster Registry (\texttt{--registry})}
 
-Component-level \texttt{build.sh} scripts (invoked via \texttt{rebuild.sh}) support a \texttt{--registry} flag (or equivalent) to push images to the in-cluster \texttt{docker-registry:5000} service.
+Component-level \texttt{build.sh} scripts (invoked via \texttt{rebuild.sh}) support
+a \texttt{--registry} flag (or equivalent) to push images to the in-cluster \texttt{docker-registry:5000} service.
 
 Typical pattern inside component \texttt{build.sh}:
+
 \begin{verbatim}
 REGISTRY="docker-registry.erp-infra.svc.cluster.local:5000"
-docker buildx build \
-  --push \
-  --platform linux/amd64 \
-  -t ${REGISTRY}/erpuno/my-service:${TAG} .
+docker buildx build --push --platform linux/amd64 \
+  -t ${REGISTRY}/erpuno/ca-pki:${TAG} .
 \end{verbatim}
 
 \textbf{Full rebuild cycle:}
@@ -530,7 +567,8 @@ docker buildx build \
 ./images.sh           # inspect registry catalog
 \end{verbatim}
 
-The in-cluster registry (exposed on port 5000) mirrors production image distribution practices and enables multi-node Kind clusters to pull images consistently.
+The in-cluster registry (exposed on port 5000) mirrors production image distribution
+practices and enables multi-node Kind clusters to pull images consistently.
 
 \subsection{Best Practices for Reproducibility}
 
@@ -542,20 +580,35 @@ The in-cluster registry (exposed on port 5000) mirrors production image distribu
 \item Monitor builder state and registry health via Docker Desktop UI + \texttt{kubectl} port-forward.
 \end{itemize}
 
-This dual-path strategy eliminates friction for developers while preserving semantic equivalence with production Kubernetes image management — a key pillar of ERP/1 operational excellence.
+This dual-path strategy eliminates friction for developers while preserving semantic
+equivalence with production Kubernetes image management — a key pillar of ERP/1 operational excellence.
 
 \newpage
 \section{Git Operations}
 
-Local validation of cloud-native systems requires not only a reproducible runtime (Kubernetes via Kind) and container storage (docker-registry), but also a stable, reproducible source of truth for dependencies and continuous delivery configuration. To satisfy this requirement, ERP/1 adopts a dedicated approach of hosting a lightweight Git server (Gitea) separately using Docker Compose.
+Local validation of cloud-native systems requires not only a reproducible
+runtime (Kubernetes via Kind) and container storage (docker-registry), but also a stable,
+reproducible source of truth for dependencies and continuous delivery configuration.
+To satisfy this requirement, ERP/1 adopts a dedicated approach of hosting a
+lightweight Git server (Gitea) separately using Docker Compose.
 
 \subsection{Architectural Approach: Out-of-Cluster Gitea}
 
-Rather than running heavy git repository servers inside the development Kubernetes cluster, Gitea is executed as a standalone Docker container managed by Docker Compose:
+Rather than running heavy git repository servers inside the development Kubernetes cluster,
+Gitea is executed as a standalone Docker container managed by Docker Compose:
 \begin{itemize}
-    \item \textbf{Decoupled Lifecycle}: The lifecycle of the code repository is completely independent of the Kubernetes cluster. Destroying or rebuilding the Kind cluster (e.g., via \texttt{kind.sh}) does not affect stored repositories, commit histories, or local configurations.
-    \item \textbf{Resource Efficiency}: By running Gitea with a SQLite database backend, the Git service starts in under 5 seconds and requires less than 100\,MB of RAM. This represents a massive reduction in resource overhead compared to in-cluster GitLab setups, leaving maximum system memory available for core ERP/1 workloads.
-    \item \textbf{Build-Time Resolution}: The Docker daemon on the host machine resolves the Git host using Docker Desktop's native \texttt{host.docker.internal} resolver. Build scripts pass this source via the \texttt{GIT\_SOURCE} build argument during image creation.
+    \item \textbf{Decoupled Lifecycle}: The lifecycle of the code repository is completely
+          independent of the Kubernetes cluster. Destroying or rebuilding the Kind
+          cluster (e.g., via \texttt{kind.sh}) does not affect stored repositories,
+          commit histories, or local configurations.
+    \item \textbf{Resource Efficiency}: By running Gitea with a SQLite database backend,
+          the Git service starts in under 5 seconds and requires less than 100\,MB of RAM.
+          This represents a massive reduction in resource overhead compared to in-cluster
+          GitLab setups, leaving maximum system memory available for core ERP/1 workloads.
+    \item \textbf{Build-Time Resolution}: The Docker daemon on the host machine resolves
+          the Git host using Docker Desktop's native \texttt{host.docker.internal} resolver.
+          Build scripts pass this source via the \texttt{GIT\_SOURCE} build argument
+          during image creation.
 \end{itemize}
 
 \subsection{Motivation for Local Git Sources}
@@ -563,8 +616,17 @@ Rather than running heavy git repository servers inside the development Kubernet
 Hosting Git repositories locally on the developer's workstation solves two critical infrastructure challenges:
 
 \begin{enumerate}
-    \item \textbf{Local Build Reproducibility}: Clones during Docker image builds (e.g., for \texttt{ca-pki}, \texttt{ns-dns}, and \texttt{ldap-directory}) are pulled directly from the local Gitea instance rather than public GitHub endpoints. This eliminates rate limiting issues, external network dependency, and the risk of build failure due to repository drift or upstream deletion.
-    \item \textbf{ArgoCD and GitOps Readiness}: Formal GitOps controllers (like ArgoCD) require continuous access to Git repositories to reconcile the actual state of the cluster with the desired state declared in Git. By running Gitea locally, developers can test entire GitOps push/sync loops, webhook integrations, and ArgoCD application deployments completely offline with zero cloud costs or complex port-forwarding setups.
+    \item \textbf{Local Build Reproducibility}: Clones during Docker image
+          builds (e.g., for \texttt{ca-pki}, \texttt{ns-dns}, and \texttt{ldap-directory})
+          are pulled directly from the local Gitea instance rather than public GitHub endpoints.
+          This eliminates rate limiting issues, external network dependency, and the risk of
+          build failure due to repository drift or upstream deletion.
+    \item \textbf{ArgoCD and GitOps Readiness}: Formal GitOps controllers (like ArgoCD) require
+          continuous access to Git repositories to reconcile the actual state of the cluster
+          with the desired state declared in Git. By running Gitea locally,
+          developers can test entire GitOps push/sync loops, webhook integrations,
+          and ArgoCD application deployments completely offline with zero cloud costs
+          or complex port-forwarding setups.
 \end{enumerate}
 
 \subsection{Using the gitops.sh Script}
@@ -588,15 +650,35 @@ Examples of script execution:
 \newpage
 \section{Conclusion}
 
-This paper has presented a deterministic framework for instantiating reproducible, multi-node Kubernetes clusters on developer workstations using Kind, Docker Desktop, and decoupled GitOps provisioning. By isolating source dependencies in an out-of-cluster Gitea instance and utilizing device-level persistent volume claim snapshotting, the proposed approach significantly reduces latency and minimizes the semantic gap between development and production runtime behaviors. 
+This paper has presented a deterministic framework for instantiating reproducible,
+multi-node Kubernetes clusters on developer workstations using Kind, Docker Desktop,
+and decoupled GitOps provisioning. By isolating source dependencies in an out-of-cluster
+Gitea instance and utilizing device-level persistent volume claim snapshotting,
+the proposed approach significantly reduces latency and minimizes the semantic
+gap between development and production runtime behaviors.
 
-While the empirical evaluation using the ERP/1 suite validates the viability of the framework, several structural limitations must be acknowledged:
+While the empirical evaluation using the ERP/1 suite validates the viability of
+the framework, several structural limitations must be acknowledged:
+
 \begin{itemize}
-    \item \textbf{Storage Driver Discrepancy}: The local execution environment relies on the \texttt{local-path-provisioner} storage class, which maps volumes to host directories. This differs from production cloud environments utilizing CSI-managed block storage (e.g., AWS EBS or GCP Persistent Disks), meaning that complex volume locking and multi-attach behaviors are not fully modeled.
-    \item \textbf{Resource Constraints}: Local orchestration of Gitea, Docker registries, and observability stacks (opensearch, prometheus) imposes a minimum physical memory ceiling of 8\,GB (ideally 16\,GB) on host hardware. On resource-constrained host machines, performance degradation or pod eviction may occur.
-    \item \textbf{Network Fidelity}: Host loopback routing and virtual networking bridges (like Kindnet) do not simulate complex production firewall policies, overlay networks (e.g., Calico or Cilium), or Cloud Provider LoadBalancers.
+    \item \textbf{Storage Driver Discrepancy}: The local execution environment relies
+          on the \texttt{local-path-provisioner} storage class, which maps volumes to
+          host directories. This differs from production cloud environments utilizing
+          CSI-managed block storage (e.g., AWS EBS or GCP Persistent Disks), meaning
+          that complex volume locking and multi-attach behaviors are not fully modeled.
+    \item \textbf{Resource Constraints}: Local orchestration of Gitea, Docker registries,
+          and observability stacks (opensearch, prometheus) imposes a minimum physical
+          memory ceiling of 8\,GB (ideally 16\,GB) on host hardware. On resource-constrained
+          host machines, performance degradation or pod eviction may occur.
+    \item \textbf{Network Fidelity}: Host loopback routing and virtual networking
+          bridges (like Kindnet) do not simulate complex production firewall policies,
+          overlay networks (e.g., Calico or Cilium), or Cloud Provider LoadBalancers.
 \end{itemize}
 
-Future work will focus on integrating eBPF-based network auditing directly into the Kind worker nodes to emulate production traffic restrictions, and implementing automated security scanner hooks inside the local registry container. In conclusion, despite the inherent hardware-virtualization abstraction boundaries, this framework provides a highly cost-effective, reproducible, and robust paradigm for continuous local validation.
+Future work will focus on integrating eBPF-based network auditing directly into the
+Kind worker nodes to emulate production traffic restrictions, and implementing automated
+security scanner hooks inside the local registry container. In conclusion, despite the
+inherent hardware-virtualization abstraction boundaries, this framework provides a
+highly cost-effective, reproducible, and robust paradigm for continuous local validation.
 
 \end{document}

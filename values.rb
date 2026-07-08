@@ -14,9 +14,9 @@ OptionParser.new do |opts|
   opts.on("-v", "--version VERSION", String,  "Set image version tag")           { |v| options[:version] = v }
 end.parse!
 
-REPO_ROOT       = Dir.pwd
-LIB_DIR         = File.join(REPO_ROOT, 'lib')
-HELM_VALUES_PATH = File.join(REPO_ROOT, 'helm', 'values.yaml')
+REPO_ROOT           = Dir.pwd
+LIB_DIR             = File.join(REPO_ROOT, 'lib')
+HELM_VALUES_PATH    = File.join(REPO_ROOT, 'helm', 'values.yaml')
 
 VERSION = options[:version] || ENV['VERSION'] || '2024.6.15'
 
@@ -32,7 +32,6 @@ GLOBAL = {
 PUBLIC_IMAGES = {
   'prometheus'      => "prom/prometheus:v2.53.0",
   'grafana'         => "grafana/grafana:11.1.0",
-  'loki'            => "grafana/loki:3.1.0",
   'otel-collector'  => "otel/opentelemetry-collector-contrib:0.102.0",
   'docker-registry' => "registry:2.8.3",
   'ns-dns'          => "erpuno/ns:#{VERSION}",
@@ -43,11 +42,11 @@ PUBLIC_IMAGES = {
   'abac-clearance'  => "erpuno/clearance:#{VERSION}",
   'chat-messenger'  => "erpuno/chat:#{VERSION}",
   'mail-delivery'   => "erpuno/mail:#{VERSION}",
-  'rest-bpe'        => "erpuno/rest:#{VERSION}",
-  'bpe-engine'      => "erpuno/bpe:#{VERSION}",
-  'kvs-database'    => "erpuno/kvs:#{VERSION}",
-  'n2o-server'      => "erpuno/n2o:#{VERSION}",
-  'nitro-portal'    => "erpuno/nitro:#{VERSION}",
+  'rest-api'        => "erpuno/rest:#{VERSION}",
+  'bpe-processes'   => "erpuno/bpe:#{VERSION}",
+  'kvs-storage'     => "erpuno/kvs:#{VERSION}",
+  'n2o-connections' => "erpuno/n2o:#{VERSION}",
+  'nitro-ui'        => "erpuno/nitro:#{VERSION}",
   'mach-ivr'        => "erpuno/mach:#{VERSION}",
   'faiss-search'    => "erpuno/faiss:#{VERSION}",
   'ai-generation'   => "erpuno/ai:#{VERSION}",
@@ -137,7 +136,7 @@ def extract_service_config(service_dir, service_name)
       # Persistence (volumeMounts pointing to PVC, or volumeClaimTemplates)
       has_pvc = false
       pvc_mount_path = nil
-      
+
       if spec['volumeClaimTemplates']
         has_pvc = true
         pvc_mount_path = '/data'
@@ -145,7 +144,6 @@ def extract_service_config(service_dir, service_name)
         pvc_vol_names = template['volumes']
           .select { |v| v['persistentVolumeClaim'] }
           .map { |v| v['name'] }
-        
         matching_mount = container['volumeMounts'].find { |m| pvc_vol_names.include?(m['name']) }
         if matching_mount
           has_pvc = true

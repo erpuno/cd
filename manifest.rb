@@ -19,7 +19,7 @@ def clean_resource(doc)
     m.delete('generation')
     m.delete('selfLink')
     m.delete('managedFields')
-    
+
     if m['annotations']
       a = m['annotations']
       a.delete('kubectl.kubernetes.io/last-applied-configuration')
