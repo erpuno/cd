@@ -1,0 +1,1257 @@
+---
+apiVersion: v1
+items:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: '1'
+    labels:
+      app: docker-registry
+    name: docker-registry
+    namespace: erp-infra
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: docker-registry
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        labels:
+          app: docker-registry
+      spec:
+        containers:
+        - image: registry:2.8.3
+          imagePullPolicy: IfNotPresent
+          name: registry
+          ports:
+          - containerPort: 5000
+            name: http
+            protocol: TCP
+          resources:
+            limits:
+              cpu: 200m
+              memory: 512Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+          terminationMessagePath: "/dev/termination-log"
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: "/var/lib/registry"
+            name: storage
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: erp-infra-sa
+        serviceAccountName: erp-infra-sa
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: registry-data
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: '1'
+    labels:
+      app: ns-dns
+    name: ns-dns
+    namespace: erp-infra
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: ns-dns
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        labels:
+          app: ns-dns
+      spec:
+        containers:
+        - args:
+          - start
+          command:
+          - bin/ns
+          env:
+          - name: ERL_AFLAGS
+            value: "+S 1 +SDcpu 1 +SDio 1 -sbt db +A 16 -env ERL_MAX_PORTS 262144"
+          image: erpuno/ns:latest
+          imagePullPolicy: IfNotPresent
+          name: ns-dns
+          ports:
+          - containerPort: 53
+            name: dns-udp
+            protocol: UDP
+          - containerPort: 53
+            name: dns-tcp
+            protocol: TCP
+          resources:
+            limits:
+              cpu: 300m
+              memory: 2Gi
+            requests:
+              cpu: 100m
+              memory: 512Mi
+          terminationMessagePath: "/dev/termination-log"
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: erp-infra-sa
+        serviceAccountName: erp-infra-sa
+        terminationGracePeriodSeconds: 30
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: '1'
+    name: traefik
+    namespace: erp-infra
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: traefik
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        labels:
+          app: traefik
+      spec:
+        containers:
+        - args:
+          - "--entrypoints.web.address=:80"
+          - "--providers.kubernetesingress=true"
+          - "--providers.kubernetesingress.ingressclass=traefik"
+          - "--log.level=WARN"
+          image: traefik:v3.3
+          imagePullPolicy: IfNotPresent
+          name: traefik
+          ports:
+          - containerPort: 80
+            hostPort: 80
+            name: web
+            protocol: TCP
+          resources:
+            limits:
+              cpu: 200m
+              memory: 256Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+          terminationMessagePath: "/dev/termination-log"
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: traefik
+        serviceAccountName: traefik
+        terminationGracePeriodSeconds: 30
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: registry-data
+    namespace: erp-infra
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 5Gi
+    storageClassName: local-path
+    volumeMode: Filesystem
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: docker-registry
+    name: docker-registry
+    namespace: erp-infra
+  spec:
+    clusterIP: 10.96.233.44
+    clusterIPs:
+    - 10.96.233.44
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      port: 5000
+      protocol: TCP
+      targetPort: 5000
+    selector:
+      app: docker-registry
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: ns-dns
+    name: ns-dns
+    namespace: erp-infra
+  spec:
+    clusterIP: 10.96.185.66
+    clusterIPs:
+    - 10.96.185.66
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: dns-udp
+      port: 53
+      protocol: UDP
+      targetPort: 53
+    - name: dns-tcp
+      port: 53
+      protocol: TCP
+      targetPort: 53
+    selector:
+      app: ns-dns
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  data:
+    ca.crt: |
+      -----BEGIN CERTIFICATE-----
+      MIIDBTCCAe2gAwIBAgIIEU+luoFeSLowDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE
+      AxMKa3ViZXJuZXRlczAeFw0yNjA3MDcyMDQ4MjFaFw0zNjA3MDQyMDUzMjFaMBUx
+      EzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+      AoIBAQDMcn1EF7hH/9/m3vmqx26+teDfF2KEQIlvUEALPHblUfit4GGZ63/FWfct
+      bPQNRQrMb/OKYU6LnX2S7DxAXMhIFHYc6YTrQXUKSrvBx4KDoPeOhZeGEY0WNxO1
+      B6IQ+O3yqFsJN6hhaLu9Q/PoGiAdqcUy049b7cJvGUloW5hEuwkLFjW8/nHXYE3t
+      lUEDXi3r8f591xzI/ucjFTh8xuLcKVJ4bRNzGb2tpy1VoFuQ7ql733Zk569NSl/E
+      cL4FktWiTQTaIfFEBWZk/As8/JZEtNs5nmKk162WbfnAFQuJrGCnagm7VokBomr2
+      nR9tJks80oUkgEIkjFwUKalsbU8JAgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP
+      BgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBQzS484A05p6PSp8VvYbYd/5/oBpjAV
+      BgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQCD+rKTgFaI
+      Yt/1G5pQi3PtX9O0fsHhLIVNWzCEcRmBnKjRQZgB9SZIrBYKqLQOAgDg6XdM87SU
+      j/hcX0l75lu9Y7HeXSQamqee9d7Oq4cRADnw3FC0eUebdM5MJVoZnyGbVDNIpF2E
+      oQ+u85intl35wJYT3Rc+c6y/YJucPWABWZ6ujIdb8dW1RVBNwsI4Vudtv4Ejj0D6
+      vViDZdvI57EX6CK67mPKN2HLOtyd7PaRyQFxktT5DquCACxoZ8QtCnRi7dP4bR6o
+      I8qC+J7BINEfVjB7V12nxKa+iEitKfPyRFhWHPQR5hZxKrx/XDZLQVpFP8PuqJ8l
+      GisXfcbwPtEv
+      -----END CERTIFICATE-----
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubernetes.io/description: Contains a CA bundle that can be used to verify the
+        kube-apiserver when using internal endpoints such as the internal service
+        IP or kubernetes.default.svc. No other usage is guaranteed across distributions
+        of Kubernetes clusters.
+    name: kube-root-ca.crt
+    namespace: erp-infra
+kind: List
+metadata:
+  resourceVersion: ''
+---
+apiVersion: v1
+items:
+- apiVersion: apps/v1
+  kind: StatefulSet
+  metadata:
+    labels:
+      app: prometheus
+    name: prometheus
+    namespace: erp-telemetry
+  spec:
+    persistentVolumeClaimRetentionPolicy:
+      whenDeleted: Retain
+      whenScaled: Retain
+    podManagementPolicy: OrderedReady
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: prometheus
+    serviceName: prometheus
+    template:
+      metadata:
+        labels:
+          app: prometheus
+      spec:
+        containers:
+        - image: prom/prometheus:v2.53.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: "/-/healthy"
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: prometheus
+          ports:
+          - containerPort: 9090
+            name: http
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: "/-/ready"
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          terminationMessagePath: "/dev/termination-log"
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: "/prometheus"
+            name: data
+          - mountPath: "/etc/prometheus"
+            name: config
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: erp-telemetry-sa
+        serviceAccountName: erp-telemetry-sa
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: prometheus-data
+        - configMap:
+            defaultMode: 420
+            name: prometheus-config
+          name: config
+    updateStrategy:
+      rollingUpdate:
+        partition: 0
+      type: RollingUpdate
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: '1'
+    labels:
+      app: grafana
+    name: grafana
+    namespace: erp-telemetry
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: grafana
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          app: grafana
+      spec:
+        containers:
+        - env:
+          - name: GF_SECURITY_ADMIN_USER
+            value: admin
+          - name: GF_SECURITY_ADMIN_PASSWORD
+            value: admin
+          - name: GF_PLUGINS_ALLOW_UI_UPDATES
+            value: 'true'
+          image: grafana/grafana:11.1.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: "/api/health"
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: grafana
+          ports:
+          - containerPort: 3000
+            name: http
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: "/api/health"
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
+              cpu: 30m
+              memory: 64Mi
+          terminationMessagePath: "/dev/termination-log"
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: "/var/lib/grafana"
+            name: storage
+          - mountPath: "/etc/grafana/provisioning/datasources"
+            name: datasources
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: erp-telemetry-sa
+        serviceAccountName: erp-telemetry-sa
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: grafana-data
+        - configMap:
+            defaultMode: 420
+            name: grafana-datasources
+          name: datasources
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: '1'
+    labels:
+      app: opensearch
+    name: opensearch
+    namespace: erp-telemetry
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: opensearch
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          app: opensearch
+      spec:
+        containers:
+        - env:
+          - name: discovery.type
+            value: single-node
+          - name: plugins.security.disabled
+            value: 'true'
+          - name: OPENSEARCH_JAVA_OPTS
+            value: "-Xms256m -Xmx256m"
+          - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
+            value: TestPassword@2024
+          image: opensearchproject/opensearch:2.14.0
+          imagePullPolicy: IfNotPresent
+          name: opensearch
+          ports:
+          - containerPort: 9200
+            name: http
+            protocol: TCP
+          - containerPort: 9300
+            name: transport
+            protocol: TCP
+          resources:
+            limits:
+              cpu: 400m
+              memory: 768Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          terminationMessagePath: "/dev/termination-log"
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: "/usr/share/opensearch/data"
+            name: storage
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: erp-telemetry-sa
+        serviceAccountName: erp-telemetry-sa
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: opensearch-data
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: '1'
+    labels:
+      app: otel-collector
+    name: otel-collector
+    namespace: erp-telemetry
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: otel-collector
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        labels:
+          app: otel-collector
+      spec:
+        containers:
+        - command:
+          - "/otelcol-contrib"
+          - "--config=/etc/otelcol/config.yaml"
+          image: otel/opentelemetry-collector-contrib:0.102.0
+          imagePullPolicy: IfNotPresent
+          name: otel-collector
+          ports:
+          - containerPort: 4317
+            name: otlp-grpc
+            protocol: TCP
+          - containerPort: 4318
+            name: otlp-http
+            protocol: TCP
+          - containerPort: 8889
+            name: prometheus
+            protocol: TCP
+          - containerPort: 13133
+            name: health
+            protocol: TCP
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
+              cpu: 30m
+              memory: 64Mi
+          terminationMessagePath: "/dev/termination-log"
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: "/etc/otelcol"
+            name: config-volume
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: erp-telemetry-sa
+        serviceAccountName: erp-telemetry-sa
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: otel-collector-config
+          name: config-volume
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: grafana-data
+    namespace: erp-telemetry
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 5Gi
+    storageClassName: local-path
+    volumeMode: Filesystem
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: opensearch-data
+    namespace: erp-telemetry
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 5Gi
+    storageClassName: local-path
+    volumeMode: Filesystem
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: prometheus-data
+    namespace: erp-telemetry
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 5Gi
+    storageClassName: local-path
+    volumeMode: Filesystem
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: grafana
+    name: grafana
+    namespace: erp-telemetry
+  spec:
+    clusterIP: 10.96.119.30
+    clusterIPs:
+    - 10.96.119.30
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      port: 3000
+      protocol: TCP
+      targetPort: 3000
+    selector:
+      app: grafana
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: opensearch
+    name: opensearch
+    namespace: erp-telemetry
+  spec:
+    clusterIP: 10.96.201.154
+    clusterIPs:
+    - 10.96.201.154
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      port: 9200
+      protocol: TCP
+      targetPort: 9200
+    - name: transport
+      port: 9300
+      protocol: TCP
+      targetPort: 9300
+    selector:
+      app: opensearch
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: otel-collector
+    name: otel-collector
+    namespace: erp-telemetry
+  spec:
+    clusterIP: 10.96.69.97
+    clusterIPs:
+    - 10.96.69.97
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: otlp-grpc
+      port: 4317
+      protocol: TCP
+      targetPort: 4317
+    - name: otlp-http
+      port: 4318
+      protocol: TCP
+      targetPort: 4318
+    - name: prometheus
+      port: 8889
+      protocol: TCP
+      targetPort: 8889
+    selector:
+      app: otel-collector
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: prometheus
+    name: prometheus
+    namespace: erp-telemetry
+  spec:
+    clusterIP: None
+    clusterIPs:
+    - None
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      port: 9090
+      protocol: TCP
+      targetPort: 9090
+    selector:
+      app: prometheus
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  data:
+    datasources.yaml: |
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          uid: prometheus
+          access: proxy
+          url: http://prometheus:9090
+          isDefault: true
+          jsonData:
+            httpMethod: POST
+        - name: OpenSearch-Logs
+          type: grafana-opensearch-datasource
+          uid: opensearch-logs
+          access: proxy
+          url: http://opensearch:9200
+          jsonData:
+            database: "otel-logs"
+            version: "2.14.0"
+            timeField: "@timestamp"
+            interval: Daily
+            derivedFields:
+              - datasourceUid: opensearch-traces
+                matcherRegex: '"traceId":\s*"([^"]+)"'
+                name: TraceID
+                url: "$${__value.raw}"
+        - name: OpenSearch-Traces
+          type: grafana-opensearch-datasource
+          uid: opensearch-traces
+          access: proxy
+          url: http://opensearch:9200
+          jsonData:
+            database: "otel-traces"
+            version: "2.14.0"
+            timeField: "@timestamp"
+            interval: Daily
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: grafana
+    name: grafana-datasources
+    namespace: erp-telemetry
+- apiVersion: v1
+  data:
+    ca.crt: |
+      -----BEGIN CERTIFICATE-----
+      MIIDBTCCAe2gAwIBAgIIEU+luoFeSLowDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE
+      AxMKa3ViZXJuZXRlczAeFw0yNjA3MDcyMDQ4MjFaFw0zNjA3MDQyMDUzMjFaMBUx
+      EzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+      AoIBAQDMcn1EF7hH/9/m3vmqx26+teDfF2KEQIlvUEALPHblUfit4GGZ63/FWfct
+      bPQNRQrMb/OKYU6LnX2S7DxAXMhIFHYc6YTrQXUKSrvBx4KDoPeOhZeGEY0WNxO1
+      B6IQ+O3yqFsJN6hhaLu9Q/PoGiAdqcUy049b7cJvGUloW5hEuwkLFjW8/nHXYE3t
+      lUEDXi3r8f591xzI/ucjFTh8xuLcKVJ4bRNzGb2tpy1VoFuQ7ql733Zk569NSl/E
+      cL4FktWiTQTaIfFEBWZk/As8/JZEtNs5nmKk162WbfnAFQuJrGCnagm7VokBomr2
+      nR9tJks80oUkgEIkjFwUKalsbU8JAgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP
+      BgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBQzS484A05p6PSp8VvYbYd/5/oBpjAV
+      BgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQCD+rKTgFaI
+      Yt/1G5pQi3PtX9O0fsHhLIVNWzCEcRmBnKjRQZgB9SZIrBYKqLQOAgDg6XdM87SU
+      j/hcX0l75lu9Y7HeXSQamqee9d7Oq4cRADnw3FC0eUebdM5MJVoZnyGbVDNIpF2E
+      oQ+u85intl35wJYT3Rc+c6y/YJucPWABWZ6ujIdb8dW1RVBNwsI4Vudtv4Ejj0D6
+      vViDZdvI57EX6CK67mPKN2HLOtyd7PaRyQFxktT5DquCACxoZ8QtCnRi7dP4bR6o
+      I8qC+J7BINEfVjB7V12nxKa+iEitKfPyRFhWHPQR5hZxKrx/XDZLQVpFP8PuqJ8l
+      GisXfcbwPtEv
+      -----END CERTIFICATE-----
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubernetes.io/description: Contains a CA bundle that can be used to verify the
+        kube-apiserver when using internal endpoints such as the internal service
+        IP or kubernetes.default.svc. No other usage is guaranteed across distributions
+        of Kubernetes clusters.
+    name: kube-root-ca.crt
+    namespace: erp-telemetry
+- apiVersion: v1
+  data:
+    config.yaml: |
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:4317
+            http:
+              endpoint: 0.0.0.0:4318
+        prometheus:
+          config:
+            scrape_configs:
+              - job_name: 'otel-collector'
+                scrape_interval: 10s
+                static_configs:
+                  - targets: ['0.0.0.0:8888']
+
+      processors:
+        batch:
+        memory_limiter:
+          check_interval: 1s
+          limit_percentage: 75
+          spike_limit_percentage: 15
+
+      exporters:
+        prometheus:
+          endpoint: 0.0.0.0:8889
+          namespace: otel
+        otlp:
+          endpoint: http://localhost:4317
+        debug:
+          verbosity: detailed
+
+      extensions:
+        health_check:
+          endpoint: 0.0.0.0:13133
+        zpages:
+          endpoint: 0.0.0.0:55679
+
+      service:
+        extensions: [health_check, zpages]
+        pipelines:
+          metrics:
+            receivers: [otlp, prometheus]
+            processors: [memory_limiter, batch]
+            exporters: [prometheus, debug]
+          traces:
+            receivers: [otlp]
+            processors: [memory_limiter, batch]
+            exporters: [debug]
+          logs:
+            receivers: [otlp]
+            processors: [memory_limiter, batch]
+            exporters: [debug]
+        telemetry:
+          logs:
+            level: "info"
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: otel-collector
+    name: otel-collector-config
+    namespace: erp-telemetry
+- apiVersion: v1
+  data:
+    prometheus.yml: |
+      global:
+        scrape_interval: 10s
+        evaluation_interval: 10s
+
+      scrape_configs:
+        - job_name: 'prometheus'
+          static_configs:
+            - targets: ['localhost:9090']
+
+        - job_name: 'otel-collector'
+          static_configs:
+            - targets: ['otel-collector:8889']
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: prometheus
+    name: prometheus-config
+    namespace: erp-telemetry
+kind: List
+metadata:
+  resourceVersion: ''
+---
+apiVersion: v1
+items:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: '1'
+    labels:
+      app: ca-pki
+    name: ca-pki
+    namespace: erp-security
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: ca-pki
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        labels:
+          app: ca-pki
+      spec:
+        containers:
+        - args:
+          - start
+          command:
+          - bin/ca
+          env:
+          - name: ERL_AFLAGS
+            value: "+S 1 +SDcpu 1 +SDio 1 -sbt db +A 16 -env ERL_MAX_PORTS 262144"
+          image: erpuno/ca-pki:latest
+          imagePullPolicy: IfNotPresent
+          name: ca-pki
+          ports:
+          - containerPort: 8047
+            name: est
+            protocol: TCP
+          - containerPort: 8829
+            name: cmp
+            protocol: TCP
+          - containerPort: 5318
+            name: cmc
+            protocol: TCP
+          resources:
+            limits:
+              cpu: 300m
+              memory: 2Gi
+            requests:
+              cpu: 100m
+              memory: 512Mi
+          terminationMessagePath: "/dev/termination-log"
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: "/app/synrc"
+            name: keys
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: erp-security-sa
+        serviceAccountName: erp-security-sa
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: keys
+          persistentVolumeClaim:
+            claimName: ca-pki-data
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: '1'
+    labels:
+      app: ldap-directory
+    name: ldap-directory
+    namespace: erp-security
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: ldap-directory
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        labels:
+          app: ldap-directory
+      spec:
+        containers:
+        - args:
+          - start
+          command:
+          - bin/ldap
+          env:
+          - name: ERL_AFLAGS
+            value: "+S 1 +SDcpu 1 +SDio 1 -sbt db +A 16 -env ERL_MAX_PORTS 262144"
+          image: erpuno/ldap:latest
+          imagePullPolicy: IfNotPresent
+          name: ldap-directory
+          ports:
+          - containerPort: 389
+            name: ldap
+            protocol: TCP
+          resources:
+            limits:
+              cpu: 300m
+              memory: 2Gi
+            requests:
+              cpu: 100m
+              memory: 512Mi
+          terminationMessagePath: "/dev/termination-log"
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: "/app/db"
+            name: ldap-db
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: erp-security-sa
+        serviceAccountName: erp-security-sa
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: ldap-db
+          persistentVolumeClaim:
+            claimName: ldap-directory-data
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: ca-pki-data
+    namespace: erp-security
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 5Gi
+    storageClassName: local-path
+    volumeMode: Filesystem
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: ldap-directory-data
+    namespace: erp-security
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 5Gi
+    storageClassName: local-path
+    volumeMode: Filesystem
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: ca-pki
+    name: ca-pki
+    namespace: erp-security
+  spec:
+    clusterIP: 10.96.111.136
+    clusterIPs:
+    - 10.96.111.136
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: est
+      port: 8047
+      protocol: TCP
+      targetPort: 8047
+    - name: cmp
+      port: 8829
+      protocol: TCP
+      targetPort: 8829
+    - name: cmc
+      port: 5318
+      protocol: TCP
+      targetPort: 5318
+    selector:
+      app: ca-pki
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: ldap-directory
+    name: ldap-directory
+    namespace: erp-security
+  spec:
+    clusterIP: 10.96.176.106
+    clusterIPs:
+    - 10.96.176.106
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: ldap
+      port: 389
+      protocol: TCP
+      targetPort: 389
+    selector:
+      app: ldap-directory
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  data:
+    ca.crt: |
+      -----BEGIN CERTIFICATE-----
+      MIIDBTCCAe2gAwIBAgIIEU+luoFeSLowDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE
+      AxMKa3ViZXJuZXRlczAeFw0yNjA3MDcyMDQ4MjFaFw0zNjA3MDQyMDUzMjFaMBUx
+      EzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+      AoIBAQDMcn1EF7hH/9/m3vmqx26+teDfF2KEQIlvUEALPHblUfit4GGZ63/FWfct
+      bPQNRQrMb/OKYU6LnX2S7DxAXMhIFHYc6YTrQXUKSrvBx4KDoPeOhZeGEY0WNxO1
+      B6IQ+O3yqFsJN6hhaLu9Q/PoGiAdqcUy049b7cJvGUloW5hEuwkLFjW8/nHXYE3t
+      lUEDXi3r8f591xzI/ucjFTh8xuLcKVJ4bRNzGb2tpy1VoFuQ7ql733Zk569NSl/E
+      cL4FktWiTQTaIfFEBWZk/As8/JZEtNs5nmKk162WbfnAFQuJrGCnagm7VokBomr2
+      nR9tJks80oUkgEIkjFwUKalsbU8JAgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP
+      BgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBQzS484A05p6PSp8VvYbYd/5/oBpjAV
+      BgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQCD+rKTgFaI
+      Yt/1G5pQi3PtX9O0fsHhLIVNWzCEcRmBnKjRQZgB9SZIrBYKqLQOAgDg6XdM87SU
+      j/hcX0l75lu9Y7HeXSQamqee9d7Oq4cRADnw3FC0eUebdM5MJVoZnyGbVDNIpF2E
+      oQ+u85intl35wJYT3Rc+c6y/YJucPWABWZ6ujIdb8dW1RVBNwsI4Vudtv4Ejj0D6
+      vViDZdvI57EX6CK67mPKN2HLOtyd7PaRyQFxktT5DquCACxoZ8QtCnRi7dP4bR6o
+      I8qC+J7BINEfVjB7V12nxKa+iEitKfPyRFhWHPQR5hZxKrx/XDZLQVpFP8PuqJ8l
+      GisXfcbwPtEv
+      -----END CERTIFICATE-----
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubernetes.io/description: Contains a CA bundle that can be used to verify the
+        kube-apiserver when using internal endpoints such as the internal service
+        IP or kubernetes.default.svc. No other usage is guaranteed across distributions
+        of Kubernetes clusters.
+    name: kube-root-ca.crt
+    namespace: erp-security
+kind: List
+metadata:
+  resourceVersion: ''
+---
+apiVersion: v1
+items:
+- apiVersion: v1
+  data:
+    ca.crt: |
+      -----BEGIN CERTIFICATE-----
+      MIIDBTCCAe2gAwIBAgIIEU+luoFeSLowDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE
+      AxMKa3ViZXJuZXRlczAeFw0yNjA3MDcyMDQ4MjFaFw0zNjA3MDQyMDUzMjFaMBUx
+      EzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+      AoIBAQDMcn1EF7hH/9/m3vmqx26+teDfF2KEQIlvUEALPHblUfit4GGZ63/FWfct
+      bPQNRQrMb/OKYU6LnX2S7DxAXMhIFHYc6YTrQXUKSrvBx4KDoPeOhZeGEY0WNxO1
+      B6IQ+O3yqFsJN6hhaLu9Q/PoGiAdqcUy049b7cJvGUloW5hEuwkLFjW8/nHXYE3t
+      lUEDXi3r8f591xzI/ucjFTh8xuLcKVJ4bRNzGb2tpy1VoFuQ7ql733Zk569NSl/E
+      cL4FktWiTQTaIfFEBWZk/As8/JZEtNs5nmKk162WbfnAFQuJrGCnagm7VokBomr2
+      nR9tJks80oUkgEIkjFwUKalsbU8JAgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP
+      BgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBQzS484A05p6PSp8VvYbYd/5/oBpjAV
+      BgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQCD+rKTgFaI
+      Yt/1G5pQi3PtX9O0fsHhLIVNWzCEcRmBnKjRQZgB9SZIrBYKqLQOAgDg6XdM87SU
+      j/hcX0l75lu9Y7HeXSQamqee9d7Oq4cRADnw3FC0eUebdM5MJVoZnyGbVDNIpF2E
+      oQ+u85intl35wJYT3Rc+c6y/YJucPWABWZ6ujIdb8dW1RVBNwsI4Vudtv4Ejj0D6
+      vViDZdvI57EX6CK67mPKN2HLOtyd7PaRyQFxktT5DquCACxoZ8QtCnRi7dP4bR6o
+      I8qC+J7BINEfVjB7V12nxKa+iEitKfPyRFhWHPQR5hZxKrx/XDZLQVpFP8PuqJ8l
+      GisXfcbwPtEv
+      -----END CERTIFICATE-----
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubernetes.io/description: Contains a CA bundle that can be used to verify the
+        kube-apiserver when using internal endpoints such as the internal service
+        IP or kubernetes.default.svc. No other usage is guaranteed across distributions
+        of Kubernetes clusters.
+    name: kube-root-ca.crt
+    namespace: erp-ai
+kind: List
+metadata:
+  resourceVersion: ''
+---
+apiVersion: v1
+items:
+- apiVersion: v1
+  data:
+    ca.crt: |
+      -----BEGIN CERTIFICATE-----
+      MIIDBTCCAe2gAwIBAgIIEU+luoFeSLowDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE
+      AxMKa3ViZXJuZXRlczAeFw0yNjA3MDcyMDQ4MjFaFw0zNjA3MDQyMDUzMjFaMBUx
+      EzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+      AoIBAQDMcn1EF7hH/9/m3vmqx26+teDfF2KEQIlvUEALPHblUfit4GGZ63/FWfct
+      bPQNRQrMb/OKYU6LnX2S7DxAXMhIFHYc6YTrQXUKSrvBx4KDoPeOhZeGEY0WNxO1
+      B6IQ+O3yqFsJN6hhaLu9Q/PoGiAdqcUy049b7cJvGUloW5hEuwkLFjW8/nHXYE3t
+      lUEDXi3r8f591xzI/ucjFTh8xuLcKVJ4bRNzGb2tpy1VoFuQ7ql733Zk569NSl/E
+      cL4FktWiTQTaIfFEBWZk/As8/JZEtNs5nmKk162WbfnAFQuJrGCnagm7VokBomr2
+      nR9tJks80oUkgEIkjFwUKalsbU8JAgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP
+      BgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBQzS484A05p6PSp8VvYbYd/5/oBpjAV
+      BgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQCD+rKTgFaI
+      Yt/1G5pQi3PtX9O0fsHhLIVNWzCEcRmBnKjRQZgB9SZIrBYKqLQOAgDg6XdM87SU
+      j/hcX0l75lu9Y7HeXSQamqee9d7Oq4cRADnw3FC0eUebdM5MJVoZnyGbVDNIpF2E
+      oQ+u85intl35wJYT3Rc+c6y/YJucPWABWZ6ujIdb8dW1RVBNwsI4Vudtv4Ejj0D6
+      vViDZdvI57EX6CK67mPKN2HLOtyd7PaRyQFxktT5DquCACxoZ8QtCnRi7dP4bR6o
+      I8qC+J7BINEfVjB7V12nxKa+iEitKfPyRFhWHPQR5hZxKrx/XDZLQVpFP8PuqJ8l
+      GisXfcbwPtEv
+      -----END CERTIFICATE-----
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubernetes.io/description: Contains a CA bundle that can be used to verify the
+        kube-apiserver when using internal endpoints such as the internal service
+        IP or kubernetes.default.svc. No other usage is guaranteed across distributions
+        of Kubernetes clusters.
+    name: kube-root-ca.crt
+    namespace: erp-services
+kind: List
+metadata:
+  resourceVersion: ''
+---
+apiVersion: v1
+items:
+- apiVersion: v1
+  data:
+    ca.crt: |
+      -----BEGIN CERTIFICATE-----
+      MIIDBTCCAe2gAwIBAgIIEU+luoFeSLowDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE
+      AxMKa3ViZXJuZXRlczAeFw0yNjA3MDcyMDQ4MjFaFw0zNjA3MDQyMDUzMjFaMBUx
+      EzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+      AoIBAQDMcn1EF7hH/9/m3vmqx26+teDfF2KEQIlvUEALPHblUfit4GGZ63/FWfct
+      bPQNRQrMb/OKYU6LnX2S7DxAXMhIFHYc6YTrQXUKSrvBx4KDoPeOhZeGEY0WNxO1
+      B6IQ+O3yqFsJN6hhaLu9Q/PoGiAdqcUy049b7cJvGUloW5hEuwkLFjW8/nHXYE3t
+      lUEDXi3r8f591xzI/ucjFTh8xuLcKVJ4bRNzGb2tpy1VoFuQ7ql733Zk569NSl/E
+      cL4FktWiTQTaIfFEBWZk/As8/JZEtNs5nmKk162WbfnAFQuJrGCnagm7VokBomr2
+      nR9tJks80oUkgEIkjFwUKalsbU8JAgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP
+      BgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBQzS484A05p6PSp8VvYbYd/5/oBpjAV
+      BgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQCD+rKTgFaI
+      Yt/1G5pQi3PtX9O0fsHhLIVNWzCEcRmBnKjRQZgB9SZIrBYKqLQOAgDg6XdM87SU
+      j/hcX0l75lu9Y7HeXSQamqee9d7Oq4cRADnw3FC0eUebdM5MJVoZnyGbVDNIpF2E
+      oQ+u85intl35wJYT3Rc+c6y/YJucPWABWZ6ujIdb8dW1RVBNwsI4Vudtv4Ejj0D6
+      vViDZdvI57EX6CK67mPKN2HLOtyd7PaRyQFxktT5DquCACxoZ8QtCnRi7dP4bR6o
+      I8qC+J7BINEfVjB7V12nxKa+iEitKfPyRFhWHPQR5hZxKrx/XDZLQVpFP8PuqJ8l
+      GisXfcbwPtEv
+      -----END CERTIFICATE-----
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubernetes.io/description: Contains a CA bundle that can be used to verify the
+        kube-apiserver when using internal endpoints such as the internal service
+        IP or kubernetes.default.svc. No other usage is guaranteed across distributions
+        of Kubernetes clusters.
+    name: kube-root-ca.crt
+    namespace: erp-apps
+kind: List
+metadata:
+  resourceVersion: ''

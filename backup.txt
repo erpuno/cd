@@ -1,15 +1,16 @@
 📦 Complete Device-Level Backup (All PVCs & StatefulSets)
-Backup directory: ./priv/20260708-002817
+Backup directory: ./priv/20260709-004026
 
 [1] Exporting all Kubernetes manifests...
 ✅ Manifests exported and cleaned
 
 [2] Discovering PVCs ...
-   Found 5 PVCs:
+   Found 6 PVCs:
    - erp-infra/registry-data
    - erp-security/ca-pki-data
    - erp-security/ldap-directory-data
    - erp-telemetry/grafana-data
+   - erp-telemetry/opensearch-data
    - erp-telemetry/prometheus-data
 
 [3] Stopping pods (unmounting volumes)...
@@ -23,19 +24,23 @@ deployment.apps/ca-pki scaled
 deployment.apps/ldap-directory scaled
    Scaling down Deployment: erp-telemetry/grafana
 deployment.apps/grafana scaled
+   Scaling down Deployment: erp-telemetry/opensearch
+deployment.apps/opensearch scaled
 ✅ All pods stopped, volumes unmounted
 
 [4] Creating device image snapshots...
-   Backing up: erp-infra/registry-data (from /var/local-path-provisioner/pvc-8a972ba3-927e-454f-ae2d-54e3b81abc81_erp-infra_registry-data)
+   Backing up: erp-infra/registry-data (from /var/local-path-provisioner/pvc-572f3e0b-547d-4d42-b708-e864a07daa26_erp-infra_registry-data)
    ✅ erp-infra@registry-data.tar.gz (4.0K,        1 items)
-   Backing up: erp-security/ca-pki-data (from /var/local-path-provisioner/pvc-3c14194f-e31e-4e13-b4cc-82a37fc6355c_erp-security_ca-pki-data)
+   Backing up: erp-security/ca-pki-data (from /var/local-path-provisioner/pvc-9aa3b283-0b54-4a3b-bef0-71f15a58fca4_erp-security_ca-pki-data)
    ✅ erp-security@ca-pki-data.tar.gz (4.0K,       14 items)
-   Backing up: erp-security/ldap-directory-data (from /var/local-path-provisioner/pvc-dca853aa-f93e-4944-b8af-26927916db76_erp-security_ldap-directory-data)
+   Backing up: erp-security/ldap-directory-data (from /var/local-path-provisioner/pvc-1329fe0a-c3ec-466e-bf08-327152e1521f_erp-security_ldap-directory-data)
    ✅ erp-security@ldap-directory-data.tar.gz (4.0K,        2 items)
-   Backing up: erp-telemetry/grafana-data (from /var/local-path-provisioner/pvc-3486ba03-6dc0-4bd6-8b1c-73a2c548c179_erp-telemetry_grafana-data)
+   Backing up: erp-telemetry/grafana-data (from /var/local-path-provisioner/pvc-7a52099a-67db-40a0-895e-c2242da56921_erp-telemetry_grafana-data)
    ✅ erp-telemetry@grafana-data.tar.gz ( 40K,        6 items)
-   Backing up: erp-telemetry/prometheus-data (from /var/local-path-provisioner/pvc-30b185f7-8d7c-458c-bfa0-0cc8d00f30c6_erp-telemetry_prometheus-data)
-   ✅ erp-telemetry@prometheus-data.tar.gz ( 28K,        6 items)
+   Backing up: erp-telemetry/opensearch-data (from /var/local-path-provisioner/pvc-26e0a42e-817e-4344-8a6f-abf60603f27b_erp-telemetry_opensearch-data)
+   ✅ erp-telemetry@opensearch-data.tar.gz ( 60K,       81 items)
+   Backing up: erp-telemetry/prometheus-data (from /var/local-path-provisioner/pvc-59e2120e-46c1-447d-a18c-7157160356b5_erp-telemetry_prometheus-data)
+   ✅ erp-telemetry@prometheus-data.tar.gz (944K,       33 items)
 
 [5] Creating backup metadata...
 ✅ Metadata created
@@ -51,15 +56,17 @@ deployment.apps/ca-pki scaled
 deployment.apps/ldap-directory scaled
    Scaling up Deployment: erp-telemetry/grafana to 1 replicas
 deployment.apps/grafana scaled
+   Scaling up Deployment: erp-telemetry/opensearch to 1 replicas
+deployment.apps/opensearch scaled
 ✅ Pods restarting
 
 ✅ Complete backup finished!
 
-📁 Backup location: ./priv/20260708-002817
+📁 Backup location: ./priv/20260709-004026
 
 📊 Backup summary:
-140K	./priv/20260708-002817
-Total files: 7
+1.1M	./priv/20260709-004026
+Total files: 8
 
-🔍 Explore backup: ./view.sh ./priv/20260708-002817
-🔄 Restore backup: ./restore.sh ./priv/20260708-002817
+🔍 Explore backup: ./view.sh ./priv/20260709-004026
+🔄 Restore backup: ./restore.sh ./priv/20260709-004026
