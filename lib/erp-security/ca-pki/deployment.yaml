@@ -31,14 +31,14 @@ spec:
           containerPort: 5318
         env:
         - name: ERL_AFLAGS
-          value: "+S 2 +SDcpu 2 +SDio 2 +MMscs 5 -sbt db"
+          value: "+S 2 +SDcpu 2 +SDio 2 +MMscs 5 -sbt db +A 32"
         resources:
           requests:
-            cpu: 200m
-            memory: 1Gi
+            cpu: 300m
+            memory: 2Gi
           limits:
-            cpu: 500m
-            memory: 4Gi
+            cpu: 1000m
+            memory: 6Gi
         volumeMounts:
         - name: keys
           mountPath: /app/synrc
