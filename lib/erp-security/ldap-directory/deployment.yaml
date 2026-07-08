@@ -27,14 +27,14 @@ spec:
           containerPort: 389
         env:
         - name: ERL_AFLAGS
-          value: "+S 2 +SDcpu 2 +SDio 2 +MMscs 5 -sbt db +A 32"
+          value: "+S 1 +SDcpu 1 +SDio 1 -sbt db +A 16 -env ERL_MAX_PORTS 262144"
         resources:
           requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
             cpu: 300m
             memory: 2Gi
-          limits:
-            cpu: 1000m
-            memory: 6Gi
         volumeMounts:
         - name: ldap-db
           mountPath: /app/db

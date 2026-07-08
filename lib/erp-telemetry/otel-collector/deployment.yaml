@@ -37,11 +37,11 @@ spec:
           protocol: TCP
         resources:
           requests:
-            cpu: 50m
-            memory: 128Mi
+            cpu: 30m
+            memory: 64Mi
           limits:
-            cpu: 200m
-            memory: 512Mi
+            cpu: 100m
+            memory: 256Mi
         volumeMounts:
         - name: config-volume
           mountPath: /etc/otelcol
