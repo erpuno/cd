@@ -67,23 +67,19 @@ deploy_service "erp-ai" "ai-generation"
 
 # Step 6: Deploy erp-services (core application services)
 echo -e "\n[6/8] Deploying erp-services..."
-deploy_service "erp-services" "kvs-database"
-deploy_service "erp-services" "bpe-engine"
-deploy_service "erp-services" "rest-bpe"
-deploy_service "erp-services" "n2o-server"
-deploy_service "erp-services" "nitro-portal"
+deploy_service "erp-services" "kvs-storage"
+deploy_service "erp-services" "bpe-processes"
+deploy_service "erp-services" "rest-api"
+deploy_service "erp-services" "n2o-connections"
+deploy_service "erp-services" "nitro-ui"
 
 # Step 7: Deploy erp-apps (business logic applications)
 echo -e "\n[7/8] Deploying erp-apps..."
-deploy_service "erp-apps" "lms-education"
-deploy_service "erp-apps" "hl7-health"
 deploy_service "erp-apps" "crm-documents"
-deploy_service "erp-apps" "acc-accounting"
 deploy_service "erp-apps" "wms-warehouse"
-deploy_service "erp-apps" "cart-registers"
-deploy_service "erp-apps" "pm-projects"
 deploy_service "erp-apps" "itsm-incidents"
 deploy_service "erp-apps" "chat-messenger"
+deploy_service "erp-apps" "ias-auth"
 
 # Step 8: Summary
 echo -e "\n[8/8] Deployment Summary"
@@ -119,7 +115,7 @@ echo "       erp-infra: ns-dns, docker-registry"
 echo "   erp-telemetry: prometheus, grafana, otel-collector"
 echo "    erp-security: ca-pki, vpn-wireguard, ias-auth, ldap-directory"
 echo "          erp-ai: ai-generation"
-echo "    erp-services: kvs-database, bpe-engine, rest-bpe, n2o-server, nitro-portal"
+echo "    erp-services: kvs-storage, bpe-processes, rest-api, n2o-connections, nitro-ui"
 echo "        erp-apps: lms-education, hl7-health, acc-accounting, wms-warehouse, cart-registers"
 echo "        erp-apps: crm-documents, pm-projects, itsm-incidents, chat-messenger"
 
