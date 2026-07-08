@@ -11,10 +11,9 @@ ADMIN_EMAIL="root@erp.uno"
 ORG_NAME="synrc"
 REPOS=("ca" "ns" "ldap")
 
-# Print banner
-echo "================================================================="
-echo "        ERP/1 GitOps Migration: GitHub -> Local Gitea"
-echo "================================================================="
+echo "+===============================================================+"
+echo "|        ERP/1: GitOps Migration: GitHub -> Gitea               |"
+echo "+===============================================================+"
 
 show_help() {
   echo "Usage: $0 [setup|migrate|all|status|stop]"
@@ -50,7 +49,6 @@ wait_for_gitea() {
 setup_gitea() {
   echo "🚀 Starting Gitea container..."
   docker compose -f "$COMPOSE_FILE" up -d
-  
   wait_for_gitea
 
   # Create admin user if not exists
@@ -73,7 +71,7 @@ setup_gitea() {
   echo "🏢 Checking Gitea organization '$ORG_NAME'..."
   local org_status
   org_status=$(curl -s -o /dev/null -w "%{http_code}" -u "$ADMIN_USER:$ADMIN_PASS" "$GITEA_URL/api/v1/orgs/$ORG_NAME" || echo "failed")
-  
+
   if [ "$org_status" = "200" ]; then
     echo "    ✓ Organization '$ORG_NAME' already exists."
   else
@@ -90,7 +88,7 @@ setup_gitea() {
     echo "📁 Checking repository '$ORG_NAME/$repo'..."
     local repo_status
     repo_status=$(curl -s -o /dev/null -w "%{http_code}" -u "$ADMIN_USER:$ADMIN_PASS" "$GITEA_URL/api/v1/repos/$ORG_NAME/$repo" || echo "failed")
-    
+
     if [ "$repo_status" = "200" ]; then
       echo "    ✓ Repository '$ORG_NAME/$repo' already exists."
     else
@@ -115,7 +113,7 @@ migrate_repos() {
   for repo in "${REPOS[@]}"; do
     echo "-----------------------------------------------------------------"
     echo "📦 Migrating '$repo'..."
-    
+
     local github_url="https://github.com/synrc/${repo}.git"
     local gitea_push_url="http://${ADMIN_USER}:${ADMIN_PASS}@localhost:3000/${ORG_NAME}/${repo}.git"
     local clone_path="$temp_dir/${repo}.git"
@@ -134,23 +132,23 @@ migrate_repos() {
       cd "$clone_path"
       git push --mirror "$gitea_push_url"
     )
-    
+
     echo "    Cleaning up local temp files..."
     rm -rf "$clone_path"
     echo "    ✓ Migration of '$repo' completed successfully."
   done
 
   rm -rf "$temp_dir"
-  echo "================================================================="
-  echo "🎉 All repositories successfully migrated to Gitea!"
-  echo "   Gitea URL: http://localhost:3000/org/synrc/dashboard"
-  echo "================================================================="
+  echo "+===============================================================+"
+  echo "|      All repositories successfully migrated to Gitea!         |"
+  echo "|   Gitea URL: http://localhost:3000/org/synrc/dashboard        |"
+  echo "+===============================================================+"
 }
 
 status_gitea() {
   echo "ℹ️ Checking Gitea Container Status..."
   docker compose -f "$COMPOSE_FILE" ps
-  
+
   echo -e "\nℹ️ Checking Repository Status in Gitea:"
   for repo in "${REPOS[@]}"; do
     local repo_status
@@ -172,23 +170,10 @@ stop_gitea() {
 }
 
 case "$ACTION" in
-  setup)
-    setup_gitea
-    ;;
-  migrate)
-    migrate_repos
-    ;;
-  all)
-    setup_gitea
-    migrate_repos
-    ;;
-  status)
-    status_gitea
-    ;;
-  stop)
-    stop_gitea
-    ;;
-  *)
-    show_help
-    ;;
+  setup) setup_gitea ;;
+  migrate) migrate_repos ;;
+  all) setup_gitea ; migrate_repos ;;
+  status) status_gitea ;;
+  stop) stop_gitea ;;
+  *) show_help ;;
 esac
