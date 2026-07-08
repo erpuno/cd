@@ -14,7 +14,7 @@ This document describes how to migrate dependencies from GitHub (`github.com/syn
 
 ## 🚀 Step 1: Run Gitea and Migrate Repositories
 
-All steps (startup, user creation, org/repo creation, and mirroring) are automated by the [gitops.sh](file:///Users/tonpa/depot/erpuno/cd/gitops.sh) script.
+All steps (startup, user creation, org/repo creation, and mirroring) are automated by the `gitops.sh` script.
 
 Run the script with the `all` command:
 ```bash
@@ -22,7 +22,7 @@ Run the script with the `all` command:
 ```
 
 This performs the following actions:
-1. Starts the Gitea container via [compose/gitea.yaml](file:///Users/tonpa/depot/erpuno/cd/compose/gitea.yaml).
+1. Starts the Gitea container via [compose/gitea.yaml](compose/gitea.yaml).
 2. Provisions the admin user (`root` with password `ErpUnoGitea2026`).
 3. Creates the `synrc` organization.
 4. Initializes repositories for `ca`, `ns`, and `ldap`.
