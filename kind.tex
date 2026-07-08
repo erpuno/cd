@@ -647,6 +647,97 @@ Examples of script execution:
 ./gitops.sh stop        # Shut down local repository node
 \end{verbatim}
 
+\subsection{ArgoCD Local Integration}
+
+To bootstrap continuous delivery in the local development environment, ArgoCD is deployed directly inside the Kind cluster in its own namespace (\texttt{argocd}). Because Gitea runs in a separate Docker container on the host machine, pods inside the cluster resolve Gitea via the native host gateway DNS entry \texttt{host.docker.internal:3000}.
+
+The local integration proceeds in four steps, automated by the custom bootstrap script \texttt{argocd.sh}:
+
+\begin{enumerate}
+    \item \textbf{Namespace Initialization}: Instantiates the \texttt{argocd} namespace.
+    \item \textbf{Manifest Deployment}: Pulls and applies the standard ArgoCD controller and server manifests.
+    \item \textbf{Gitea Code Mirroring}: Creates the \texttt{cd} repository inside the Gitea organization if not present, and pushes the local configuration directory state as the GitOps source of truth.
+    \item \textbf{Application Mapping}: Configures the root ArgoCD Application to monitor the Gitea repo's \texttt{helm/} path and automatically synchronize changes into the cluster.
+\end{enumerate}
+
+To route traffic to the ArgoCD web console, we define a Kubernetes Ingress resource mapping the domain \texttt{argocd.erp-uno.local} to the \texttt{argocd-server} service, utilizing the cluster's pre-configured Traefik Ingress controller:
+
+\begin{verbatim}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server-ingress
+  namespace: argocd
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: argocd.erp-uno.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: argocd-server
+            port:
+              number: 80
+\end{verbatim}
+
+Developers register \texttt{127.0.0.1 argocd.erp-uno.local} in the host resolver configuration to enable direct browser access.
+
+If the UI is not accessible directly or if editing \texttt{/etc/hosts} is restricted, port forwarding to the ArgoCD Server service serves as a fallback:
+\begin{verbatim}
+kubectl port-forward -n argocd svc/argocd-server 8080:80
+\end{verbatim}
+The Web UI can then be accessed via browser at \texttt{http://localhost:8080}.
+
+* Username: admin
+* Password: Rb2OTCWZpnzxMYK7
+
+To make this port forwarding tunnel permanent on macOS (surviving restarts and running automatically in the background), developers can install the provided LaunchAgent configuration:
+\begin{verbatim}
+# Copy plist to macOS LaunchAgents directory
+cp argocd/uno.erp.argocd-portforward.plist ~/Library/LaunchAgents/
+
+# Load the background service agent
+launchctl load ~/Library/LaunchAgents/uno.erp.argocd-portforward.plist
+\end{verbatim}
+
+\subsubsection{Using the ArgoCD Command-Line Client}
+
+Rather than interacting with the Web UI, developers can use the ArgoCD CLI tool. On macOS, the utility is installed via Homebrew:
+\begin{verbatim}
+brew install argocd
+\end{verbatim}
+
+Once the port forwarding tunnel is active, obtain the admin credentials and authenticate the CLI client:
+\begin{verbatim}
+# Retrieve the generated administrator password
+PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath="{.data.password}" | base64 -d)
+
+# Log in to the localhost server
+argocd login localhost:8080 --insecure --username admin --password "$PASSWORD"
+\end{verbatim}
+
+With the CLI authenticated, applications can be inspected, updated, and synchronized directly from the terminal. Note that running any command without first executing the login step (or without specifying the server explicitly) will trigger an \texttt{"Argo CD server address unspecified"} fatal error. You can either authenticate first, or supply the server and security bypass flags on every command:
+\begin{verbatim}
+# Display details using explicit server parameters
+argocd --server localhost:8080 --insecure app get erp-uno
+
+# Trigger manual synchronization using explicit server parameters
+argocd --server localhost:8080 --insecure app sync erp-uno
+\end{verbatim}
+
+If you have already authenticated using the \texttt{argocd login} command, the server context is saved locally, and you can run the commands directly:
+\begin{verbatim}
+# Display details and health of the application
+argocd app get erp-uno
+
+# Trigger a manual sync of all manifests
+argocd app sync erp-uno
+\end{verbatim}
+
 \newpage
 \section{Conclusion}
 

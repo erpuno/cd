@@ -59,28 +59,28 @@ deploy_service "erp-telemetry" "otel-collector"
 # Step 4: Deploy erp-security
 echo -e "\n[4/8] Deploying erp-security..."
 deploy_service "erp-security" "ca-pki"
-deploy_service "erp-security" "vpn-wireguard"
+# deploy_service "erp-security" "vpn-wireguard"
 deploy_service "erp-security" "ldap-directory"
 
 # Step 5: Deploy erp-ai
 echo -e "\n[5/8] Deploying erp-ai..."
-deploy_service "erp-ai" "ai-generation"
+# deploy_service "erp-ai" "ai-generation"
 
 # Step 6: Deploy erp-services (core application services)
 echo -e "\n[6/8] Deploying erp-services..."
-deploy_service "erp-services" "kvs-storage"
-deploy_service "erp-services" "bpe-processes"
-deploy_service "erp-services" "rest-api"
-deploy_service "erp-services" "n2o-connections"
-deploy_service "erp-services" "nitro-ui"
+# deploy_service "erp-services" "kvs-storage"
+# deploy_service "erp-services" "bpe-processes"
+# deploy_service "erp-services" "rest-api"
+# deploy_service "erp-services" "n2o-connections"
+# deploy_service "erp-services" "nitro-ui"
 
 # Step 7: Deploy erp-apps (business logic applications)
 echo -e "\n[7/8] Deploying erp-apps..."
-deploy_service "erp-apps" "crm-documents"
-deploy_service "erp-apps" "wms-warehouse"
-deploy_service "erp-apps" "itsm-incidents"
-deploy_service "erp-apps" "chat-messenger"
-deploy_service "erp-apps" "ias-auth"
+# deploy_service "erp-apps" "crm-documents"
+# deploy_service "erp-apps" "wms-warehouse"
+# deploy_service "erp-apps" "itsm-incidents"
+# deploy_service "erp-apps" "chat-messenger"
+# deploy_service "erp-apps" "ias-auth"
 
 # Step 8: Summary
 echo -e "\n[8/8] Deployment Summary"
