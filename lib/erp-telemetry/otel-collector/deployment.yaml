@@ -85,6 +85,9 @@ data:
       prometheus:
         endpoint: 0.0.0.0:8889
         namespace: otel
+      opensearch:
+        endpoints: ["http://opensearch:9200"]
+        index: "otel-index-{now}"
       debug:
         verbosity: detailed
 
@@ -104,11 +107,11 @@ data:
         traces:
           receivers: [otlp]
           processors: [memory_limiter, batch]
-          exporters: [debug]
+          exporters: [opensearch, debug]
         logs:
           receivers: [otlp]
           processors: [memory_limiter, batch]
-          exporters: [debug]
+          exporters: [opensearch, debug]
       telemetry:
         logs:
           level: "info"

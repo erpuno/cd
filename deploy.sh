@@ -51,6 +51,7 @@ deploy_service "erp-infra" "docker-registry"
 
 # Step 3: Deploy erp-telemetry
 echo -e "\n[3/8] Deploying erp-telemetry..."
+deploy_service "erp-telemetry" "opensearch"
 deploy_service "erp-telemetry" "prometheus"
 deploy_service "erp-telemetry" "grafana"
 deploy_service "erp-telemetry" "otel-collector"
