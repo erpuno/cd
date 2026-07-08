@@ -31,11 +31,11 @@ spec:
           protocol: TCP
         env:
         - name: ERL_AFLAGS
-          value: "+S 1 +SDcpu 1 +SDio 1 +MMscs 0 +JMsingle true"
+          value: "+S 2 +SDcpu 2 +SDio 2 +MMscs 5 -sbt db"
         resources:
           requests:
-            cpu: 50m
-            memory: 512Mi
-          limits:
             cpu: 200m
-            memory: 3Gi
+            memory: 1Gi
+          limits:
+            cpu: 500m
+            memory: 4Gi
