@@ -1,14 +1,15 @@
 ╔════════════════════════════════════════════════════════════════════════════════╗
-║                   ERP/1: Cluster Liveness & Events Monitor                     ║
+║                   ERP/1: Cluster Liveness & Events Monitor                   ║
 ╚════════════════════════════════════════════════════════════════════════════════╝
 
 [1/4] Checking Kubernetes API Server and Node Liveness...
 NAME                  STATUS   ROLES           AGE   VERSION
-synrc-control-plane   Ready    control-plane   27h   v1.36.1
+synrc-control-plane   Ready    control-plane   35h   v1.36.1
     ✓ Cluster nodes are active
 
 [2/4] Checking ArgoCD Server Connection (127.0.0.1:8080)...
     ✓ Connection successful
+    Authenticating ArgoCD CLI...
 
 [3/4] Querying ArgoCD Cluster & App Liveness...
 SERVER                          NAME        VERSION  STATUS      MESSAGE  PROJECT
@@ -26,54 +27,66 @@ Source:
   Helm Values:      values.yaml
 SyncWindow:         Sync Allowed
 Sync Policy:        Automated (Prune)
-Sync Status:        OutOfSync from HEAD (f3b3c67)
+Sync Status:        Synced to HEAD (b104158)
 Health Status:      Healthy
 
-GROUP  KIND            NAMESPACE      NAME              STATUS     HEALTH   HOOK  MESSAGE
-apps   StatefulSet     erp-security   ldap-directory    OutOfSync  Healthy        statefulset.apps/ldap-directory serverside-applied
-apps   StatefulSet     erp-telemetry  prometheus        OutOfSync  Healthy        statefulset.apps/prometheus serverside-applied
-       Namespace                      erp-ai            Synced                    
-       Namespace                      erp-apps          Synced                    
-       Namespace                      erp-infra         Synced                    
-       Namespace                      erp-security      Synced                    
-       Namespace                      erp-services      Synced                    
-       Namespace                      erp-telemetry     Synced                    
-       Service         erp-infra      traefik-ingress   Synced     Healthy        
-       Service         erp-security   ldap-directory    Synced     Healthy        
-       Service         erp-telemetry  prometheus        Synced     Healthy        
-       ServiceAccount  erp-ai         erp-ai-sa         Synced                    
-       ServiceAccount  erp-apps       erp-apps-sa       Synced                    
-       ServiceAccount  erp-infra      erp-infra-sa      Synced                    
-       ServiceAccount  erp-security   erp-security-sa   Synced                    
-       ServiceAccount  erp-services   erp-services-sa   Synced                    
-       ServiceAccount  erp-telemetry  erp-telemetry-sa  Synced                    
-apps   Deployment      erp-infra      traefik-ingress   Synced     Healthy        
+GROUP  KIND            NAMESPACE      NAME              STATUS  HEALTH   HOOK  MESSAGE
+       Service         erp-telemetry  prometheus        Synced  Healthy        service/prometheus serverside-applied
+       Service         erp-telemetry  otel-collector    Synced  Healthy        service/otel-collector serverside-applied
+apps   StatefulSet     erp-telemetry  prometheus        Synced  Healthy        statefulset.apps/prometheus serverside-applied
+apps   StatefulSet     erp-telemetry  grafana           Synced  Healthy        statefulset.apps/grafana serverside-applied
+apps   StatefulSet     erp-telemetry  opensearch        Synced  Healthy        statefulset.apps/opensearch serverside-applied
+       Namespace                      erp-ai            Synced                 
+       Namespace                      erp-apps          Synced                 
+       Namespace                      erp-infra         Synced                 
+       Namespace                      erp-security      Synced                 
+       Namespace                      erp-services      Synced                 
+       Namespace                      erp-telemetry     Synced                 
+       Service         erp-infra      docker-registry   Synced  Healthy        
+       Service         erp-infra      ns-dns            Synced  Healthy        
+       Service         erp-infra      traefik-ingress   Synced  Healthy        
+       Service         erp-security   ca-pki            Synced  Healthy        
+       Service         erp-security   ldap-directory    Synced  Healthy        
+       Service         erp-telemetry  grafana           Synced  Healthy        
+       Service         erp-telemetry  opensearch        Synced  Healthy        
+       ServiceAccount  erp-ai         erp-ai-sa         Synced                 
+       ServiceAccount  erp-apps       erp-apps-sa       Synced                 
+       ServiceAccount  erp-infra      erp-infra-sa      Synced                 
+       ServiceAccount  erp-security   erp-security-sa   Synced                 
+       ServiceAccount  erp-services   erp-services-sa   Synced                 
+       ServiceAccount  erp-telemetry  erp-telemetry-sa  Synced                 
+apps   Deployment      erp-infra      ns-dns            Synced  Healthy        
+apps   Deployment      erp-infra      traefik-ingress   Synced  Healthy        
+apps   Deployment      erp-telemetry  otel-collector    Synced  Healthy        
+apps   StatefulSet     erp-infra      docker-registry   Synced  Healthy        
+apps   StatefulSet     erp-security   ca-pki            Synced  Healthy        
+apps   StatefulSet     erp-security   ldap-directory    Synced  Healthy        
 
 [4/4] Retrieving latest events (Error/Warning/Info) in ERP namespaces...
 --------------------------------------------------------------------------------
-erp-infra     7m15s Normal  deployment/traefik-ingress             Scaled up replica set traefik-ingress-79f6d44b94 from 0 to 1
-argocd        7m15s Normal  application/erp-uno                    Partial sync operation to f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca succeeded
-argocd        7m15s Normal  application/erp-uno                    Updated health status: Healthy -> Progressing
-argocd        7m15s Normal  application/erp-uno                    Sync operation to f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca succeeded
-erp-telemetry 7m14s Normal  pod/prometheus-0                       Container created                       
-erp-telemetry 7m14s Normal  pod/prometheus-0                       Container started                       
-erp-security  7m14s Normal  pod/ldap-directory-0                   Container image "docker.io/erpuno/ldap:latest" already present on machine and ca
-erp-telemetry 7m14s Normal  pod/prometheus-0                       Container image "docker.io/prom/prometheus:v2.53.0" already present on machine a
-erp-security  7m14s Normal  pod/ldap-directory-0                   Container created                       
-erp-infra     7m14s Normal  pod/traefik-ingress-79f6d44b94-lvrjf   Pulling image "docker.io/traefik:v3.3"  
-erp-infra     7m14s Normal  pod/traefik-ingress-79f6d44b94-lvrjf   Successfully pulled image "docker.io/traefik:v3.3" in 898ms (898ms including wai
-erp-infra     7m14s Normal  pod/traefik-ingress-79f6d44b94-lvrjf   Container created                       
-erp-infra     7m14s Normal  pod/traefik-ingress-79f6d44b94-lvrjf   Container started                       
-erp-security  7m14s Normal  pod/ldap-directory-0                   Container started                       
-argocd        7m13s Normal  application/erp-uno                    Initiated automated sync to 'f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca'
-argocd        7m13s Normal  application/erp-uno                    Updated health status: Progressing -> Healthy
-argocd        7m13s Normal  application/erp-uno                    Partial sync operation to f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca succeeded
-argocd        7m7s  Normal  application/erp-uno                    Partial sync operation to f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca succeeded
-argocd        7m7s  Normal  application/erp-uno                    Initiated automated sync to 'f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca'
-argocd        6m49s Normal  application/erp-uno                    Partial sync operation to f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca succeeded
-argocd        6m49s Normal  application/erp-uno                    Initiated automated sync to 'f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca'
-argocd        5m55s Normal  application/erp-uno                    Initiated automated sync to 'f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca'
-argocd        5m55s Normal  application/erp-uno                    Partial sync operation to f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca succeeded
-argocd        3m13s Normal  application/erp-uno                    Initiated automated sync to 'f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca'
-argocd        3m13s Normal  application/erp-uno                    Partial sync operation to f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca succeeded
+erp-security  22m   Normal  pod/ca-pki-0                           Container created                       
+erp-security  22m   Normal  pod/ca-pki-0                           Container started                       
+erp-telemetry 22m   Normal  persistentvolumeclaim/data-grafana-0   External provisioner is provisioning volume for claim "erp-telemetry/data-grafan
+erp-telemetry 22m   Normal  persistentvolumeclaim/data-prometheus- External provisioner is provisioning volume for claim "erp-telemetry/data-promet
+erp-telemetry 22m   Normal  persistentvolumeclaim/data-prometheus- Successfully provisioned volume pvc-6af9c195-e974-4828-b30c-8c4902d4a651
+erp-telemetry 22m   Normal  pod/prometheus-0                       Container created                       
+erp-telemetry 22m   Normal  pod/prometheus-0                       Container started                       
+erp-telemetry 22m   Normal  pod/prometheus-0                       Successfully assigned erp-telemetry/prometheus-0 to synrc-control-plane
+erp-telemetry 22m   Normal  pod/prometheus-0                       Container image "docker.io/prom/prometheus:v2.53.0" already present on machine a
+erp-telemetry 22m   Normal  persistentvolumeclaim/data-grafana-0   Successfully provisioned volume pvc-e84700a6-12ce-4bf2-b661-2ee2f9037e49
+erp-telemetry 22m   Normal  pod/grafana-0                          Container image "docker.io/grafana/grafana:11.1.0" already present on machine an
+erp-telemetry 22m   Normal  pod/grafana-0                          Container started                       
+erp-telemetry 22m   Normal  pod/grafana-0                          Container created                       
+erp-telemetry 22m   Normal  pod/grafana-0                          Successfully assigned erp-telemetry/grafana-0 to synrc-control-plane
+erp-telemetry 22m   Normal  statefulset/opensearch                 Create Pod opensearch-0 in StatefulSet opensearch successful
+erp-telemetry 22m   Normal  persistentvolumeclaim/data-opensearch- External provisioner is provisioning volume for claim "erp-telemetry/data-opense
+erp-telemetry 22m   Normal  statefulset/opensearch                 Create Claim data-opensearch-0 Pod opensearch-0 in StatefulSet opensearch succes
+erp-telemetry 22m   Normal  persistentvolumeclaim/data-opensearch- Waiting for a volume to be created either by the external provisioner 'rancher.i
+erp-telemetry 22m   Normal  persistentvolumeclaim/data-opensearch- waiting for first consumer to be created before binding
+erp-telemetry 21m   Normal  persistentvolumeclaim/data-opensearch- Successfully provisioned volume pvc-9cf2333d-5d4f-4513-b073-1205f2a9fb0e
+argocd        21m   Normal  application/erp-uno                    Updated health status: Progressing -> Healthy
+erp-telemetry 21m   Normal  pod/opensearch-0                       Container started                       
+erp-telemetry 21m   Normal  pod/opensearch-0                       Successfully assigned erp-telemetry/opensearch-0 to synrc-control-plane
+erp-telemetry 21m   Normal  pod/opensearch-0                       Container created                       
+erp-telemetry 21m   Normal  pod/opensearch-0                       Container image "docker.io/opensearchproject/opensearch:2.14.0" already present 
 --------------------------------------------------------------------------------

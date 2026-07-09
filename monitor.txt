@@ -1,0 +1,47 @@
+================================================================================
+📊 ERP/1 Cluster Monitor | Time: 2026-07-09 11:40:27 | Context: kind-synrc
+================================================================================
+
+📌 ArgoCD Application Status [APP: erp-uno]
+--------------------------------------------------------------------------------
+Name:               argocd/erp-uno
+Sync Status:        Synced to HEAD (b104158)
+Health Status:      Healthy
+
+⚙️ ArgoCD System Pods
+--------------------------------------------------------------------------------
+argocd-application-controller-0                     true   Running   0
+argocd-applicationset-controller-68fd97ccb6-stk75   true   Running   0
+argocd-dex-server-99ff57675-r9vbf                   true   Running   0
+argocd-notifications-controller-8596549fb6-ms9n9    true   Running   0
+argocd-redis-6f6867546c-568hd                       true   Running   0
+argocd-repo-server-59444f4bbb-8skfn                 true   Running   0
+argocd-server-55494cf66-4cqs5                       true   Running   0
+
+📦 ERP Application Pods
+--------------------------------------------------------------------------------
+NAMESPACE          POD NAME                                      READY   STATUS   RESTARTS
+---------          --------                                      -----   ------   --------
+erp-infra          docker-registry-0                             1/1     Running  0
+erp-infra          ns-dns-6854d7dd87-rhb22                       1/1     Running  0
+erp-infra          traefik-ingress-79f6d44b94-pzsmq              1/1     Running  0
+erp-security       ca-pki-0                                      1/1     Running  0
+erp-security       ldap-directory-0                              1/1     Running  0
+erp-telemetry      grafana-0                                     1/1     Running  0
+erp-telemetry      opensearch-0                                  1/1     Running  0
+erp-telemetry      otel-collector-64d89fdf77-7zt8n               1/1     Running  0
+erp-telemetry      prometheus-0                                  1/1     Running  0
+
+⚠️ Recent Kubernetes Events (ERP & ArgoCD)
+--------------------------------------------------------------------------------
+erp-telemetry Normal  persistentvolumeclaim/data-opens Waiting for a volume to be created either by the e
+erp-telemetry Normal  persistentvolumeclaim/data-opens waiting for first consumer to be created before bi
+erp-telemetry Normal  persistentvolumeclaim/data-opens Successfully provisioned volume pvc-9cf2333d-5d4f-
+argocd        Normal  application/erp-uno              Updated health status: Progressing -> Healthy     
+erp-telemetry Normal  pod/opensearch-0                 Container started                                 
+erp-telemetry Normal  pod/opensearch-0                 Successfully assigned erp-telemetry/opensearch-0 t
+erp-telemetry Normal  pod/opensearch-0                 Container created                                 
+erp-telemetry Normal  pod/opensearch-0                 Container image "docker.io/opensearchproject/opens
+================================================================================
+💡 Tip: Press Ctrl+C to exit monitoring loop
+👋 Monitoring stopped.
