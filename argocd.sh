@@ -40,10 +40,12 @@ fi
 # 2.5 Generate helm/values.yaml from active configuration
 echo -e "\n[2.5/6] Generating helm/values.yaml from active services..."
 ruby "$SCRIPT_DIR/values.rb" --force
-if ! git diff --quiet helm/values.yaml; then
-  echo "    Committing generated helm/values.yaml..."
-  git add helm/values.yaml
-  git commit -m "auto-generate helm/values.yaml"
+HAD_DIFF=false
+if ! git diff --quiet; then
+  echo "    Creating temporary commit for Gitea push (changes will be reset locally afterwards)..."
+  git add -u
+  git commit -m "temp: local fixes and auto-generated helm/values.yaml"
+  HAD_DIFF=true
 fi
 
 # 3. Push current branch to Gitea
@@ -57,6 +59,12 @@ PUSH_URL="http://${ADMIN_USER}:${ADMIN_PASS}@localhost:3000/${ORG_NAME}/${REPO_N
 echo "    Pushing branch '$CURRENT_BRANCH' to Gitea 'main'..."
 git push -f "$PUSH_URL" "${CURRENT_BRANCH}:main"
 echo "    ✓ Pushed local code successfully"
+
+# Reset the temporary commit if one was created, so working copy has unstaged changes
+if [ "$HAD_DIFF" = true ]; then
+  echo "    Resetting temporary commit (keeping changes in working tree for review)..."
+  git reset HEAD~1
+fi
 
 # 4. Check Kubernetes cluster access
 echo -e "\n[4/6] Checking Kubernetes cluster status..."
@@ -95,6 +103,15 @@ kubectl -n argocd patch deploy argocd-server --type='json' -p='[{"op": "add", "p
 
 echo "    Waiting for ArgoCD server deployment rollout..."
 kubectl rollout status deployment argocd-server -n argocd --timeout=150s
+
+# 5.5 Clean up manual deployments/services/hpas/pvcs to avoid GitOps conflicts
+echo -e "\n[5.5/7] Cleaning up manual deployments/services to avoid GitOps conflicts..."
+for ns in erp-infra erp-security erp-telemetry erp-ai erp-services erp-apps; do
+  if kubectl get ns "$ns" &>/dev/null; then
+    echo "    Cleaning namespace $ns..."
+    kubectl delete deployments,services,statefulsets,hpa,pvc --all -n "$ns" --ignore-not-found --grace-period=0 --force 2>/dev/null || true
+  fi
+done
 
 # 6. Apply Ingress and Application
 echo -e "\n[6/7] Applying ArgoCD Application & Ingress manifests..."

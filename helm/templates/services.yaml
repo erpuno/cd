@@ -1,9 +1,9 @@
 {{- range $namespace, $services := .Values.services }}
 {{- if (index $.Values.namespaces $namespace).enabled }}
----
-# Services for {{ $namespace }}
 {{- range $serviceName, $service := $services }}
 {{- if $service.enabled }}
+---
+# Service for {{ $namespace }}/{{ $serviceName }}
 apiVersion: v1
 kind: Service
 metadata:
