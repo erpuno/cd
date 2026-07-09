@@ -29,12 +29,10 @@ if ! curl -s --fail "http://$ARGOCD_SERVER" >/dev/null; then
 fi
 echo "    ✓ Connection successful"
 
-# 3. Authenticate ArgoCD CLI if needed
-if ! argocd account get-user-info --server "$ARGOCD_SERVER" --plaintext &>/dev/null; then
-  echo "    Authenticating ArgoCD CLI..."
-  PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
-  argocd login "$ARGOCD_SERVER" --plaintext --skip-test-tls --username admin --password "$PASSWORD" >/dev/null
-fi
+# 3. Authenticate ArgoCD CLI
+echo "    Authenticating ArgoCD CLI..."
+PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+echo y | argocd login "$ARGOCD_SERVER" --plaintext --insecure --skip-test-tls --username admin --password "$PASSWORD" >/dev/null
 
 # 4. Check ArgoCD Application and Cluster Liveness
 echo -e "\n[3/4] Querying ArgoCD Cluster & App Liveness..."
