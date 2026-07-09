@@ -146,6 +146,30 @@ def extract_service_config(service_dir, service_name)
           'mountPath'      => pvc_mount_path || '/data'
         }
       end
+
+      # ConfigMaps (volumeMounts pointing to ConfigMap volumes)
+      config_maps = []
+      if template['volumes'] && container['volumeMounts']
+        cm_volumes = {}
+        template['volumes'].each do |v|
+          if v['configMap']
+            cm_volumes[v['name']] = v['configMap']['name']
+          end
+        end
+
+        container['volumeMounts'].each do |m|
+          if cm_volumes.key?(m['name'])
+            config_maps << {
+              'name' => cm_volumes[m['name']],
+              'mountPath' => m['mountPath']
+            }
+          end
+        end
+      end
+
+      unless config_maps.empty?
+        config['configMaps'] = config_maps
+      end
     rescue => e
       warn "⚠️  Parse error #{deployment_path}: #{e.message}"
     end

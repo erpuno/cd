@@ -57,11 +57,27 @@ spec:
         resources:
           {{- toYaml $service.resources | nindent 10 }}
         {{- end }}
-        {{- if $service.persistence }}
+        {{- if or $service.persistence $service.configMaps }}
         volumeMounts:
+        {{- if $service.persistence }}
         - name: data
           mountPath: {{ $service.persistence.mountPath }}
         {{- end }}
+        {{- if $service.configMaps }}
+        {{- range $cm := $service.configMaps }}
+        - name: {{ $cm.name }}-vol
+          mountPath: {{ $cm.mountPath }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+      {{- if $service.configMaps }}
+      volumes:
+      {{- range $cm := $service.configMaps }}
+      - name: {{ $cm.name }}-vol
+        configMap:
+          name: {{ $cm.name }}
+      {{- end }}
+      {{- end }}
   {{- if $service.persistence }}
   volumeClaimTemplates:
   - apiVersion: v1

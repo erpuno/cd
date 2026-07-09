@@ -168,6 +168,9 @@ services:
         size: 10Gi
         storageClassName: standard
         mountPath: "/var/lib/grafana"
+      configMaps:
+      - name: grafana-datasources
+        mountPath: "/etc/grafana/provisioning/datasources"
     opensearch:
       enabled: true
       replicas: 1
@@ -213,6 +216,9 @@ services:
       - "/otelcol-contrib"
       - "--config=/etc/otelcol/config.yaml"
       protocol: TCP
+      configMaps:
+      - name: otel-collector-config
+        mountPath: "/etc/otelcol"
     prometheus:
       enabled: true
       replicas: 1
@@ -232,6 +238,9 @@ services:
         size: 10Gi
         storageClassName: standard
         mountPath: "/prometheus"
+      configMaps:
+      - name: prometheus-config
+        mountPath: "/etc/prometheus"
 rbac:
   create: true
 networkPolicy:
