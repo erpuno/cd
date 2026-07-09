@@ -40,45 +40,6 @@ services:
       tag: 2024.6.15
       port: 8080
   erp-apps:
-    acc-accounting:
-      enabled: true
-      replicas: 1
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-      image: erpuno/acc-accounting
-      tag: 2024.6.15
-      port: 8080
-    cart-registers:
-      enabled: true
-      replicas: 1
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-      image: erpuno/cart-registers
-      tag: 2024.6.15
-      port: 8080
-    crm-documents:
-      enabled: true
-      replicas: 1
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-      image: erpuno/crm-documents
-      tag: 2024.6.15
-      port: 8080
     hl7-health:
       enabled: true
       replicas: 2
@@ -98,19 +59,6 @@ services:
         minReplicas: 2
         maxReplicas: 6
         targetCPUUtilization: 75
-    itsm-incidents:
-      enabled: true
-      replicas: 1
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-      image: erpuno/itsm-incidents
-      tag: 2024.6.15
-      port: 8080
     lms-education:
       enabled: true
       replicas: 2
@@ -130,32 +78,6 @@ services:
         minReplicas: 2
         maxReplicas: 6
         targetCPUUtilization: 75
-    pm-projects:
-      enabled: true
-      replicas: 1
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-      image: erpuno/pm-projects
-      tag: 2024.6.15
-      port: 8080
-    wms-warehouse:
-      enabled: true
-      replicas: 1
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-      image: erpuno/wms-warehouse
-      tag: 2024.6.15
-      port: 8080
   erp-infra:
     docker-registry:
       enabled: true
@@ -242,72 +164,7 @@ services:
         size: 10Gi
         storageClassName: standard
         mountPath: "/app/db"
-  erp-services:
-    bpe-processes:
-      enabled: true
-      replicas: 1
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-      image: erpuno/bpe-processes
-      tag: 2024.6.15
-      port: 8080
-    chat-messenger:
-      enabled: true
-      replicas: 1
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-      image: erpuno/chat-messenger
-      tag: 2024.6.15
-      port: 8080
-    kvs-storage:
-      enabled: true
-      replicas: 1
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-      image: erpuno/kvs-storage
-      tag: 2024.6.15
-      port: 8080
-    n2o-connections:
-      enabled: true
-      replicas: 1
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-      image: erpuno/n2o-connections
-      tag: 2024.6.15
-      port: 8080
-    rest-api:
-      enabled: true
-      replicas: 1
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-      image: erpuno/rest-api
-      tag: 2024.6.15
-      port: 8080
+  erp-services: {}
   erp-telemetry:
     grafana:
       enabled: true
