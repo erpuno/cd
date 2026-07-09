@@ -371,38 +371,43 @@ erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\tex
 
 \subsection{Зведена таблиця маніфестів}
 
-D --- deployment, S --- service, P --- pvc, V --- values, H --- hpa.
+Легенда: D --- deployment, S --- service, P --- pvc, V --- values, H --- hpa.
 
 \vspace{6pt}
 {\footnotesize
-\begin{longtable}{L{5.5cm} L{2.0cm} L{1.6cm} C{0.9cm} L{1.7cm} L{2cm}}
+\begin{longtable}{L{5.5cm} L{2.0cm} L{1.6cm} C{0.9cm} L{1.7cm} L{1.5cm}}
 \toprule
 \rowcolor{headerbg}
-\color{primary}\textbf{Сервіс} & \color{primary}\textbf{Namespace} & \color{primary}\textbf{Kind} & \color{primary}\textbf{Port} & \color{primary}\textbf{CPU req/lim} & \color{primary}\textbf{Маніфести} \\
+\color{primary}\textbf{Сервіс} & \color{primary}\textbf{Namespace} & \color{primary}\textbf{Kind} & \color{primary}\textbf{Port} & \color{primary}\textbf{CPU req/lim} & \color{primary}\textbf{Легенда} \\
 \midrule\endhead\bottomrule\endfoot
-\multicolumn{6}{l}{\textcolor{infrablue}{\bfseries\small erp-infra --- Інфраструктурний рівень}}\\
+\multicolumn{6}{l}{\textcolor{infrablue}{\bfseries\small erp-infra --- Рівень інфраструктури}}\\
+\midrule
 \texttt{ns-dns}          & erp-infra  & Deployment  & 8080 & 100m/500m & DSV \\
 \rowcolor{rowalt}\texttt{docker-registry} & erp-infra & Deployment & 5000 & 50m/200m & PDSV \\
 \midrule
-\multicolumn{6}{l}{\textcolor{successgreen}{\bfseries\small erp-telemetry --- Observability рівень}}\\
+\multicolumn{6}{l}{\textcolor{successgreen}{\bfseries\small erp-telemetry --- Рівень спостереження}}\\
+\midrule
 \texttt{prometheus}      & erp-telemetry & StatefulSet & 9090 & 100m/500m & PDSV \\
 \rowcolor{rowalt}\texttt{grafana}  & erp-telemetry & Deployment & 3000 & 50m/200m & PDSV \\
 \texttt{otel-collector} & erp-telemetry & Deployment & 8404 & 100m/500m & DSV \\
 \midrule
-\multicolumn{6}{l}{\textcolor{secpurple}{\bfseries\small erp-security --- Безпековий рівень}}\\
+\multicolumn{6}{l}{\textcolor{secpurple}{\bfseries\small erp-security --- Рівень безпеки}}\\
+\midrule
 \texttt{ca-pki}          & erp-security & Deployment & 8201 & 100m/500m & DSV \\
 \midrule
-\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small erp-ai --- AI рівень}}\\
+\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small erp-ai --- Рівень AI моделей}}\\
 \rowcolor{rowalt}\texttt{ai-generation} & erp-ai & Deployment & 8601 & 100m/500m & DSV \\
 \midrule
-\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small erp-services --- Сервісний рівень}}\\
+\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small erp-services --- Рівень служб і сервісів}}\\
+\midrule
 \texttt{rest-bpe}        & erp-services & Deployment & 8303 & 100m/500m & DSV \\
 \rowcolor{rowalt}\texttt{bpe-engine}   & erp-services & Deployment & 8302 & 100m/500m & DSV \\
 \texttt{n2o-server}      & erp-services & Deployment & 8511 & 100m/500m & DSV \\
 \rowcolor{rowalt}\texttt{kvs-database} & erp-services & Deployment & 8301 & 100m/500m & DSV \\
 \texttt{chat-messenger}  & erp-services & Deployment & 8507 & 100m/500m & DSV \\
 \midrule
-\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small erp-apps --- Бізнес рівень}}\\
+\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small erp-apps --- Рівень ІКС}}\\
+\midrule
 \rowcolor{rowalt}\texttt{hl7-health}   & erp-apps & Deployment & 8502 & 100m/500m & HDSV \\
 \texttt{lms-education}   & erp-apps & Deployment & 8506 & 100m/500m & HDSV \\
 \rowcolor{rowalt}\texttt{wms-warehouse}& erp-apps & Deployment & 8505 & 100m/500m & DSV \\
@@ -419,7 +424,7 @@ D --- deployment, S --- service, P --- pvc, V --- values, H --- hpa.
 \newpage
 \subsection{Параметри \texttt{deployment.yaml}}
 
-\begin{longtable}{L{4.8cm} L{2.5cm} L{6.7cm}}
+\begin{longtable}{L{5.0cm} L{2.5cm} L{6.5cm}}
 \toprule
 \rowcolor{headerbg}
 \color{primary}\textbf{Поле YAML} &
@@ -432,7 +437,8 @@ D --- deployment, S --- service, P --- pvc, V --- values, H --- hpa.
 \rowcolor{rowalt}\texttt{metadata.namespace} & erp-*        & Цільовий namespace; підставляється через \texttt{sed} у deploy.sh \\[2pt]
 \texttt{spec.replicas}                    & 1 або 2         & HL7-health і LMS-education --- 2 для High Availability \\[2pt]
 \rowcolor{rowalt}\texttt{containers[].image} & registry/n:tag & \texttt{erpuno/\{service\}:2024.6.15} \\[2pt]
-\texttt{containers[].ports[].containerPort} & int           & Порт, на якому прослуховує застосунок \\[2pt]
+\texttt{containers[].ports[]\
+        .containerPort} & int           & Порт, на якому прослуховує застосунок \\[2pt]
 \rowcolor{rowalt}\texttt{resources.requests.cpu} & 50m--100m & Гарантований CPU (milliCPU) \\[2pt]
 \texttt{resources.limits.cpu}             & 200m--500m      & Максимальний CPU \\[2pt]
 \rowcolor{rowalt}\texttt{resources.requests.memory} & 128--256Mi & Гарантована пам'ять \\[2pt]
@@ -446,7 +452,7 @@ D --- deployment, S --- service, P --- pvc, V --- values, H --- hpa.
 
 \subsection{Параметри \texttt{service.yaml}}
 
-\begin{longtable}{L{4.8cm} L{2.5cm} L{6.7cm}}
+\begin{longtable}{L{5.0cm} L{2.5cm} L{6.5cm}}
 \toprule
 \rowcolor{headerbg}
 \color{primary}\textbf{Поле YAML} & \color{primary}\textbf{Значення} & \color{primary}\textbf{Призначення} \\
@@ -463,7 +469,7 @@ D --- deployment, S --- service, P --- pvc, V --- values, H --- hpa.
 \newpage
 \subsection{Параметри \texttt{hpa.yaml}}
 
-\begin{longtable}{L{4.8cm} L{2.5cm} L{6.7cm}}
+\begin{longtable}{L{5.0cm} L{2.5cm} L{6.5cm}}
 \toprule
 \rowcolor{headerbg}
 \color{primary}\textbf{Поле YAML} & \color{primary}\textbf{Значення} & \color{primary}\textbf{Призначення} \\
@@ -478,7 +484,7 @@ D --- deployment, S --- service, P --- pvc, V --- values, H --- hpa.
 
 \subsection{Параметри \texttt{pvc.yaml}}
 
-\begin{longtable}{L{4.8cm} L{2.5cm} L{6.7cm}}
+\begin{longtable}{L{5.0cm} L{2.5cm} L{6.6cm}}
 \toprule
 \rowcolor{headerbg}
 \color{primary}\textbf{Поле YAML} & \color{primary}\textbf{Значення} & \color{primary}\textbf{Призначення} \\
@@ -668,6 +674,7 @@ erp-apps      & 99.90\% & 43.2 хв & Бізнес-додатки з менш ж
 \rowcolor{rowalt}erp-ai        & 99.50\% & 3.6 год & Допоміжний сервіс; деградація не блокує роботу \\[2pt]
 \end{longtable}
 
+\newpage
 \subsection{SLI --- сигнали надійності (RED Method)}
 
 \begin{longtable}{L{3.2cm} L{2.8cm} L{8cm}}
@@ -692,9 +699,8 @@ Pod Readiness & Availability
   & \texttt{kube\_pod\_status\_ready\{condition="true"\} == 1} \\[4pt]
 \end{longtable}
 
-% ===========================================================================
 \newpage
-\section{Observability Stack}
+\section{Архітектура спостереження}
 
 \subsection{Компоненти стеку}
 
@@ -725,11 +731,26 @@ kubectl get pods -n erp-telemetry
 kubectl get pvc  -n erp-telemetry
 \end{verbatim}
 
-% ===========================================================================
+\addtocontents{toc}{\protect\newpage}
 \newpage
-\section{Автоматизація та GitOps}
+\section{Розгортання кластеру}
 
-\subsection{Процес розгортання: 8 кроків}
+Процедура розгортання та життєвого циклу оркестрації платформи ERP/1 є повністю детермінованим, автоматизованим та декларативно описаним процесом. Вона спроектована відповідно до методології Site Reliability Engineering (SRE) та архітектурних паттернів GitOps. Забезпечення високого ступеня повторюваності та зближення середовищ розробки й промислової експлуатації досягається за допомогою гібридної системи автоматизації. Ця система поєднує інструменти прямої імперативної ініціалізації (bash-сценарії, Ruby-генератори конфігурацій, Helm-пакетування) та декларативний GitOps-контролер безперервної синхронізації (ArgoCD), який використовує локальний сервер Git (Gitea) як внутрішнє джерело істини (Single Source of Truth).
+
+Контур автоматизації розгортання включає такі фундаментальні компоненти:
+\begin{itemize}
+    \item \textbf{Скрипт валідації пререквізитів (\texttt{prereq.sh})}: Здійснює статичний та динамічний аналіз операційного середовища на відповідність вимогам (версії \texttt{kubectl}, \texttt{helm}, \texttt{kind}, стан вузлів, наявність StorageClass та конфігурація DNS).
+    \item \textbf{Ruby-генератор конфігурацій (\texttt{values.rb})}: Реалізує концепцію зворотного GitOps, парсячи сирі Kubernetes-маніфести мікросервісів та агрегуючи їх у єдиний структурований файл параметрів Helm (\texttt{helm/values.yaml}).
+    \item \textbf{Скрипт топологічної оркестрації (\texttt{deploy.sh})}: Керує послідовним розгортанням шарів інфраструктури та бізнес-додатків з урахуванням графів їхніх взаємних залежностей.
+    \item \textbf{Моно-чарт Helm (\texttt{erp-uno})}: Параметризований шаблон проектування Kubernetes-ресурсів для всіх 6 просторів імен і 21 сервісу платформи.
+    \item \textbf{Локальний сервіс репозиторіїв Gitea}: Контейнеризоване сховище коду та конфігурацій, що мінімізує залежність від глобальних мереж і запобігає дрейфу залежностей (dependency drift).
+    \item \textbf{Контролер безперервної доставки ArgoCD}: Декларативний рушій, що відстежує розбіжності між станом локальних репозиторіїв і поточним станом кластера, забезпечуючи автоматичне приведення (sync) та самовідновлення (self-heal) ресурсів.
+\end{itemize}
+
+Описана архітектура забезпечує мінімізацію рутинної операційної діяльності (TOIL), високу відтворюваність середовищ та прискорене відновлення після збоїв. Повне розгортання кластера на сучасному обладнанні займає менше 5 хвилин. Система є сумісною з вітчизняними державними вимогами до комплексних систем захисту інформації (КСЗІ) завдяки використанню захищеного базового дистрибутиву UA Linux, мережевих політик ізоляції \texttt{NetworkPolicy} за принципом \textit{least-privilege} та закритого OCI-реєстру образів.
+
+\newpage
+\subsection{Послідовність розгортання неймспейсів}
 
 \begin{longtable}{C{1.2cm} L{3.5cm} L{9.3cm}}
 \toprule
@@ -755,7 +776,7 @@ kubectl get pvc  -n erp-telemetry
 \rowcolor{headerbg}
 \color{primary}\textbf{Інструмент} & \color{primary}\textbf{Роль у pipeline} \\
 \midrule\endhead\bottomrule\endfoot
-ArgoCD / Flux
+ArgoCD
   & Безперервна синхронізація Git $\rightarrow$ кластер.
     Автоматичне застосування змін при push до \texttt{main} \\[4pt]
 \rowcolor{rowalt}\texttt{values.rb} (Ruby)
@@ -767,9 +788,6 @@ Kyverno / OPA
 \rowcolor{rowalt}GitHub Actions / GitLab CI
   & \texttt{helm lint} $\to$ \texttt{ruby values.rb --dry-run}
     $\to$ \texttt{helm diff} $\to$ \texttt{helm upgrade} \\[4pt]
-Renovate Bot
-  & Автоматичне оновлення версій образів у \texttt{values.yaml}
-    через PR \\[4pt]
 \end{longtable}
 
 \subsection{Співвідношення Git-репозиторіїв та компонентів GitOps}
@@ -813,367 +831,6 @@ Renovate Bot
 \texttt{erpuno/itsm}         & \texttt{itsm-incidents} (Service Desk / SLA) \\
 \end{longtable}
 }
-
-% ===========================================================================
-\newpage
-\section{Локальний контур GitOps: Gitea та ArgoCD}
-
-Впровадження концепції GitOps у локальному середовищі розробки дозволяє мінімізувати розходження конфігурацій (configuration drift) між локальними та продуктовими середовищами, забезпечити повну відтворюваність та усунути залежність від зовнішніх мережевих ресурсів під час розгортання.
-
-Локальний контур GitOps платформи ERP/1 базується на двох ключових інструментах: локальному Git-сервері Gitea та контролері безперервної синхронізації ArgoCD.
-
-\subsection{Концепція локального GitOps та ізоляція залежностей}
-
-Класичний підхід до GitOps передбачає, що Git-репозиторій є єдиним джерелом істини (Single Source of Truth) для стану кластера. Проте, використання публічних сервісів, таких як GitHub, для розгортання локальних dev-середовищ має ряд недоліків:
-\begin{itemize}
-    \item \textbf{Мережева залежність і ліміти}: Обмеження швидкості (rate limits) API GitHub та залежність від стабільного інтернет-з'єднання сповільнюють ініціалізацію.
-    \item \textbf{Дрейф версій (Dependency Drift)}: Видалення або оновлення сторонніх репозиторіїв може призвести до неможливості відтворити складання кластера.
-    \item \textbf{Конфіденційність}: Зберігання локальних конфігурацій та секретів у публічному хмарі несе ризики безпеки.
-\end{itemize}
-
-Для вирішення цих проблем локальний контур ERP/1 повністю ізолює вихідний код та маніфести у межах розробницької станції, використовуючи локальний сервер Gitea як проміжне сховище для ArgoCD та докер-білдера.
-
-\subsection{Локальний Git-сервер Gitea}
-
-Локальний Git-сервер Gitea розгортається у виділеному Docker-контейнері за допомогою Docker Compose, конфігурація якого описана у файлі \texttt{compose/gitea.yaml}:
-
-\begin{verbatim}
-services:
-  gitea:
-    image: gitea/gitea:latest
-    container_name: gitea
-    restart: always
-    ports:
-      - "3000:3000"    # Web UI
-      - "2222:22"      # SSH
-    volumes:
-      - ./gitea/data:/data
-      - ./gitea/ssh:/data/ssh
-    environment:
-      - USER_UID=1000
-      - USER_GID=1000
-      - GITEA__database__DB_TYPE=sqlite3
-      - GITEA__database__PATH=/data/gitea.db
-      - GITEA__security__INSTALL_LOCK=true
-      - GITEA__server__DOMAIN=localhost
-      - GITEA__server__SSH_DOMAIN=localhost
-      - GITEA__server__SSH_PORT=2222
-      - GITEA__server__ROOT_URL=http://localhost:3000/
-    shm_size: '128m'
-\end{verbatim}
-
-\textbf{Ключові архітектурні рішення конфігурації Gitea:}
-\begin{enumerate}
-    \item \textbf{SQLite як СУБД}: Використання SQLite3 виключає необхідність запуску окремого сервера баз даних, забезпечуючи споживання оперативної пам'яті контейнером в межах 100\,МБ та швидкий запуск ($<$ 5 секунд).
-    \item \textbf{Блокування інсталятора (INSTALL\_LOCK)}: Попереднє встановлення значення \texttt{true} дозволяє пропустити інтерактивний веб-інтерфейс первинного налаштування. Gitea відразу готова до роботи через API.
-    \item \textbf{Локальне монтування}: Усі дані репозиторіїв та налаштувань зберігаються у локальній директорії \texttt{./compose/gitea/data}, що дозволяє легко виконувати резервне копіювання.
-\end{enumerate}
-
-Автоматизація управління Gitea здійснюється через скрипт \texttt{gitops.sh}. Команда \texttt{./gitops.sh setup} виконує запуск контейнера, створює адміністратора \texttt{root} (з паролем \texttt{ErpUnoGitea2026}), організацію \texttt{synrc} та репозиторії \texttt{ca}, \texttt{ns}, \texttt{ldap}. Наступна команда \texttt{./gitops.sh migrate} робить bare-clone репозиторіїв із GitHub (\texttt{github.com/synrc/*}) та дзеркалює їх у локальний Gitea.
-
-Це дозволяє локальному Docker-демону під час збирання образів звертатися безпосередньо до хост-машини (\texttt{host.docker.internal:3000}) для отримання вихідного коду сервісів, забезпечуючи 100\% автономність складання.
-
-\subsection{Розгортання та інтеграція ArgoCD}
-
-ArgoCD виступає в ролі GitOps-контролера всередині KinD-кластера, забезпечуючи декларативне розгортання та автоматичну синхронізацію стану ресурсів.
-
-\textbf{Компоненти розгортання ArgoCD (каталог \texttt{./argocd/}):}
-\begin{itemize}
-    \item \texttt{install.yaml} --- офіційні маніфести ArgoCD версії v2.11+, які розгортаються у виділеному просторі імен \texttt{argocd}.
-    \item \texttt{ingress.yaml} --- конфігурація Traefik Ingress для надання доступу до веб-консолі за доменним ім'ям \texttt{argocd.erp-uno.local} через стандартний HTTP-порт:
-\begin{verbatim}
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: argocd-server-ingress
-  namespace: argocd
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
-spec:
-  ingressClassName: traefik
-  rules:
-  - host: argocd.erp-uno.local
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: argocd-server
-            port:
-              number: 80
-\end{verbatim}
-    \item \texttt{application.yaml} --- маніфест кореневого додатку ArgoCD Application (\texttt{erp-uno}), який реалізує патерн \guillemotleft App-of-Apps\guillemotright:
-\begin{verbatim}
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: erp-uno
-  namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
-spec:
-  project: default
-  source:
-    repoURL: 'http://host.docker.internal:3000/synrc/cd.git'
-    path: helm
-    targetRevision: HEAD
-    helm:
-      valueFiles:
-        - values.yaml
-      parameters:
-        - name: global.domain
-          value: erp.uno
-        - name: global.environment
-          value: production
-  destination:
-    server: 'https://kubernetes.default.svc'
-    namespace: default
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
-      - ServerSideApply=true
-\end{verbatim}
-\end{itemize}
-
-\textbf{Особливості інтеграції ArgoCD в ERP/1:}
-\begin{enumerate}
-    \item \textbf{Зв'язок із хостом}: Параметр \texttt{repoURL} вказує на \texttt{http://host.docker.internal:3000/synrc/cd.git}. Оскільки ArgoCD працює всередині контейнерів KinD-кластера, адреса \texttt{host.docker.internal} дозволяє виходити на Git-сервер Gitea, який працює на хост-системі розробника.
-    \item \textbf{Автоматична синхронізація}: Політика \texttt{automated.prune: true} та \texttt{automated.selfHeal: true} забезпечує миттєве видалення нерелевантних ресурсів та автоматичне відновлення стану при виявленні відхилень (out of sync).
-    \item \textbf{ServerSideApply}: Використання опції \texttt{ServerSideApply=true} вирішує проблеми з перевищенням ліміту розміру анотацій у маніфестах при роботі з великими конфігураційними картами.
-    \item \textbf{Постійний Port-Forward}: Скрипт \texttt{argocd.sh} автоматично створює та завантажує LaunchAgent для macOS (\texttt{uno.erp.argocd-portforward.plist}), що підтримує постійний тунель \texttt{kubectl port-forward svc/argocd-server 8080:80} у фоновому режимі розробника.
-\end{enumerate}
-
-
-% ===========================================================================
-\newpage
-\section{Механіка оркестрації та життєвий цикл розгортання}
-
-\subsection{Формальний контур ініціалізації: від DNS та хостів до реєстру}
-
-Повне розгортання та підготовка локальної ШІ-інфраструктури виконується у суворій послідовності кроків, починаючи від налаштування хост-мережі та закінчуючи запуском OCI-реєстру:
-
-\begin{enumerate}[leftmargin=1.5cm]
-    \item \textbf{Налаштування хост-резолвінгу (/etc/hosts)}: На кожному фізичному вузлі та керуючій машині прописуються статичні записи домену \texttt{erp.uno} та локального OCI-реєстру \texttt{registry.erp.uno} для забезпечення роботи транспортного контуру без зовнішнього DNS-сервера.
-    \item \textbf{Налаштування сертифікатів безпеки OCI-реєстру}: Для виключення помилок небезпечного з'єднання (insecure registry) на всіх робочих вузлах Kubernetes прописується кореневий CA-сертифікат у каталозі \\ \texttt{/etc/docker/certs.d/registry.erp.uno/ca.crt} \\ та \texttt{/etc/containerd/certs.d/}.
-    \item \textbf{Запуск OCI Docker Registry}: На інфраструктурному хості запускається OCI-реєстр як системна служба \texttt{containerd} або Docker-контейнер з монтуванням локального сховища для образів компонентів.
-    \item \textbf{Складання та публікація образів (CI/CD)}: Образи мікросервісів збираються на базі \textbf{Alpine Linux}, тегуються версією релізу та завантажуються (\texttt{docker push}) до \texttt{registry.erp.uno}.
-    \item \textbf{Ініціалізація інфраструктури Kubernetes}: За допомогою \texttt{deploy.sh} або Helm застосовуються глобальні ресурси (Namespaces, StorageClasses, Calico NetworkPolicies та RBAC ролі).
-\end{enumerate}
-
-\subsection{Кубернетес за лаштунками (Behind the Scenes)}
-
-При виконанні команди \texttt{kubectl apply -f manifest.yaml} або запуску Helm-інсталяції ядро та базові служби Kubernetes виконують наступні внутрішні операції:
-
-\begin{itemize}
-    \item \textbf{kube-apiserver} (Точка входу API): Отримує HTTPS-запит, автентифікує клієнта, авторизує дію на основі RBAC-правил, перевіряє схему об'єкта та зберігає декларативний стан у розподіленому сховищі \textbf{etcd}.
-    \item \textbf{kube-controller-manager} (Контролери стану):
-        \begin{itemize}
-            \item \textit{Deployment controller} створює відповідний \texttt{ReplicaSet}.
-            \item \textit{ReplicaSet controller} генерує специфікації для створення конкретних подів відповідно до ліміту реплік.
-            \item \textit{StatefulSet controller} гарантує запуск подів з унікальними індексами (\texttt{prometheus-0}, \texttt{kvs-database-0}) та прив'язку стабільних сховищ PVC.
-        \end{itemize}
-    \item \textbf{kube-scheduler} (Планувальник вузлів): Відстежує нерозподілені поди, аналізує вимоги до ресурсів (\texttt{requests.cpu}, \texttt{requests.memory}) та призначає поди на вузли з достатнім вільним обсягом ресурсів.
-    \item \textbf{kubelet} (Робочий агент на вузлі): Отримує оновлення специфікації подів для свого вузла від API-сервера та викликає контейнерне середовище виконання \textbf{containerd} через інтерфейс CRI (Container Runtime Interface).
-    \item \textbf{containerd} (Контейнерне середовище):
-        \begin{itemize}
-            \item Здійснює запит та завантаження відповідного образу з OCI-реєстру \texttt{registry.erp.uno}.
-            \item Викликає мережевий плагін CNI (Calico) для виділення внутрішньої IP-адреси та створення віртуальних інтерфейсів.
-            \item Налаштовує обмеження ресурсів на рівні ядра ОС Linux через механізми \texttt{cgroups} (відповідно до \texttt{limits.cpu} та \texttt{limits.memory}).
-            \item Запускає ізольовані процеси контейнера та відслідковує їхній стан для передачі звітів про liveness/readiness проби назад до kubelet.
-        \end{itemize}
-\end{itemize}
-
-\subsection{Генерація values.yaml за допомогою values.rb: зворотний GitOps}
-
-За класичним підходом Helm розроблявся як інструмент шаблонізації Kubernetes маніфестів на основі наперед визначених статичних змінних (\texttt{values.yaml}). Проте, при великій кількості мікросервісів це призводить до дублювання та розходження конфігурацій.
-
-У платформі ERP/1 застосовується концепція \textbf{зворотного GitOps} за допомогою скрипта \texttt{values.rb}:
-
-\begin{itemize}
-    \item \textbf{Маніфест як джерело істини}: Розробники редагують стандартні декларативні файли \texttt{deployment.yaml}, \texttt{service.yaml} та \texttt{hpa.yaml} у директоріях \texttt{lib/}.
-    \item \textbf{Статична компіляція}: Скрипт \texttt{values.rb} обходить усі директорії компонентів, парсить YAML-файли та вилучає критичні параметри (кількість реплік, порти, ліміти ресурсів CPU/RAM, наявність сховищ та HPA).
-    \item \textbf{Генерація конфігурації Helm}: Зібрані дані серіалізуються у єдиний файл \texttt{helm/values.yaml}. Це дозволяє зберегти простоту індивідуального супроводження сервісів у \texttt{lib/} та одночасно використовувати переваги Helm (реліз-менеджмент, відкати версій, декларативне оновлення) у продуктивному контурі.
-\end{itemize}
-
-% ===========================================================================
-\newpage
-\section{Incident Management / On-Call}
-
-\subsection{Severity-рівні}
-
-\begin{longtable}{C{2cm} L{4cm} L{8cm}}
-\toprule
-\rowcolor{headerbg}
-\color{primary}\textbf{Рівень} &
-\color{primary}\textbf{Критерій} &
-\color{primary}\textbf{Відповідь} \\
-\midrule\endhead\bottomrule\endfoot
-\textcolor{warnred}{\textbf{Sev1}}
-  & Платформа недоступна (erp-telemetry або erp-security Down)
-  & Негайно. MTTR $<$ 30 хв. Обов'язковий постмортем \\[4pt]
-\rowcolor{rowalt}\textcolor{warnred}{\textbf{Sev2}}
-  & Один або більше erp-apps / erp-services недоступні
-  & До 1 год. Постмортем обов'язковий \\[4pt]
-\textcolor{tieryellow}{\textbf{Sev3}}
-  & Деградація: висока latency, часткова відмова
-  & Протягом робочого дня \\[4pt]
-\rowcolor{rowalt}\textcolor{successgreen}{\textbf{Sev4}}
-  & Незначні проблеми, cosmetic warnings
-  & Наступний спринт \\[4pt]
-\end{longtable}
-
-\subsection{Playbooks}
-
-\begin{longtable}{L{4.5cm} L{9.5cm}}
-\toprule
-\rowcolor{headerbg}
-\color{primary}\textbf{Інцидент} & \color{primary}\textbf{Кроки діагностики} \\
-\midrule\endhead\bottomrule\endfoot
-Pod CrashLoopBackOff
-  & \texttt{kubectl describe pod -n \{ns\} \{pod\}} $\to$
-    \texttt{kubectl logs --previous} $\to$
-    перевірити livenessProbe $\to$ resource limits \\[4pt]
-\rowcolor{rowalt}ImagePullBackOff
-  & Перевірити авторизацію у приватному \texttt{docker-registry} $\to$
-    перевірити шлях до образу у \texttt{values.yaml} $\to$ pull secret \\[4pt]
-Prometheus PV Full
-  & Перевірити вільне місце на томах (\texttt{df -h}) $\to$
-    переглянути retention policy $\to$ провести tsdb clean/compaction \\[4pt]
-\rowcolor{rowalt}NetworkPolicy violation
-  & \texttt{kubectl get networkpolicy -A} $\to$
-    тест: \texttt{kubectl exec -it ... -{}- curl http://\{svc\}:\{port\}} \\[4pt]
-High CPU / Memory
-  & \texttt{kubectl top pods -n \{ns\}} $\to$
-    \texttt{kubectl get hpa -A} $\to$
-    \texttt{kubectl scale deployment \{name\} --replicas=3 -n \{ns\}} \\[4pt]
-\end{longtable}
-
-\subsection{Аналіз реальних відмов та постмортеми}
-
-Промислова експлуатація платформи в державних органах сектору безпеки сформувала базу знань щодо запобігання критичним аваріям. Нижче наведено два ключових сценарії з реальної практики експлуатації та заходи щодо підвищення надійності:
-
-\begin{enumerate}[leftmargin=1.5cm]
-    \item \textbf{Кейс 1: Амортизація навантаження під час пікової HTTP-активності}
-    \begin{itemize}
-        \item \textit{Опис інциденту:} Під час масового звернення громадян до кабінетів електронних послуг навантаження зросло до 150,000 HTTP-запитів на секунду, що забило пули з'єднань веб-акцепторів Erlang.
-        \item \textit{Коренева причина:} Ліміт TCP-акцепторів за замовчуванням (25k) та низька швидкість парсингу JSON-пакетів привели до вичерпання CPU.
-        \item \textit{Рішення та стабілізація:} Впроваджено лімітування на рівні Ingress Gateway. Пул акцепторів збільшено до 200,000, а парсинг JSON переведено на оптимізовані C99 NIF-бібліотеки. Це знизило утилізацію CPU з 95\% до 12\% при аналогічному трафіку.
-    \end{itemize}
-
-    \item \textbf{Кейс 2: Запобігання розділенню мережі (Split-Brain) в кластері СУБД}
-    \begin{itemize}
-        \item \textit{Опис інциденту:} Внаслідок короткочасного збою мережевого комутатора відбулося розділення зв'язку між нодами розподіленої Mnesia/KVS. Ноди утворили два сегменти (Split-Brain) та продовжували приймати транзакції на запис.
-        \item \textit{Коренева причина:} Автоматична реконсиляція Mnesia була вимкнена, що призвело до розходження стану реплік.
-        \item \textit{Рішення та стабілізація:} Впроваджено обробники події \texttt{mnesia\_down} та сценарії автоматичного злиття (merge/reconciliation) на основі вектора часових міток транзакцій. Налаштовано автоматичне повторне об'єднання сегментів та синхронізацію без втрати цілісності даних.
-    \end{itemize}
-\end{enumerate}
-
-% ===========================================================================
-\newpage
-\section{Chaos Engineering та Resilience Testing}
-
-\subsection{Стратегія ін'єкції відмов}
-
-\begin{longtable}{L{3.5cm} L{3cm} L{7.5cm}}
-\toprule
-\rowcolor{headerbg}
-\color{primary}\textbf{Тип відмови} &
-\color{primary}\textbf{Інструмент} &
-\color{primary}\textbf{Очікуваний результат} \\
-\midrule\endhead\bottomrule\endfoot
-Pod Kill & Chaos Mesh
-  & HPA/Deployment відновлює репліки; SLO зберігається \\[4pt]
-\rowcolor{rowalt}Node Drain & \texttt{kubectl drain}
-  & Поди евакуюються завдяки podAntiAffinity \\[4pt]
-Network Partition & Chaos Mesh NetworkChaos
-  & NetworkPolicy ізолює деградацію; telemetry продовжує роботу \\[4pt]
-\rowcolor{rowalt}Memory Pressure & LitmusChaos
-  & Перевірка limits і OOMKill-поведінки \\[4pt]
-Resource Starvation & Chaos Mesh StressChaos
-  & HPA масштабується (MTTD $<$ 2 хв) \\[4pt]
-\end{longtable}
-
-\subsection{RTO / RPO цілі}
-
-\begin{longtable}{L{3.8cm} C{2.5cm} C{2.5cm} L{5.2cm}}
-\toprule
-\rowcolor{headerbg}
-\color{primary}\textbf{Сервіс} &
-\color{primary}\textbf{RTO} &
-\color{primary}\textbf{RPO} &
-\color{primary}\textbf{Механізм} \\
-\midrule\endhead\bottomrule\endfoot
-prometheus (StatefulSet) & $<$ 5 хв & $<$ 1 хв & StatefulSet + PVC; авто-перезапуск \\[2pt]
-\rowcolor{rowalt}rest-bpe (Deployment) & $<$ 3 хв & N/A & Rolling update \\[2pt]
-hl7-health (HPA min 2) & $<$ 2 хв & N/A & HPA + podAntiAffinity \\[2pt]
-\rowcolor{rowalt}docker-registry & $<$ 5 хв & $<$ 5 хв & PVC 10 Gi; швидкий перезапуск \\[2pt]
-\end{longtable}
-
-% ===========================================================================
-\newpage
-\section{Операційні метрики та ресурсний бюджет}
-
-\subsection{Ключові SRE-метрики}
-
-\begin{longtable}{L{4.5cm} C{3cm} L{6.5cm}}
-\toprule
-\rowcolor{headerbg}
-\color{primary}\textbf{Метрика} &
-\color{primary}\textbf{Ціль} &
-\color{primary}\textbf{Вимірювання} \\
-\midrule\endhead\bottomrule\endfoot
-MTTR (Sev1)           & $<$ 30 хв & Grafana: час між першим алертом та відновленням \\[2pt]
-\rowcolor{rowalt}MTTD  & $<$ 5 хв  & Prometheus alerting rules з \texttt{for: 5m} \\[2pt]
-Error Budget Burn Rate & $<$ 1.0   & \texttt{sum(rate(errors[1h])) / error\_budget\_rate} \\[2pt]
-\rowcolor{rowalt}TOIL (інженерний час) & $<$ 50\% & Відслідковується у JIRA / itsm-incidents \\[2pt]
-Deployment Frequency  & $\geq$ 1/тижд. & Git commits to main; ArgoCD sync count \\[2pt]
-\rowcolor{rowalt}Change Failure Rate & $<$ 5\% & Rollback / загальна кількість деплойментів \\[2pt]
-\end{longtable}
-
-\subsection{Ресурсне навантаження кластеру}
-
-Кластер: 1 вузол, 10 vCPU, 8 ГБ RAM (arm64, Docker Desktop).
-
-\begin{longtable}{L{3.5cm} R{1.8cm} R{2.5cm} R{2.5cm} R{2.5cm}}
-\toprule
-\rowcolor{headerbg}
-\color{primary}\textbf{Namespace} &
-\color{primary}\textbf{Сервісів} &
-\color{primary}\textbf{CPU req.} &
-\color{primary}\textbf{Mem req.} &
-\color{primary}\textbf{PVC} \\
-\midrule\endhead\bottomrule\endfoot
-erp-infra     & 2  & 150m   & 384Mi   & 10 Gi \\[2pt]
-\rowcolor{rowalt}erp-telemetry & 4  & 350m   & 896Mi   & 30 Gi \\[2pt]
-erp-security  & 1  & 100m   & 256Mi   & --- \\[2pt]
-\rowcolor{rowalt}erp-ai        & 1  & 100m   & 256Mi   & --- \\[2pt]
-erp-services  & 5  & 500m   & 1.25 Gi & --- \\[2pt]
-\rowcolor{rowalt}erp-apps      & 8  & 900m   & 2.25 Gi & --- \\[2pt]
-\midrule
-\textbf{Разом} & \textbf{21} & \textbf{2.1 cores} & \textbf{5.3 Gi} & \textbf{40 Gi} \\[2pt]
-\end{longtable}
-
-% ===========================================================================
-\newpage
-\section{Розгортання кластеру}
-
-Процедура розгортання та життєвого циклу оркестрації платформи ERP/1 є повністю детермінованим, автоматизованим та декларативно описаним процесом. Вона спроектована відповідно до методології Site Reliability Engineering (SRE) та архітектурних паттернів GitOps. Забезпечення високого ступеня повторюваності та зближення середовищ розробки й промислової експлуатації досягається за допомогою гібридної системи автоматизації. Ця система поєднує інструменти прямої імперативної ініціалізації (bash-сценарії, Ruby-генератори конфігурацій, Helm-пакетування) та декларативний GitOps-контролер безперервної синхронізації (ArgoCD), який використовує локальний сервер Git (Gitea) як внутрішнє джерело істини (Single Source of Truth).
-
-Контур автоматизації розгортання включає такі фундаментальні компоненти:
-\begin{itemize}
-    \item \textbf{Скрипт валідації пререквізитів (\texttt{prereq.sh})}: Здійснює статичний та динамічний аналіз операційного середовища на відповідність вимогам (версії \texttt{kubectl}, \texttt{helm}, \texttt{kind}, стан вузлів, наявність StorageClass та конфігурація DNS).
-    \item \textbf{Ruby-генератор конфігурацій (\texttt{values.rb})}: Реалізує концепцію зворотного GitOps, парсячи сирі Kubernetes-маніфести мікросервісів та агрегуючи їх у єдиний структурований файл параметрів Helm (\texttt{helm/values.yaml}).
-    \item \textbf{Скрипт топологічної оркестрації (\texttt{deploy.sh})}: Керує послідовним розгортанням шарів інфраструктури та бізнес-додатків з урахуванням графів їхніх взаємних залежностей.
-    \item \textbf{Моно-чарт Helm (\texttt{erp-uno})}: Параметризований шаблон проектування Kubernetes-ресурсів для всіх 6 просторів імен і 21 сервісу платформи.
-    \item \textbf{Локальний сервіс репозиторіїв Gitea}: Контейнеризоване сховище коду та конфігурацій, що мінімізує залежність від глобальних мереж і запобігає дрейфу залежностей (dependency drift).
-    \item \textbf{Контролер безперервної доставки ArgoCD}: Декларативний рушій, що відстежує розбіжності між станом локальних репозиторіїв і поточним станом кластера, забезпечуючи автоматичне приведення (sync) та самовідновлення (self-heal) ресурсів.
-\end{itemize}
-
-Описана архітектура забезпечує мінімізацію рутинної операційної діяльності (TOIL), високу відтворюваність середовищ та прискорене відновлення після збоїв. Повне розгортання кластера на сучасному обладнанні займає менше 5 хвилин. Система є сумісною з вітчизняними державними вимогами до комплексних систем захисту інформації (КСЗІ) завдяки використанню захищеного базового дистрибутиву UA Linux, мережевих політик ізоляції \texttt{NetworkPolicy} за принципом \textit{least-privilege} та закритого OCI-реєстру образів.
 
 \subsection{Формалізована послідовність «холодного» запуску (Cold Boot Sequence)}
 
@@ -1542,6 +1199,350 @@ namespace "erp-services" deleted
 namespace "erp-apps" deleted
 namespace "erp-telemetry" deleted
 \end{verbatim}
+
+
+% ===========================================================================
+\newpage
+\section{Локальний контур GitOps: Gitea та ArgoCD}
+
+Впровадження концепції GitOps у локальному середовищі розробки дозволяє мінімізувати розходження конфігурацій (configuration drift) між локальними та продуктовими середовищами, забезпечити повну відтворюваність та усунути залежність від зовнішніх мережевих ресурсів під час розгортання.
+
+Локальний контур GitOps платформи ERP/1 базується на двох ключових інструментах: локальному Git-сервері Gitea та контролері безперервної синхронізації ArgoCD.
+
+\subsection{Концепція локального GitOps та ізоляція залежностей}
+
+Класичний підхід до GitOps передбачає, що Git-репозиторій є єдиним джерелом істини (Single Source of Truth) для стану кластера. Проте, використання публічних сервісів, таких як GitHub, для розгортання локальних dev-середовищ має ряд недоліків:
+\begin{itemize}
+    \item \textbf{Мережева залежність і ліміти}: Обмеження швидкості (rate limits) API GitHub та залежність від стабільного інтернет-з'єднання сповільнюють ініціалізацію.
+    \item \textbf{Дрейф версій (Dependency Drift)}: Видалення або оновлення сторонніх репозиторіїв може призвести до неможливості відтворити складання кластера.
+    \item \textbf{Конфіденційність}: Зберігання локальних конфігурацій та секретів у публічному хмарі несе ризики безпеки.
+\end{itemize}
+
+Для вирішення цих проблем локальний контур ERP/1 повністю ізолює вихідний код та маніфести у межах розробницької станції, використовуючи локальний сервер Gitea як проміжне сховище для ArgoCD та докер-білдера.
+
+\subsection{Локальний Git-сервер Gitea}
+
+Локальний Git-сервер Gitea розгортається у виділеному Docker-контейнері за допомогою Docker Compose, конфігурація якого описана у файлі \texttt{compose/gitea.yaml}:
+
+\begin{verbatim}
+services:
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    restart: always
+    ports:
+      - "3000:3000"    # Web UI
+      - "2222:22"      # SSH
+    volumes:
+      - ./gitea/data:/data
+      - ./gitea/ssh:/data/ssh
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=sqlite3
+      - GITEA__database__PATH=/data/gitea.db
+      - GITEA__security__INSTALL_LOCK=true
+      - GITEA__server__DOMAIN=localhost
+      - GITEA__server__SSH_DOMAIN=localhost
+      - GITEA__server__SSH_PORT=2222
+      - GITEA__server__ROOT_URL=http://localhost:3000/
+    shm_size: '128m'
+\end{verbatim}
+
+\textbf{Ключові архітектурні рішення конфігурації Gitea:}
+\begin{enumerate}
+    \item \textbf{SQLite як СУБД}: Використання SQLite3 виключає необхідність запуску окремого сервера баз даних, забезпечуючи споживання оперативної пам'яті контейнером в межах 100\,МБ та швидкий запуск ($<$ 5 секунд).
+    \item \textbf{Блокування інсталятора (INSTALL\_LOCK)}: Попереднє встановлення значення \texttt{true} дозволяє пропустити інтерактивний веб-інтерфейс первинного налаштування. Gitea відразу готова до роботи через API.
+    \item \textbf{Локальне монтування}: Усі дані репозиторіїв та налаштувань зберігаються у локальній директорії \texttt{./compose/gitea/data}, що дозволяє легко виконувати резервне копіювання.
+\end{enumerate}
+
+Автоматизація управління Gitea здійснюється через скрипт \texttt{gitops.sh}. Команда \texttt{./gitops.sh setup} виконує запуск контейнера, створює адміністратора \texttt{root} (з паролем \texttt{ErpUnoGitea2026}), організацію \texttt{synrc} та репозиторії \texttt{ca}, \texttt{ns}, \texttt{ldap}. Наступна команда \texttt{./gitops.sh migrate} робить bare-clone репозиторіїв із GitHub (\texttt{github.com/synrc/*}) та дзеркалює їх у локальний Gitea.
+
+Це дозволяє локальному Docker-демону під час збирання образів звертатися безпосередньо до хост-машини (\texttt{host.docker.internal:3000}) для отримання вихідного коду сервісів, забезпечуючи 100\% автономність складання.
+
+\subsection{Розгортання та інтеграція ArgoCD}
+
+ArgoCD виступає в ролі GitOps-контролера всередині KinD-кластера, забезпечуючи декларативне розгортання та автоматичну синхронізацію стану ресурсів.
+
+\textbf{Компоненти розгортання ArgoCD (каталог \texttt{./argocd/}):}
+\begin{itemize}
+    \item \texttt{install.yaml} --- офіційні маніфести ArgoCD версії v2.11+, які розгортаються у виділеному просторі імен \texttt{argocd}.
+    \item \texttt{ingress.yaml} --- конфігурація Traefik Ingress для надання доступу до веб-консолі за доменним ім'ям \texttt{argocd.erp-uno.local} через стандартний HTTP-порт:
+\begin{verbatim}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server-ingress
+  namespace: argocd
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: argocd.erp-uno.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: argocd-server
+            port:
+              number: 80
+\end{verbatim}
+    \item \texttt{application.yaml} --- маніфест кореневого додатку ArgoCD Application (\texttt{erp-uno}), який реалізує патерн \guillemotleft App-of-Apps\guillemotright:
+\begin{verbatim}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: erp-uno
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: 'http://host.docker.internal:3000/synrc/cd.git'
+    path: helm
+    targetRevision: HEAD
+    helm:
+      valueFiles:
+        - values.yaml
+      parameters:
+        - name: global.domain
+          value: erp.uno
+        - name: global.environment
+          value: production
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+\end{verbatim}
+\end{itemize}
+
+\textbf{Особливості інтеграції ArgoCD в ERP/1:}
+\begin{enumerate}
+    \item \textbf{Зв'язок із хостом}: Параметр \texttt{repoURL} вказує на \texttt{http://host.docker.internal:3000/synrc/cd.git}. Оскільки ArgoCD працює всередині контейнерів KinD-кластера, адреса \texttt{host.docker.internal} дозволяє виходити на Git-сервер Gitea, який працює на хост-системі розробника.
+    \item \textbf{Автоматична синхронізація}: Політика \texttt{automated.prune: true} та \texttt{automated.selfHeal: true} забезпечує миттєве видалення нерелевантних ресурсів та автоматичне відновлення стану при виявленні відхилень (out of sync).
+    \item \textbf{ServerSideApply}: Використання опції \texttt{ServerSideApply=true} вирішує проблеми з перевищенням ліміту розміру анотацій у маніфестах при роботі з великими конфігураційними картами.
+    \item \textbf{Постійний Port-Forward}: Скрипт \texttt{argocd.sh} автоматично створює та завантажує LaunchAgent для macOS (\texttt{uno.erp.argocd-portforward.plist}), що підтримує постійний тунель \texttt{kubectl port-forward svc/argocd-server 8080:80} у фоновому режимі розробника.
+\end{enumerate}
+
+
+% ===========================================================================
+\newpage
+\section{Механіка оркестрації та життєвий цикл розгортання}
+
+\subsection{Формальний контур ініціалізації: від DNS та хостів до реєстру}
+
+Повне розгортання та підготовка локальної ШІ-інфраструктури виконується у суворій послідовності кроків, починаючи від налаштування хост-мережі та закінчуючи запуском OCI-реєстру:
+
+\begin{enumerate}[leftmargin=1.5cm]
+    \item \textbf{Налаштування хост-резолвінгу (/etc/hosts)}: На кожному фізичному вузлі та керуючій машині прописуються статичні записи домену \texttt{erp.uno} та локального OCI-реєстру \texttt{registry.erp.uno} для забезпечення роботи транспортного контуру без зовнішнього DNS-сервера.
+    \item \textbf{Налаштування сертифікатів безпеки OCI-реєстру}: Для виключення помилок небезпечного з'єднання (insecure registry) на всіх робочих вузлах Kubernetes прописується кореневий CA-сертифікат у каталозі \\ \texttt{/etc/docker/certs.d/registry.erp.uno/ca.crt} \\ та \texttt{/etc/containerd/certs.d/}.
+    \item \textbf{Запуск OCI Docker Registry}: На інфраструктурному хості запускається OCI-реєстр як системна служба \texttt{containerd} або Docker-контейнер з монтуванням локального сховища для образів компонентів.
+    \item \textbf{Складання та публікація образів (CI/CD)}: Образи мікросервісів збираються на базі \textbf{Alpine Linux}, тегуються версією релізу та завантажуються (\texttt{docker push}) до \texttt{registry.erp.uno}.
+    \item \textbf{Ініціалізація інфраструктури Kubernetes}: За допомогою \texttt{deploy.sh} або Helm застосовуються глобальні ресурси (Namespaces, StorageClasses, Calico NetworkPolicies та RBAC ролі).
+\end{enumerate}
+
+\subsection{Кубернетес за лаштунками (Behind the Scenes)}
+
+При виконанні команди \texttt{kubectl apply -f manifest.yaml} або запуску Helm-інсталяції ядро та базові служби Kubernetes виконують наступні внутрішні операції:
+
+\begin{itemize}
+    \item \textbf{kube-apiserver} (Точка входу API): Отримує HTTPS-запит, автентифікує клієнта, авторизує дію на основі RBAC-правил, перевіряє схему об'єкта та зберігає декларативний стан у розподіленому сховищі \textbf{etcd}.
+    \item \textbf{kube-controller-manager} (Контролери стану):
+        \begin{itemize}
+            \item \textit{Deployment controller} створює відповідний \texttt{ReplicaSet}.
+            \item \textit{ReplicaSet controller} генерує специфікації для створення конкретних подів відповідно до ліміту реплік.
+            \item \textit{StatefulSet controller} гарантує запуск подів з унікальними індексами (\texttt{prometheus-0}, \texttt{kvs-database-0}) та прив'язку стабільних сховищ PVC.
+        \end{itemize}
+    \item \textbf{kube-scheduler} (Планувальник вузлів): Відстежує нерозподілені поди, аналізує вимоги до ресурсів (\texttt{requests.cpu}, \texttt{requests.memory}) та призначає поди на вузли з достатнім вільним обсягом ресурсів.
+    \item \textbf{kubelet} (Робочий агент на вузлі): Отримує оновлення специфікації подів для свого вузла від API-сервера та викликає контейнерне середовище виконання \textbf{containerd} через інтерфейс CRI (Container Runtime Interface).
+    \item \textbf{containerd} (Контейнерне середовище):
+        \begin{itemize}
+            \item Здійснює запит та завантаження відповідного образу з OCI-реєстру \texttt{registry.erp.uno}.
+            \item Викликає мережевий плагін CNI (Calico) для виділення внутрішньої IP-адреси та створення віртуальних інтерфейсів.
+            \item Налаштовує обмеження ресурсів на рівні ядра ОС Linux через механізми \texttt{cgroups} (відповідно до \texttt{limits.cpu} та \texttt{limits.memory}).
+            \item Запускає ізольовані процеси контейнера та відслідковує їхній стан для передачі звітів про liveness/readiness проби назад до kubelet.
+        \end{itemize}
+\end{itemize}
+
+\subsection{Генерація values.yaml за допомогою values.rb: зворотний GitOps}
+
+За класичним підходом Helm розроблявся як інструмент шаблонізації Kubernetes маніфестів на основі наперед визначених статичних змінних (\texttt{values.yaml}). Проте, при великій кількості мікросервісів це призводить до дублювання та розходження конфігурацій.
+
+У платформі ERP/1 застосовується концепція \textbf{зворотного GitOps} за допомогою скрипта \texttt{values.rb}:
+
+\begin{itemize}
+    \item \textbf{Маніфест як джерело істини}: Розробники редагують стандартні декларативні файли \texttt{deployment.yaml}, \texttt{service.yaml} та \texttt{hpa.yaml} у директоріях \texttt{lib/}.
+    \item \textbf{Статична компіляція}: Скрипт \texttt{values.rb} обходить усі директорії компонентів, парсить YAML-файли та вилучає критичні параметри (кількість реплік, порти, ліміти ресурсів CPU/RAM, наявність сховищ та HPA).
+    \item \textbf{Генерація конфігурації Helm}: Зібрані дані серіалізуються у єдиний файл \texttt{helm/values.yaml}. Це дозволяє зберегти простоту індивідуального супроводження сервісів у \texttt{lib/} та одночасно використовувати переваги Helm (реліз-менеджмент, відкати версій, декларативне оновлення) у продуктивному контурі.
+\end{itemize}
+
+% ===========================================================================
+\newpage
+\section{Incident Management / On-Call}
+
+\subsection{Severity-рівні}
+
+\begin{longtable}{C{2cm} L{4cm} L{8cm}}
+\toprule
+\rowcolor{headerbg}
+\color{primary}\textbf{Рівень} &
+\color{primary}\textbf{Критерій} &
+\color{primary}\textbf{Відповідь} \\
+\midrule\endhead\bottomrule\endfoot
+\textcolor{warnred}{\textbf{Sev1}}
+  & Платформа недоступна (erp-telemetry або erp-security Down)
+  & Негайно. MTTR $<$ 30 хв. Обов'язковий постмортем \\[4pt]
+\rowcolor{rowalt}\textcolor{warnred}{\textbf{Sev2}}
+  & Один або більше erp-apps / erp-services недоступні
+  & До 1 год. Постмортем обов'язковий \\[4pt]
+\textcolor{tieryellow}{\textbf{Sev3}}
+  & Деградація: висока latency, часткова відмова
+  & Протягом робочого дня \\[4pt]
+\rowcolor{rowalt}\textcolor{successgreen}{\textbf{Sev4}}
+  & Незначні проблеми, cosmetic warnings
+  & Наступний спринт \\[4pt]
+\end{longtable}
+
+\subsection{Playbooks}
+
+\begin{longtable}{L{4.5cm} L{9.5cm}}
+\toprule
+\rowcolor{headerbg}
+\color{primary}\textbf{Інцидент} & \color{primary}\textbf{Кроки діагностики} \\
+\midrule\endhead\bottomrule\endfoot
+Pod CrashLoopBackOff
+  & \texttt{kubectl describe pod -n \{ns\} \{pod\}} $\to$
+    \texttt{kubectl logs --previous} $\to$
+    перевірити livenessProbe $\to$ resource limits \\[4pt]
+\rowcolor{rowalt}ImagePullBackOff
+  & Перевірити авторизацію у приватному \texttt{docker-registry} $\to$
+    перевірити шлях до образу у \texttt{values.yaml} $\to$ pull secret \\[4pt]
+Prometheus PV Full
+  & Перевірити вільне місце на томах (\texttt{df -h}) $\to$
+    переглянути retention policy $\to$ провести tsdb clean/compaction \\[4pt]
+\rowcolor{rowalt}NetworkPolicy violation
+  & \texttt{kubectl get networkpolicy -A} $\to$
+    тест: \texttt{kubectl exec -it ... -{}- curl http://\{svc\}:\{port\}} \\[4pt]
+High CPU / Memory
+  & \texttt{kubectl top pods -n \{ns\}} $\to$
+    \texttt{kubectl get hpa -A} $\to$
+    \texttt{kubectl scale deployment \{name\} --replicas=3 -n \{ns\}} \\[4pt]
+\end{longtable}
+
+\subsection{Аналіз реальних відмов та постмортеми}
+
+Промислова експлуатація платформи в державних органах сектору безпеки сформувала базу знань щодо запобігання критичним аваріям. Нижче наведено два ключових сценарії з реальної практики експлуатації та заходи щодо підвищення надійності:
+
+\begin{enumerate}[leftmargin=1.5cm]
+    \item \textbf{Кейс 1: Амортизація навантаження під час пікової HTTP-активності}
+    \begin{itemize}
+        \item \textit{Опис інциденту:} Під час масового звернення громадян до кабінетів електронних послуг навантаження зросло до 150,000 HTTP-запитів на секунду, що забило пули з'єднань веб-акцепторів Erlang.
+        \item \textit{Коренева причина:} Ліміт TCP-акцепторів за замовчуванням (25k) та низька швидкість парсингу JSON-пакетів привели до вичерпання CPU.
+        \item \textit{Рішення та стабілізація:} Впроваджено лімітування на рівні Ingress Gateway. Пул акцепторів збільшено до 200,000, а парсинг JSON переведено на оптимізовані C99 NIF-бібліотеки. Це знизило утилізацію CPU з 95\% до 12\% при аналогічному трафіку.
+    \end{itemize}
+
+    \item \textbf{Кейс 2: Запобігання розділенню мережі (Split-Brain) в кластері СУБД}
+    \begin{itemize}
+        \item \textit{Опис інциденту:} Внаслідок короткочасного збою мережевого комутатора відбулося розділення зв'язку між нодами розподіленої Mnesia/KVS. Ноди утворили два сегменти (Split-Brain) та продовжували приймати транзакції на запис.
+        \item \textit{Коренева причина:} Автоматична реконсиляція Mnesia була вимкнена, що призвело до розходження стану реплік.
+        \item \textit{Рішення та стабілізація:} Впроваджено обробники події \texttt{mnesia\_down} та сценарії автоматичного злиття (merge/reconciliation) на основі вектора часових міток транзакцій. Налаштовано автоматичне повторне об'єднання сегментів та синхронізацію без втрати цілісності даних.
+    \end{itemize}
+\end{enumerate}
+
+% ===========================================================================
+\newpage
+\section{Chaos Engineering та Resilience Testing}
+
+\subsection{Стратегія ін'єкції відмов}
+
+\begin{longtable}{L{3.5cm} L{3cm} L{7.5cm}}
+\toprule
+\rowcolor{headerbg}
+\color{primary}\textbf{Тип відмови} &
+\color{primary}\textbf{Інструмент} &
+\color{primary}\textbf{Очікуваний результат} \\
+\midrule\endhead\bottomrule\endfoot
+Pod Kill & Chaos Mesh
+  & HPA/Deployment відновлює репліки; SLO зберігається \\[4pt]
+\rowcolor{rowalt}Node Drain & \texttt{kubectl drain}
+  & Поди евакуюються завдяки podAntiAffinity \\[4pt]
+Network Partition & Chaos Mesh NetworkChaos
+  & NetworkPolicy ізолює деградацію; telemetry продовжує роботу \\[4pt]
+\rowcolor{rowalt}Memory Pressure & LitmusChaos
+  & Перевірка limits і OOMKill-поведінки \\[4pt]
+Resource Starvation & Chaos Mesh StressChaos
+  & HPA масштабується (MTTD $<$ 2 хв) \\[4pt]
+\end{longtable}
+
+\subsection{RTO / RPO цілі}
+
+\begin{longtable}{L{3.8cm} C{2.5cm} C{2.5cm} L{5.2cm}}
+\toprule
+\rowcolor{headerbg}
+\color{primary}\textbf{Сервіс} &
+\color{primary}\textbf{RTO} &
+\color{primary}\textbf{RPO} &
+\color{primary}\textbf{Механізм} \\
+\midrule\endhead\bottomrule\endfoot
+prometheus (StatefulSet) & $<$ 5 хв & $<$ 1 хв & StatefulSet + PVC; авто-перезапуск \\[2pt]
+\rowcolor{rowalt}rest-bpe (Deployment) & $<$ 3 хв & N/A & Rolling update \\[2pt]
+hl7-health (HPA min 2) & $<$ 2 хв & N/A & HPA + podAntiAffinity \\[2pt]
+\rowcolor{rowalt}docker-registry & $<$ 5 хв & $<$ 5 хв & PVC 10 Gi; швидкий перезапуск \\[2pt]
+\end{longtable}
+
+% ===========================================================================
+\newpage
+\section{Операційні метрики та ресурсний бюджет}
+
+\subsection{Ключові SRE-метрики}
+
+\begin{longtable}{L{4.5cm} C{3cm} L{6.5cm}}
+\toprule
+\rowcolor{headerbg}
+\color{primary}\textbf{Метрика} &
+\color{primary}\textbf{Ціль} &
+\color{primary}\textbf{Вимірювання} \\
+\midrule\endhead\bottomrule\endfoot
+MTTR (Sev1)           & $<$ 30 хв & Grafana: час між першим алертом та відновленням \\[2pt]
+\rowcolor{rowalt}MTTD  & $<$ 5 хв  & Prometheus alerting rules з \texttt{for: 5m} \\[2pt]
+Error Budget Burn Rate & $<$ 1.0   & \texttt{sum(rate(errors[1h])) / error\_budget\_rate} \\[2pt]
+\rowcolor{rowalt}TOIL (інженерний час) & $<$ 50\% & Відслідковується у JIRA / itsm-incidents \\[2pt]
+Deployment Frequency  & $\geq$ 1/тижд. & Git commits to main; ArgoCD sync count \\[2pt]
+\rowcolor{rowalt}Change Failure Rate & $<$ 5\% & Rollback / загальна кількість деплойментів \\[2pt]
+\end{longtable}
+
+\subsection{Ресурсне навантаження кластеру}
+
+Кластер: 1 вузол, 10 vCPU, 8 ГБ RAM (arm64, Docker Desktop).
+
+\begin{longtable}{L{3.5cm} R{1.8cm} R{2.5cm} R{2.5cm} R{2.5cm}}
+\toprule
+\rowcolor{headerbg}
+\color{primary}\textbf{Namespace} &
+\color{primary}\textbf{Сервісів} &
+\color{primary}\textbf{CPU req.} &
+\color{primary}\textbf{Mem req.} &
+\color{primary}\textbf{PVC} \\
+\midrule\endhead\bottomrule\endfoot
+erp-infra     & 2  & 150m   & 384Mi   & 10 Gi \\[2pt]
+\rowcolor{rowalt}erp-telemetry & 4  & 350m   & 896Mi   & 30 Gi \\[2pt]
+erp-security  & 1  & 100m   & 256Mi   & --- \\[2pt]
+\rowcolor{rowalt}erp-ai        & 1  & 100m   & 256Mi   & --- \\[2pt]
+erp-services  & 5  & 500m   & 1.25 Gi & --- \\[2pt]
+\rowcolor{rowalt}erp-apps      & 8  & 900m   & 2.25 Gi & --- \\[2pt]
+\midrule
+\textbf{Разом} & \textbf{21} & \textbf{2.1 cores} & \textbf{5.3 Gi} & \textbf{40 Gi} \\[2pt]
+\end{longtable}
 
 % ===========================================================================
 \newpage
