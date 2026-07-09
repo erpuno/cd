@@ -25,59 +25,8 @@ namespaces:
     enabled: true
     tier: observability
 services:
-  erp-ai:
-    ai-generation:
-      enabled: true
-      replicas: 1
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-      image: erpuno/ai-generation
-      tag: 2024.6.15
-      port: 8080
-  erp-apps:
-    hl7-health:
-      enabled: true
-      replicas: 2
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-      image: erpuno/hl7-health
-      tag: 2024.6.15
-      port: 8502
-      protocol: TCP
-      hpa:
-        enabled: true
-        minReplicas: 2
-        maxReplicas: 6
-        targetCPUUtilization: 75
-    lms-education:
-      enabled: true
-      replicas: 2
-      resources:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-        limits:
-          cpu: 500m
-          memory: 512Mi
-      image: erpuno/lms-education
-      tag: 2024.6.15
-      port: 8506
-      protocol: TCP
-      hpa:
-        enabled: true
-        minReplicas: 2
-        maxReplicas: 6
-        targetCPUUtilization: 75
+  erp-ai: {}
+  erp-apps: {}
   erp-infra:
     docker-registry:
       enabled: true
@@ -242,14 +191,8 @@ rbac:
 networkPolicy:
   enabled: true
 ingress:
-  enabled: true
+  enabled: false
   className: nginx
   tls:
     enabled: false
-  hosts:
-  - host: erp.uno
-    paths:
-    - path: "/"
-      service: nitro-portal
-      namespace: erp-services
-      port: 8510
+  hosts: []

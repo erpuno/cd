@@ -39,6 +39,9 @@ PUBLIC_IMAGES = {
   'ldap-directory'  => "erpuno/ldap:#{VERSION}",
 }.freeze
 
+# Services to blacklist/exclude from Helm values generation
+BLACKLIST = ['nitro-ui', 'ai-generation', 'lms-education', 'hl7-health'].freeze
+
 # Parse image string → { registry_prefix, image_name, tag }
 def parse_image(full_image)
   # e.g. "prom/prometheus:v2.53.0" → image="prom/prometheus", tag="v2.53.0"
@@ -198,6 +201,7 @@ def generate_values
     Dir.glob(File.join(ns_dir, '*/')).sort.each do |svc_dir|
       service_name = File.basename(svc_dir.chomp('/'))
       next if service_name.empty?
+      next if BLACKLIST.any? { |b| service_name.include?(b) }
 
       config = extract_service_config(svc_dir, service_name)
       values['services'][ns_name][service_name] = config
@@ -207,15 +211,10 @@ def generate_values
   values['rbac']          = { 'create' => true }
   values['networkPolicy'] = { 'enabled' => true }
   values['ingress'] = {
-    'enabled'   => true,
+    'enabled'   => false,
     'className' => 'nginx',
     'tls'       => { 'enabled' => false },
-    'hosts'     => [
-      {
-        'host'  => GLOBAL['domain'],
-        'paths' => [{ 'path' => '/', 'service' => 'nitro-portal', 'namespace' => 'erp-services', 'port' => 8510 }]
-      }
-    ]
+    'hosts'     => []
   }
 
   values
