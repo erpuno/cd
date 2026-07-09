@@ -33,17 +33,32 @@ merge_kubeconfig() {
   rm -f "${temp_config}"
 }
 
+generate_config() {
+  local user_home="${HOME}"
+  local data_dir="${user_home}/kind-data"
+  mkdir -p "${data_dir}"
+  cat > kind-config.yaml <<EOF
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  extraMounts:
+  - hostPath: ${data_dir}
+    containerPath: /var/local-path-provisioner
+EOF
+  echo "✓ Generated kind-config.yaml for user: $(whoami)"
+  echo "  hostPath: ${data_dir}"
+}
+
 create() {
   echo "Creating KinD cluster: ${KIND_CLUSTER_NAME}"
 
+  # Auto-generate config so hostPath always matches the current user
+  generate_config
+
   # Create kind cluster
-  if [ -f kind-config.yaml ]; then
-    kind create cluster --name "${KIND_CLUSTER_NAME}" --config kind-config.yaml \
-      2>&1 | grep -v "^WARNING: IPv4 forwarding" || true
-  else
-    kind create cluster --name "${KIND_CLUSTER_NAME}" \
-      2>&1 | grep -v "^WARNING: IPv4 forwarding" || true
-  fi
+  kind create cluster --name "${KIND_CLUSTER_NAME}" --config kind-config.yaml \
+    2>&1 | grep -v "^WARNING: IPv4 forwarding" || true
   echo "✓ KinD cluster created"
 
   # Merge kubeconfig into ~/.kube/config
@@ -51,7 +66,7 @@ create() {
   echo "✓ Context merged into ~/.kube/config"
   echo ""
   echo "To switch to KinD context:"
-  echo "  kubectl config use-context ${KIND_CLUSTER_NAME}"
+  echo "  kubectl config use-context kind-${KIND_CLUSTER_NAME}"
   echo ""
   echo "To return to docker-desktop:"
   echo "  kubectl config use-context docker-desktop"
@@ -105,6 +120,7 @@ merge_existing() {
 # Main logic
 case "${1:-help}" in
   create) create ;;
+  config) generate_config ;;
   delete) delete ;;
   kind) use ;;
   docker) use_docker_desktop ;;
@@ -118,7 +134,8 @@ USAGE:
   ./kind.sh [COMMAND]
 
 COMMANDS:
-  create          Create a new KinD cluster and merge into ~/.kube/config
+  create          Generate kind-config.yaml, create a KinD cluster and merge into ~/.kube/config
+  config          (Re)generate kind-config.yaml using the current user's $HOME
   delete          Delete the KinD cluster
   kind            Switch kubectl to KinD context
   docker          Switch kubectl back to docker-desktop context
@@ -127,11 +144,11 @@ COMMANDS:
   help            Show this message
 
 ENVIRONMENT:
-  CLUSTER_NAME    Name of the cluster (default: kind)
+  CLUSTER_NAME    Name of the cluster (default: synrc)
 
 EXAMPLES:
-  ./kind.sh merge
-  ./kind.sh create [name]
+  ./kind.sh config           # regenerate kind-config.yaml for current user
+  ./kind.sh create [name]    # auto-generates config then creates cluster
   ./kind.sh delete [name]
   ./kind.sh kind
   ./kind.sh docker

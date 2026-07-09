@@ -6,9 +6,6 @@ global:
   imagePullPolicy: IfNotPresent
   version: 2024.6.15
 namespaces:
-  erp-ai:
-    enabled: true
-    tier: ai
   erp-apps:
     enabled: true
     tier: application
@@ -18,14 +15,10 @@ namespaces:
   erp-security:
     enabled: true
     tier: security
-  erp-services:
-    enabled: true
-    tier: application
   erp-telemetry:
     enabled: true
     tier: observability
 services:
-  erp-ai: {}
   erp-apps: {}
   erp-infra:
     docker-registry:
@@ -140,7 +133,6 @@ services:
         size: 10Gi
         storageClassName: standard
         mountPath: "/app/db"
-  erp-services: {}
   erp-telemetry:
     grafana:
       enabled: true
