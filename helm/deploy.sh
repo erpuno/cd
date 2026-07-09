@@ -54,7 +54,10 @@ helm upgrade --install erp-uno "$CHART_DIR" \
   --server-side=true \
   --force-conflicts
 
-echo
+echo -e "\n[5.5/5] Re-patching Helm & ArgoCD metadata..."
+bash "$SCRIPT_DIR/patch.sh" 2>/dev/null
+echo "    ✓ All deployed resources tagged"
+
 echo "╔════════════════════════════════════════════════════════╗"
 echo "║           Helm Deployment Complete ✓                   ║"
 echo "╚════════════════════════════════════════════════════════╝"

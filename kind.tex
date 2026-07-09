@@ -649,18 +649,22 @@ Examples of script execution:
 
 \subsection{ArgoCD Local Integration}
 
-To bootstrap continuous delivery in the local development environment, ArgoCD is deployed directly inside the Kind cluster in its own namespace (\texttt{argocd}). Because Gitea runs in a separate Docker container on the host machine, pods inside the cluster resolve Gitea via the native host gateway DNS entry \texttt{host.docker.internal:3000}.
-
+To bootstrap continuous delivery in the local development environment,
+ArgoCD is deployed directly inside the Kind cluster in its own namespace (\texttt{argocd})
 The local integration proceeds in four steps, automated by the custom bootstrap script \texttt{argocd.sh}:
 
 \begin{enumerate}
     \item \textbf{Namespace Initialization}: Instantiates the \texttt{argocd} namespace.
     \item \textbf{Manifest Deployment}: Pulls and applies the standard ArgoCD controller and server manifests.
-    \item \textbf{Gitea Code Mirroring}: Creates the \texttt{cd} repository inside the Gitea organization if not present, and pushes the local configuration directory state as the GitOps source of truth.
-    \item \textbf{Application Mapping}: Configures the root ArgoCD Application to monitor the Gitea repo's \texttt{helm/} path and automatically synchronize changes into the cluster.
+    \item \textbf{Gitea Code Mirroring}: Creates the \texttt{cd} repository inside the Gitea organization if not present,
+          and pushes the local configuration directory state as the GitOps source of truth.
+    \item \textbf{Application Mapping}: Configures the root ArgoCD Application to monitor
+          the Gitea repo's \texttt{helm/} path and automatically synchronize changes into the cluster.
 \end{enumerate}
 
-To route traffic to the ArgoCD web console, we define a Kubernetes Ingress resource mapping the domain \texttt{argocd.erp-uno.local} to the \texttt{argocd-server} service, utilizing the cluster's pre-configured Traefik Ingress controller:
+To route traffic to the ArgoCD web console, we define a Kubernetes Ingress resource mapping
+the domain \texttt{argocd.erp-uno.local} to the \texttt{argocd-server} service,
+utilizing the cluster's pre-configured Traefik Ingress controller:
 
 \begin{verbatim}
 apiVersion: networking.k8s.io/v1
@@ -684,17 +688,21 @@ spec:
 \end{verbatim}
 
 Developers register \texttt{127.0.0.1 argocd.erp-uno.local} in the host resolver configuration to enable direct browser access.
+If the UI is not accessible directly or if editing \texttt{/etc/hosts} is restricted,
+port forwarding to the ArgoCD Server service serves as a fallback:
 
-If the UI is not accessible directly or if editing \texttt{/etc/hosts} is restricted, port forwarding to the ArgoCD Server service serves as a fallback:
 \begin{verbatim}
 kubectl port-forward -n argocd svc/argocd-server 8080:80
 \end{verbatim}
+
 The Web UI can then be accessed via browser at \texttt{http://localhost:8080}.
 
 * Username: admin
 * Password: Rb2OTCWZpnzxMYK7
 
-To make this port forwarding tunnel permanent on macOS (surviving restarts and running automatically in the background), developers can install the provided LaunchAgent configuration:
+To make this port forwarding tunnel permanent on macOS (surviving restarts and running automatically in the background),
+developers can install the provided LaunchAgent configuration:
+
 \begin{verbatim}
 # Copy plist to macOS LaunchAgents directory
 cp argocd/uno.erp.argocd-portforward.plist ~/Library/LaunchAgents/

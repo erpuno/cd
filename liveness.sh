@@ -7,7 +7,7 @@ ARGOCD_SERVER="127.0.0.1:8080"
 APP_NAME="erp-uno"
 
 echo "╔════════════════════════════════════════════════════════════════════════════════╗"
-echo "║                   ERP/1: Cluster Liveness & Events Monitor                     ║"
+echo "║                   ERP/1: Cluster Liveness & Events Monitor                   ║"
 echo "╚════════════════════════════════════════════════════════════════════════════════╝"
 
 # 1. Check Kubernetes Cluster liveness
@@ -44,7 +44,7 @@ argocd app get "$APP_NAME" --server "$ARGOCD_SERVER" --plaintext
 
 # 5. Fetch latest events (Warning/Error/Info) from cluster namespaces
 echo -e "\n[4/4] Retrieving latest events (Error/Warning/Info) in ERP namespaces..."
-printf '%.0s-' {1..80}; echo ""
+echo "--------------------------------------------------------------------------------"
 kubectl get events -A --sort-by='.metadata.creationTimestamp' \
   | grep -E "erp-|argocd|default" \
   | awk '{
@@ -60,4 +60,4 @@ kubectl get events -A --sort-by='.metadata.creationTimestamp' \
       print line
     }' \
   | tail -n 25 || echo "No recent events found"
-printf '%.0s-' {1..80}; echo ""
+echo "--------------------------------------------------------------------------------"
