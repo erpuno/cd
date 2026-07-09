@@ -36,7 +36,7 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
-      image: erpuno/ai
+      image: erpuno/ai-generation
       tag: 2024.6.15
       port: 8080
   erp-apps:
@@ -50,7 +50,7 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
-      image: erpuno/acc
+      image: erpuno/acc-accounting
       tag: 2024.6.15
       port: 8080
     cart-registers:
@@ -63,7 +63,7 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
-      image: erpuno/cart
+      image: erpuno/cart-registers
       tag: 2024.6.15
       port: 8080
     crm-documents:
@@ -76,7 +76,7 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
-      image: erpuno/crm
+      image: erpuno/crm-documents
       tag: 2024.6.15
       port: 8080
     hl7-health:
@@ -108,7 +108,7 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
-      image: erpuno/itsm
+      image: erpuno/itsm-incidents
       tag: 2024.6.15
       port: 8080
     lms-education:
@@ -140,7 +140,7 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
-      image: erpuno/pm
+      image: erpuno/pm-projects
       tag: 2024.6.15
       port: 8080
     wms-warehouse:
@@ -153,7 +153,7 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
-      image: erpuno/warehouse
+      image: erpuno/wms-warehouse
       tag: 2024.6.15
       port: 8080
   erp-infra:
@@ -181,11 +181,11 @@ services:
       replicas: 1
       resources:
         requests:
-          cpu: 50m
+          cpu: 100m
           memory: 512Mi
         limits:
-          cpu: 200m
-          memory: 3Gi
+          cpu: 300m
+          memory: 2Gi
       image: erpuno/ns
       port: 53
       tag: latest
@@ -209,11 +209,11 @@ services:
       replicas: 1
       resources:
         requests:
-          cpu: 50m
+          cpu: 100m
           memory: 512Mi
         limits:
-          cpu: 200m
-          memory: 3Gi
+          cpu: 300m
+          memory: 2Gi
       image: erpuno/ca-pki
       tag: latest
       port: 8047
@@ -228,11 +228,11 @@ services:
       replicas: 1
       resources:
         requests:
-          cpu: 50m
+          cpu: 100m
           memory: 512Mi
         limits:
-          cpu: 200m
-          memory: 3Gi
+          cpu: 300m
+          memory: 2Gi
       image: erpuno/ldap
       port: 389
       tag: latest
@@ -243,7 +243,7 @@ services:
         storageClassName: standard
         mountPath: "/app/db"
   erp-services:
-    bpe-engine:
+    bpe-processes:
       enabled: true
       replicas: 1
       resources:
@@ -253,7 +253,7 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
-      image: erpuno/bpe
+      image: erpuno/bpe-processes
       tag: 2024.6.15
       port: 8080
     chat-messenger:
@@ -266,10 +266,10 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
-      image: erpuno/chat
+      image: erpuno/chat-messenger
       tag: 2024.6.15
       port: 8080
-    kvs-database:
+    kvs-storage:
       enabled: true
       replicas: 1
       resources:
@@ -279,10 +279,10 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
-      image: erpuno/kvs
+      image: erpuno/kvs-storage
       tag: 2024.6.15
       port: 8080
-    n2o-server:
+    n2o-connections:
       enabled: true
       replicas: 1
       resources:
@@ -292,10 +292,10 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
-      image: erpuno/n2o
+      image: erpuno/n2o-connections
       tag: 2024.6.15
       port: 8080
-    rest-bpe:
+    rest-api:
       enabled: true
       replicas: 1
       resources:
@@ -305,7 +305,7 @@ services:
         limits:
           cpu: 500m
           memory: 512Mi
-      image: erpuno/rest
+      image: erpuno/rest-api
       tag: 2024.6.15
       port: 8080
   erp-telemetry:
@@ -314,11 +314,11 @@ services:
       replicas: 1
       resources:
         requests:
-          cpu: 50m
-          memory: 128Mi
+          cpu: 30m
+          memory: 64Mi
         limits:
-          cpu: 200m
-          memory: 512Mi
+          cpu: 100m
+          memory: 256Mi
       image: grafana/grafana
       tag: 11.1.0
       port: 3000
@@ -328,16 +328,35 @@ services:
         size: 10Gi
         storageClassName: standard
         mountPath: "/var/lib/grafana"
+    opensearch:
+      enabled: true
+      replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 400m
+          memory: 768Mi
+      image: opensearchproject/opensearch
+      tag: 2.14.0
+      port: 9200
+      protocol: TCP
+      persistence:
+        enabled: true
+        size: 10Gi
+        storageClassName: standard
+        mountPath: "/usr/share/opensearch/data"
     otel-collector:
       enabled: true
       replicas: 1
       resources:
         requests:
-          cpu: 50m
-          memory: 128Mi
+          cpu: 30m
+          memory: 64Mi
         limits:
-          cpu: 200m
-          memory: 512Mi
+          cpu: 100m
+          memory: 256Mi
       image: otel/opentelemetry-collector-contrib
       port: 4317
       tag: 0.102.0
