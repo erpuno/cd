@@ -83,7 +83,8 @@ def extract_service_config(service_dir, service_name)
   deployment_path = File.join(service_dir, 'deployment.yaml')
   if File.exist?(deployment_path)
     begin
-      dep       = YAML.safe_load(File.read(deployment_path)) || {}
+      docs = YAML.load_stream(File.read(deployment_path))
+      dep = docs.find { |d| d && ['Deployment', 'StatefulSet'].include?(d['kind']) } || {}
       spec      = dep['spec'] || {}
       template  = spec.dig('template', 'spec') || {}
       container = template.dig('containers', 0) || {}
@@ -96,6 +97,11 @@ def extract_service_config(service_dir, service_name)
         config['image'] = parsed['image']
         config['tag']   = parsed['tag']
       end
+
+      # Command, args and env
+      config['command'] = container['command'] if container['command']
+      config['args']    = container['args']    if container['args']
+      config['env']     = container['env']     if container['env']
 
       # Ports
       if (ports = container['ports'])

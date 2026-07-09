@@ -60,20 +60,33 @@ services:
       image: erpuno/ns
       port: 53
       tag: latest
+      command:
+      - bin/ns
+      args:
+      - start
+      env:
+      - name: ERL_AFLAGS
+        value: "+S 1 +SDcpu 1 +SDio 1 -sbt db +A 16 -env ERL_MAX_PORTS 262144"
       protocol: UDP
     traefik-ingress:
       enabled: true
       replicas: 1
       resources:
         requests:
-          cpu: 100m
-          memory: 256Mi
+          cpu: 50m
+          memory: 64Mi
         limits:
-          cpu: 500m
-          memory: 512Mi
-      image: erpuno/traefik-ingress
-      tag: 2024.6.15
-      port: 8080
+          cpu: 200m
+          memory: 256Mi
+      image: traefik
+      tag: v3.3
+      args:
+      - "--entrypoints.web.address=:80"
+      - "--providers.kubernetesingress=true"
+      - "--providers.kubernetesingress.ingressclass=traefik"
+      - "--log.level=WARN"
+      port: 80
+      protocol: TCP
   erp-security:
     ca-pki:
       enabled: true
@@ -87,6 +100,13 @@ services:
           memory: 2Gi
       image: erpuno/ca-pki
       tag: latest
+      command:
+      - bin/ca
+      args:
+      - start
+      env:
+      - name: ERL_AFLAGS
+        value: "+S 1 +SDcpu 1 +SDio 1 -sbt db +A 16 -env ERL_MAX_PORTS 262144"
       port: 8047
       protocol: TCP
       persistence:
@@ -107,6 +127,13 @@ services:
       image: erpuno/ldap
       port: 389
       tag: latest
+      command:
+      - bin/ldap
+      args:
+      - start
+      env:
+      - name: ERL_AFLAGS
+        value: "+S 1 +SDcpu 1 +SDio 1 -sbt db +A 16 -env ERL_MAX_PORTS 262144"
       protocol: TCP
       persistence:
         enabled: true
@@ -127,6 +154,13 @@ services:
           memory: 256Mi
       image: grafana/grafana
       tag: 11.1.0
+      env:
+      - name: GF_SECURITY_ADMIN_USER
+        value: admin
+      - name: GF_SECURITY_ADMIN_PASSWORD
+        value: admin
+      - name: GF_PLUGINS_ALLOW_UI_UPDATES
+        value: 'true'
       port: 3000
       protocol: TCP
       persistence:
@@ -146,6 +180,15 @@ services:
           memory: 768Mi
       image: opensearchproject/opensearch
       tag: 2.14.0
+      env:
+      - name: discovery.type
+        value: single-node
+      - name: plugins.security.disabled
+        value: 'true'
+      - name: OPENSEARCH_JAVA_OPTS
+        value: "-Xms256m -Xmx256m"
+      - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
+        value: TestPassword@2024
       port: 9200
       protocol: TCP
       persistence:
@@ -166,6 +209,9 @@ services:
       image: otel/opentelemetry-collector-contrib
       port: 4317
       tag: 0.102.0
+      command:
+      - "/otelcol-contrib"
+      - "--config=/etc/otelcol/config.yaml"
       protocol: TCP
     prometheus:
       enabled: true

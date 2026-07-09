@@ -9,9 +9,21 @@ echo "╔═══════════════════════�
 echo "║    ERP/1: Підпримємство Helm Deployment                ║"
 echo "╚════════════════════════════════════════════════════════╝"
 
-# 1. Cleanup immutable resources (StatefulSet spec is immutable on upgrade)
+# 1. Cleanup immutable resources (StatefulSet specs and Service clusterIPs are immutable)
 echo -e "\n[1/5] Cleaning up immutable resources..."
+# Delete conflicting StatefulSets
 kubectl delete statefulset prometheus -n erp-telemetry --ignore-not-found --force --grace-period=0 2>/dev/null || true
+kubectl delete statefulset ldap-directory -n erp-security --ignore-not-found --force --grace-period=0 2>/dev/null || true
+kubectl delete statefulset opensearch -n erp-telemetry --ignore-not-found --force --grace-period=0 2>/dev/null || true
+
+# Delete conflicting Services (transitioning from standard ClusterIP to Headless None)
+kubectl delete svc docker-registry -n erp-infra --ignore-not-found 2>/dev/null || true
+kubectl delete svc ca-pki -n erp-security --ignore-not-found 2>/dev/null || true
+kubectl delete svc ldap-directory -n erp-security --ignore-not-found 2>/dev/null || true
+kubectl delete svc grafana -n erp-telemetry --ignore-not-found 2>/dev/null || true
+kubectl delete svc opensearch -n erp-telemetry --ignore-not-found 2>/dev/null || true
+kubectl delete svc prometheus -n erp-telemetry --ignore-not-found 2>/dev/null || true
+
 kubectl delete hpa --all --all-namespaces --ignore-not-found 2>/dev/null || true
 
 # 2. Ensure namespaces exist before applying RBAC
