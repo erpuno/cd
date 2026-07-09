@@ -102,7 +102,7 @@ echo "    Configuring ArgoCD server in insecure (HTTP) mode..."
 kubectl -n argocd patch deploy argocd-server --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--insecure"}]'
 
 echo "    Waiting for ArgoCD server deployment rollout..."
-kubectl rollout status deployment argocd-server -n argocd --timeout=150s
+kubectl rollout status deployment argocd-server -n argocd --timeout=300s
 
 # 5.5 Clean up manual deployments/services/hpas/pvcs to avoid GitOps conflicts
 echo -e "\n[5.5/7] Cleaning up manual deployments/services to avoid GitOps conflicts..."
@@ -122,14 +122,20 @@ kubectl apply -f "$SCRIPT_DIR/argocd/application.yaml"
 echo -e "\n[7/7] Creating permanent background port-forward (localhost:8080)..."
 PLIST_NAME="uno.erp.argocd-portforward.plist"
 PLIST_PATH="$HOME/Library/LaunchAgents/$PLIST_NAME"
+WRAPPER_SCRIPT="$SCRIPT_DIR/argocd/argocd-portforward.sh"
+
+chmod +x "$WRAPPER_SCRIPT"
 
 mkdir -p "$HOME/Library/LaunchAgents"
-cp "$SCRIPT_DIR/argocd/$PLIST_NAME" "$PLIST_PATH"
+
+# Substitute the script path placeholder with the actual absolute repo path
+sed "s|__SCRIPT_PATH__|${WRAPPER_SCRIPT}|g" \
+    "$SCRIPT_DIR/argocd/$PLIST_NAME" > "$PLIST_PATH"
 
 # Load and launch the agent
 launchctl unload "$PLIST_PATH" 2>/dev/null || true
 launchctl load "$PLIST_PATH"
-echo "    ✓ macOS launchd agent configured and loaded"
+echo "    ✓ macOS launchd agent configured (context resolved dynamically at runtime)"
 
 echo -e "\n🎉 ArgoCD Local GitOps Setup Completed!"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

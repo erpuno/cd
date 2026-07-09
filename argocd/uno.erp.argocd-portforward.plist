@@ -6,16 +6,18 @@
     <string>uno.erp.argocd-portforward</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/opt/homebrew/bin/kubectl</string>
-        <string>port-forward</string>
-        <string>-n</string>
-        <string>argocd</string>
-        <string>svc/argocd-server</string>
-        <string>8080:80</string>
+        <string>/bin/bash</string>
+        <string>__SCRIPT_PATH__</string>
     </array>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
     <true/>
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+    <key>StandardOutPath</key>
+    <string>/tmp/argocd-portforward.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/argocd-portforward.err</string>
 </dict>
 </plist>

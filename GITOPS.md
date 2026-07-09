@@ -5,6 +5,58 @@ to a locally managed Gitea instance for local development and build reproducibil
 on macOS/Windows/Linux. This Gitea instance is also used as source of truth for
 ArgoCD cluster controller.
 
+## Full Bootstrap Sequence (macOS / M1)
+
+Run these commands in order after every macOS reboot or fresh cluster setup:
+
+```bash
+# 1. Start local Gitea and mirror GitHub repos
+./gitops.sh all
+
+# 2. Create the KinD cluster (auto-generates kind-config.yaml for current user)
+./kind.sh create synrc
+
+# 3. Switch kubectl to the KinD context
+./kind.sh kind
+# Verify: kubectl config current-context  →  kind-synrc
+# Verify: kubectl get nodes               →  synrc-control-plane Ready
+
+# 4. Deploy base layer (namespaces, RBAC, storage, infra services)
+./deploy.sh
+
+# 5. Build all custom ERP images from local Dockerfiles and load into KinD
+#    (pulls source from local Gitea via host.docker.internal:3000)
+./rebuild.sh
+
+# 6. Generate unified Helm values
+./values.rb --force
+
+# 7. Deploy ArgoCD + push CD repo to Gitea + set up port-forward
+./argocd.sh
+```
+
+> **Note — M1/ARM64**: `./kind.sh create` automatically regenerates `kind-config.yaml`
+> using your current `$HOME`, so the `hostPath` for local storage is always correct
+> regardless of which user is running the script.
+
+> **Note — First boot image pull**: On the first run, ArgoCD pulls ~186 MB of ARM64
+> images. The rollout timeout is set to 300 s. If it still times out, all pods will
+> be Running shortly after — just re-run `./argocd.sh` (it is idempotent).
+
+### Clean Restart
+
+```bash
+./delete.sh          # deletes K8s namespaces + KinD cluster
+./kind.sh create synrc
+./kind.sh kind
+./deploy.sh
+./rebuild.sh
+./values.rb --force
+./argocd.sh
+```
+
+---
+
 ## Why Gitea?
 
 * **Lightweight & Fast**: SQLite-backed Gitea starts in under 5 seconds and uses
@@ -72,6 +124,20 @@ RUN git clone ${GIT_SOURCE}/synrc/ca.git .
 
 Docker Desktop automatically resolves `host.docker.internal` to the host machine during `docker build`.
 
+### Building all images at once
+
+Use `./rebuild.sh` to build every service that has a `build.sh` in `lib/` and load the
+resulting image directly into the KinD cluster:
+
+```bash
+./rebuild.sh
+```
+
+This script:
+1. Resets and re-creates the in-cluster `docker-registry`
+2. Finds every `lib/**/build.sh` and runs `docker build` + `kind load docker-image`
+3. Re-runs `./deploy.sh` to bring updated pods online
+
 ### Building with a custom Git Server
 
 If Gitea is running on a different server or IP, you can override the source URL during build using `--build-arg`:
@@ -82,13 +148,14 @@ docker build --build-arg GIT_SOURCE=http://192.168.1.50:3000 -t erpuno/ca-pki:la
 
 ## Management Commands
 
-* **Check Status**: `./gitops.sh status` Check container and migrated repository health:
-* **Stop Gitea**: `./gitops.sh stop` Shutdown the container:
+* **Check Status**: `./gitops.sh status` Check container and migrated repository health
+* **Stop Gitea**: `./gitops.sh stop` Shutdown the container
 * **Start Gitea**: `./gitops.sh setup`
-* **Force Re-Migration**: `./gitops.sh migrate` Pull fresh updates from GitHub and overwrite Gitea contents:
+* **Force Re-Migration**: `./gitops.sh migrate` Pull fresh updates from GitHub and overwrite Gitea contents
+* **Rebuild all images**: `./rebuild.sh`
+* **Inspect registry**: `./images.sh` or `./images.sh --local` (also shows KinD-loaded images)
 
 ## Step 3: ArgoCD GitOps Integration
-
 
 To verify and execute GitOps deployments inside the Kind cluster using ArgoCD:
 
