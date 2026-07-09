@@ -11,6 +11,7 @@ echo "╚═══════════════════════�
 
 # 1. Cleanup immutable resources (StatefulSet specs and Service clusterIPs are immutable)
 echo -e "\n[1/5] Cleaning up immutable resources..."
+
 # Delete conflicting StatefulSets / Deployments
 # kubectl delete statefulset prometheus -n erp-telemetry --ignore-not-found --force --grace-period=0 2>/dev/null || true
 # kubectl delete statefulset ldap-directory -n erp-security --ignore-not-found --force --grace-period=0 2>/dev/null || true

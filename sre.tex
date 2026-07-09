@@ -122,27 +122,25 @@
 \begin{document}
 \pagestyle{fancy}
 
-% ---- Title page -----------------------------------------------------------
 \begin{titlepage}
 \AddToShipoutPictureBG*{\AtPageLowerLeft{\color{primary}\rule{\paperwidth}{\paperheight}}}
 \color{white}\thispagestyle{empty}\vspace*{3cm}\centering
   {\Huge \textbf{ERP/1: Підприємство} \par}\vspace{1.5cm}
-  {\HUGE \textbf{SRE Handbook} \par}\vspace{2cm}
+  {\HUGE \textbf{CD/SRE Handbook} \par}\vspace{2cm}
   {\LARGE \textbf{Настанови системного адміністратора\\ для розгортання, спостереження і обслуговування кластерів ЦОД} \par}
   \vspace{1.5cm}
   \begin{tabular}{rl}
-    \textbf{Версія системи:}  & 2024.6.15 \\[4pt]
+    \textbf{Версія системи:}  & 2026.7.10 \\[4pt]
+    \textbf{Контекст:}        & kind (arm64) \\[4pt]
     \textbf{Кластер:}         & synrc-control-plane (arm64) \\[4pt]
     \textbf{Домен:}           & 1 (erp.uno)\\[4pt]
-    \textbf{Неймспейси:}      & 6 просторів (infra, telemetry, security, services, apps, ai) \\[4pt]
-    \textbf{Компоненти:}      & 20 сервісів \\[4pt]
-    \textbf{Дата випуску:}    & 04 липня 2026 \\
+    \textbf{Неймспейси:}      & 7 просторів (argocd, infra, telemetry, security, services, apps, ai) \\[4pt]
+    \textbf{Компоненти:}      & 66 сервісів та 22 ІКС \\[4pt]
   \end{tabular}
 \vfill
-  {\large 2026 \copyright\ Zen Crypted --- Системи Електронного Урядування \par}
+  {\large 2026 \copyright\ Системи Електронного Урядування \par}
 \end{titlepage}
 
-% ---- ToC ------------------------------------------------------------------
 \newpage
 \begin{center}{\Huge\color{primary}\bfseries Зміст\par}\end{center}
 \vspace{30pt}
@@ -152,7 +150,7 @@
 \newpage
 \begin{abstract}
 \noindent
-Цей \textbf{SRE Handbook} є авторитетним технічним довідником з Site Reliability Engineering
+Цей \textbf{CD/SRE Handbook} є авторитетним технічним довідником з Site Reliability Engineering
 для платформи \textbf{ERP/1: Підприємство}. Він охоплює повну архітектуру
 multi-namespace Kubernetes-кластеру, деталізовану структуру Helm-чартів,
 специфікацію всіх маніфестів компонентів, а також практики SRE: SLI/SLO,
@@ -202,13 +200,14 @@ arch: arm64, 10 CPU, 8 ГБ RAM) під керуванням \textbf{Docker Desk
 Уся конфігурація зберігається декларативно у репозиторії \texttt{erpuno/cd}
 та синхронізується через Helm-чарти і shell-скрипти.
 
-Платформа складається з \textbf{6 namespace'ів} та \textbf{20 мікросервісів},
-організованих за принципом \textit{Separation of Concerns}:
+Платформа складається з \textbf{7 просторів} та \textbf{88 сервісів},
+організованих за принципом \textbf{Separation of Concerns}:
 
 \vspace{10pt}
 \begin{tcolorbox}[notebox]
-\textbf{Порядок розгортання (залежності):}\\[4pt]
-              \texttt{infra}
+\textbf{Порядок розгортання залежностей:}\\[4pt]
+              \texttt{argocd}
+$\rightarrow$ \texttt{infra}
 $\rightarrow$ \texttt{telemetry}
 $\rightarrow$ \texttt{security}
 $\rightarrow$ \texttt{ai}
@@ -218,6 +217,18 @@ $\rightarrow$ \texttt{apps}\\[4pt]
 Порядок відображає топологічне сортування залежностей між сервісами.
 \end{tcolorbox}
 
+\begin{tcolorbox}[notebox]
+\textbf{Мікросервіси.}
+Термін "мікросервіси"\ (після того, як Director of Operations Engineering, який пофіксав Netflix,
+виступив з доповіддю на QCon в Сан Франціско "Mastering Chaos - A Netflix Guide to Microservices"
+\footnote{\url{https://www.youtube.com/watch?v=CZ3wIuvmHeM}}) отримав негативний відтінок, оскільки для контрольованого
+масштабування доводиться на практиці масштабувати моноліти (приклад ЕСОЗ). Тому в нашому документі ми будемо
+називати "мікросервісами"\ поди, що будуються на основі образів Alpine Linux (мають навіть вищі показники
+по безпеці ніж UA Linux із-за своєї мінімалістичності), а просто "сервісами"\ образи, що будуються на образах Linux
+з власними initd інфрастктурами, сервісами і розширеними пакетними менеджерами, такі як Ubuntu, UA Linux, тощо.
+\end{tcolorbox}
+
+\newpage
 \subsection{Простори та їх призначення}
 
 \begin{longtable}{L{3cm} L{2.3cm} L{8.7cm}}
@@ -264,12 +275,13 @@ $\rightarrow$ \texttt{apps}\\[4pt]
     \texttt{itsm-incidents} \\[4pt]
 \end{longtable}
 
-\subsection{Поточний стан кластеру}
+\newpage
+\subsection{Структура кластеру}
 
-Snapshot стану подів (04 липня 2026, uptime 99.97\%, \texttt{kubectl get all -{}-all-namespaces}):
+Snapshot стану подів (04 липня 2026, uptime 99.97\%, \texttt{kubectl get all -A}):
 
 \vspace{8pt}
-\begin{longtable}{L{3.2cm} L{5.2cm} L{1.5cm} L{3cm} L{3.5cm}}
+\begin{longtable}{L{3.2cm} L{5.2cm} L{1.5cm} L{3cm} L{1.5cm}}
 \toprule
 \rowcolor{headerbg}
 \color{primary}\textbf{Namespace} &
@@ -302,28 +314,42 @@ erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\tex
 Моніторинг доступний через Grafana на \texttt{:3000}.
 \end{tcolorbox}
 
-% ===========================================================================
 \newpage
-\section{Структура репозиторію}
+\section{Структура CD репозиторію}
 
 \subsection{Огляд директорій}
 
-\begin{longtable}{L{4cm} L{10cm}}
+\begin{longtable}{L{3cm} L{12cm}}
 \toprule
 \rowcolor{headerbg}
 \color{primary}\textbf{Шлях} & \color{primary}\textbf{Призначення} \\
 \midrule\endhead\bottomrule\endfoot
-\texttt{helm/}           & Helm-чарт верхнього рівня: \texttt{Chart.yaml}, \texttt{values.yaml} \\[2pt]
-\rowcolor{rowalt}\texttt{helm/templates/} & Go-шаблони: \texttt{deployments.yaml}, \texttt{services.yaml}, \texttt{hpa.yaml}, \texttt{namespaces.yaml} \\[2pt]
-\texttt{lib/}            & Сирі маніфести на компонент: \texttt{lib/\{namespace\}/\{service\}/} \\[2pt]
-\rowcolor{rowalt}\texttt{lib/erp-*/}      & По одній директорії на кожен з 6 namespace'ів \\[2pt]
-\texttt{share/}         & Кластерні ресурси: \texttt{namespaces.yaml}, \texttt{rbac.yaml}, \texttt{networkpolicy.yaml}, \texttt{storage-class.yaml} \\[2pt]
-\rowcolor{rowalt}\texttt{values.rb}       & Ruby-скрипт: читає \texttt{lib/} $\rightarrow$ генерує \texttt{helm/values.yaml} \\[2pt]
-\texttt{deploy.sh}       & Bash-скрипт 8-крокового розгортання \\[2pt]
-\rowcolor{rowalt}\texttt{prereq.sh}       & Перевірка та встановлення передумов (kind, kubectl, helm) \\[2pt]
-\texttt{delete.sh}       & Видалення всіх ERP-ресурсів з кластеру \\[2pt]
+\rowcolor{rowalt}\texttt{argocd/} & Docker Compose леєр для Gitea (поза кластером): \texttt{install.yaml}, \texttt{uno.erp.argocd-portforward.plist}, \texttt{ingress.yaml}, \texttt{application.yaml}, \texttt{argocd-portforward.sh} \\[2pt]
+\rowcolor{rowalt}\texttt{compose/} & Docker Compose леєр для Gitea (поза кластером): \texttt{gitea.yaml} \\[2pt]
+\rowcolor{rowalt}\texttt{helm/} & Helm-чарт верхнього рівня: \texttt{Chart.yaml}, \texttt{values.yaml}, \texttt{deploy.sh},  \texttt{patch.sh}, \texttt{validate.sh} \\[2pt]
+\rowcolor{rowalt}\texttt{helm/templates/} & Шаблони для Helm чарту: \texttt{deployments.yaml}, \texttt{services.yaml}, \texttt{hpa.yaml}, \texttt{namespaces.yaml} \\[2pt]
+\rowcolor{rowalt}\texttt{lib/} & Сирі маніфести для служб та ІКС: \texttt{lib/\{namespace\}/\{service\}/} \\[2pt]
+\rowcolor{rowalt}\texttt{lib/erp-*/} & По одній директорії на кожен з 6 namespace'ів \\[2pt]
+\rowcolor{rowalt}\texttt{share/} & Кластерні ресурси: \texttt{namespaces.yaml}, \texttt{rbac.yaml}, \texttt{networkpolicy.yaml}, \texttt{storage-class.yaml} \\[2pt]
+\texttt{argocd.sh} & bash-скрипт розрогратння простору ArgoCD і його синхронізація з внутрішнім Gitea репозиторієм, що містить стан кластеру\\[2pt]
+\texttt{backup.sh} & bash-скрипт резервного копіювання PVC леєрів\\[2pt]
+\texttt{delete-pvc.sh} & Імітація втрати PVC ресурсів \\[2pt]
+\texttt{delete.sh} & Видалення всіх ERP-ресурсів з кластеру \\[2pt]
+\texttt{deploy.sh} & bash-скрипт функціонального розгортання кластера \\[2pt]
+\texttt{gitops.sh} & bash-скрипт розгортання Gitea і зовнішній мірорінг\\[2pt]
+\texttt{images.sh} & bash-скрипт відображення Docker контейнерів з ERP/1 службами і ІКС\\[2pt]
+\texttt{kind.sh} & bash-скрипт управління K8S контекстами Kind\\[2pt]
+\texttt{liveness.sh} & bash-скрипт статусу ArgoCD простору\\[2pt]
+\texttt{manifest.rb} & bash-скрипт, який використовується \texttt{backup.sh} для фільтрації K8S маніфестів\\[2pt]
+\texttt{monitor.sh} & termios bash-скрипт для безперервного одноекранного термінального моніторингу\\[2pt]
+\texttt{prereq.sh} & Перевірка та встановлення передумов (kind, kubectl, helm) \\[2pt]
+\texttt{rebuild.sh} & Збірка Docker контейнерів з Gitea і публікації в реєстрі контейнерів \\[2pt]
+\texttt{restore.sh} & bash-скрипт відновленя резервних копій PVC леєрів\\[2pt]
+\texttt{values.rb} & Ruby-скрипт: читає \texttt{lib/} $\rightarrow$ генерує \texttt{helm/values.yaml} \\[2pt]
+\texttt{view.sh} & Переглядач та екстрактор файлів з резервних копій \\[2pt]
 \end{longtable}
 
+\newpage
 \subsection{Шаблон компонента}
 
 Кожен мікросервіс у \texttt{lib/\{namespace\}/\{service\}/} може містити:
@@ -363,9 +389,19 @@ erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\tex
   & Локальні значення для конкретного сервісу.
     Читається \texttt{values.rb} при генерації \texttt{helm/values.yaml}.
     Дублює ключові параметри \texttt{deployment.yaml} у форматі Helm \\[4pt]
+\rowcolor{rowalt}
+\texttt{ingress.yaml}
+  & \texttt{Ingress} Описа інгрес контролера.
+    Поля: \texttt{spec.rules[].http.path[].backend.service},
+    \texttt{.ingressClassName: local-path} \\[4pt]
+\texttt{Dockerfile}
+  & Файл для збірки контейнера служби чи ІКС з Gitea \\[4pt]
+\rowcolor{rowalt}
+\texttt{build.sh}
+  & Файл для збірки імаджа або для \texttt{kind load docker-image} або для \texttt{docker push} (використовується \texttt{--registry} опція).
+ \\[4pt]
 \end{longtable}
 
-% ===========================================================================
 \newpage
 \section{Каталог компонентів ERP/1}
 
@@ -380,25 +416,25 @@ erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\tex
 \rowcolor{headerbg}
 \color{primary}\textbf{Сервіс} & \color{primary}\textbf{Namespace} & \color{primary}\textbf{Kind} & \color{primary}\textbf{Port} & \color{primary}\textbf{CPU req/lim} & \color{primary}\textbf{Легенда} \\
 \midrule\endhead\bottomrule\endfoot
-\multicolumn{6}{l}{\textcolor{infrablue}{\bfseries\small erp-infra --- Рівень інфраструктури}}\\
+\multicolumn{6}{l}{\textcolor{infrablue}{\bfseries\small Рівень інфраструктури}}\\
 \midrule
 \texttt{ns-dns}          & erp-infra  & Deployment  & 8080 & 100m/500m & DSV \\
 \rowcolor{rowalt}\texttt{docker-registry} & erp-infra & Deployment & 5000 & 50m/200m & PDSV \\
 \midrule
-\multicolumn{6}{l}{\textcolor{successgreen}{\bfseries\small erp-telemetry --- Рівень спостереження}}\\
+\multicolumn{6}{l}{\textcolor{successgreen}{\bfseries\small Рівень спостереження}}\\
 \midrule
 \texttt{prometheus}      & erp-telemetry & StatefulSet & 9090 & 100m/500m & PDSV \\
 \rowcolor{rowalt}\texttt{grafana}  & erp-telemetry & Deployment & 3000 & 50m/200m & PDSV \\
 \texttt{otel-collector} & erp-telemetry & Deployment & 8404 & 100m/500m & DSV \\
 \midrule
-\multicolumn{6}{l}{\textcolor{secpurple}{\bfseries\small erp-security --- Рівень безпеки}}\\
+\multicolumn{6}{l}{\textcolor{secpurple}{\bfseries\small Рівень безпеки}}\\
 \midrule
 \texttt{ca-pki}          & erp-security & Deployment & 8201 & 100m/500m & DSV \\
 \midrule
-\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small erp-ai --- Рівень AI моделей}}\\
+\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small Рівень моделей}}\\
 \rowcolor{rowalt}\texttt{ai-generation} & erp-ai & Deployment & 8601 & 100m/500m & DSV \\
 \midrule
-\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small erp-services --- Рівень служб і сервісів}}\\
+\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small Рівень служб і сервісів}}\\
 \midrule
 \texttt{rest-bpe}        & erp-services & Deployment & 8303 & 100m/500m & DSV \\
 \rowcolor{rowalt}\texttt{bpe-engine}   & erp-services & Deployment & 8302 & 100m/500m & DSV \\
@@ -406,7 +442,7 @@ erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\tex
 \rowcolor{rowalt}\texttt{kvs-database} & erp-services & Deployment & 8301 & 100m/500m & DSV \\
 \texttt{chat-messenger}  & erp-services & Deployment & 8507 & 100m/500m & DSV \\
 \midrule
-\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small erp-apps --- Рівень ІКС}}\\
+\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small Рівень ІКС}}\\
 \midrule
 \rowcolor{rowalt}\texttt{hl7-health}   & erp-apps & Deployment & 8502 & 100m/500m & HDSV \\
 \texttt{lms-education}   & erp-apps & Deployment & 8506 & 100m/500m & HDSV \\
@@ -417,9 +453,9 @@ erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\tex
 \rowcolor{rowalt}\texttt{pm-projects}  & erp-apps & Deployment & 8514 & 100m/500m & DSV \\
 \texttt{itsm-incidents}  & erp-apps & Deployment & 8513 & 100m/500m & DSV \\
 \end{longtable}
-}% end footnotesize
+}
 
-{\footnotesize \textsuperscript{HL} headless service (\texttt{clusterIP: None}) для StatefulSet}
+% {\footnotesize \textsuperscript{HL} headless service (\texttt{clusterIP: None}) для StatefulSet}
 
 \newpage
 \subsection{Параметри \texttt{deployment.yaml}}
@@ -474,7 +510,7 @@ erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\tex
 \rowcolor{headerbg}
 \color{primary}\textbf{Поле YAML} & \color{primary}\textbf{Значення} & \color{primary}\textbf{Призначення} \\
 \midrule\endhead\bottomrule\endfoot
-\texttt{apiVersion}           & autoscaling/v2 & Підтримує кілька метрик (CPU + Memory) \\[2pt]
+\texttt{apiVersion} & autoscaling/v2 & Підтримує кілька метрик (CPU + Memory) \\[2pt]
 \rowcolor{rowalt}\texttt{spec.scaleTargetRef} & Deployment & Об'єкт масштабування \\[2pt]
 \texttt{spec.minReplicas}     & 2           & Мінімум реплік (HL7-health, LMS-education) \\[2pt]
 \rowcolor{rowalt}\texttt{spec.maxReplicas} & 6 & Максимум реплік при навантаженні \\[2pt]
@@ -489,13 +525,12 @@ erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\tex
 \rowcolor{headerbg}
 \color{primary}\textbf{Поле YAML} & \color{primary}\textbf{Значення} & \color{primary}\textbf{Призначення} \\
 \midrule\endhead\bottomrule\endfoot
-\texttt{kind: PersistentVolumeClaim} & v1       & Запит на постійне сховище \\[2pt]
+\texttt{kind: PersistentVolumeClaim} & v1 & Запит на постійне сховище \\[2pt]
 \rowcolor{rowalt}\texttt{spec.accessModes} & ReadWriteOnce & Один вузол --- запис \\[2pt]
-\texttt{spec.storageClassName}  & local-path  & Provisioner для kind/Docker Desktop \\[2pt]
+\texttt{spec.storageClassName} & local-path  & Provisioner для kind/Docker Desktop \\[2pt]
 \rowcolor{rowalt}\texttt{spec.resources.requests.storage} & 10Gi & Розмір тому \\[2pt]
 \end{longtable}
 
-% ===========================================================================
 \newpage
 \section{Синхронізація Helm-чарту}
 
@@ -533,12 +568,9 @@ helm upgrade --install erp-uno ./helm \
     Кожен запис: \texttt{enabled}, \texttt{replicas}, \texttt{resources},
     \texttt{port}, \texttt{image}, \texttt{protocol}, \texttt{persistence},
     \texttt{hpa} \\[4pt]
-\rowcolor{rowalt}\texttt{rbac:}
-  & \texttt{create: true} --- дозволяє Helm-шаблонам генерувати RBAC \\[4pt]
-\texttt{networkPolicy:}
-  & \texttt{enabled: true} --- активує NetworkPolicy між namespace'ами \\[4pt]
-\rowcolor{rowalt}\texttt{ingress:}
-  & \texttt{className: nginx}, hosts, TLS, маршрут до \texttt{nitro-portal:8510} \\[4pt]
+\rowcolor{rowalt}\texttt{rbac:} & \texttt{create: true} --- дозволяє Helm-шаблонам генерувати RBAC \\[4pt]
+\texttt{networkPolicy:} & \texttt{enabled: true} --- активує NetworkPolicy між namespace'ами \\[4pt]
+\rowcolor{rowalt}\texttt{ingress:} & \texttt{className: nginx}, hosts, TLS, маршрут до \texttt{nitro-portal:8510} \\[4pt]
 \end{longtable}
 
 \newpage
@@ -546,24 +578,28 @@ helm upgrade --install erp-uno ./helm \
 
 \begin{tcolorbox}[notebox]
 \textbf{Принцип роботи:}\\[4pt]
-\texttt{lib/} $\xrightarrow{\texttt{values.rb}}$ \texttt{helm/values.yaml}
-$\xrightarrow{\text{Helm templates}}$ \textbf{Kubernetes manifests}\\[4pt]
-\texttt{lib/} --- джерело істини. Будь-яка зміна в \texttt{lib/} вимагає
-перегенерації: \texttt{ruby values.rb --force}
+Запускається сценарiй зворотної генерацiї для збору конфiгурацiй окремих мiкро-
+сервiсiв та автоматичного формування зведеного файлу параметрiв Helm.
+Каталог \texttt{lib/} --- джерело істини. Будь-яка зміна в \texttt{lib/} вимагає
+перегенерації: \texttt{ruby values.rb --force}, що генерує \texttt{helm/values.yaml},
+який, в свою чергу, є джерелом істини для ArgoCD.
 \end{tcolorbox}
 
 \begin{verbatim}
 ruby values.rb --force          # overwrite without confirmation
 ruby values.rb --dry-run        # preview only, no file write
 ruby values.rb --version 2024.7 # update all image versions
-
-# Algorithm:
-# 1. Dir.glob("lib/erp-*/*/")  -- iterate components
-# 2. YAML.safe_load deployment.yaml  -- parse manifest
-# 3. Extract: replicas, image, port, resources, persistence, hpa
-# 4. Write into services[namespace][service]
-# 5. Serialize to helm/values.yaml
 \end{verbatim}
+
+Алгоритм:
+
+\begin{enumerate}
+\item \texttt{Dir.glob("lib/erp-*/*/")}  -- iterate components
+\item \texttt{YAML.safe\_load deployment.yaml} -- parse manifest
+\item Extract: \texttt{replicas, image, port, resources, persistence, hpa}
+\item Write into \texttt{services[namespace][service]}
+\item Serialize to \texttt{helm/values.yaml}
+\end{enumerate}
 
 \subsection{Helm-шаблони}
 
