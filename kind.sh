@@ -57,8 +57,7 @@ create() {
   generate_config
 
   # Create kind cluster
-  kind create cluster --name "${KIND_CLUSTER_NAME}" --config kind-config.yaml \
-    2>&1 | grep -v "^WARNING: IPv4 forwarding" || true
+  kind create cluster --name "${KIND_CLUSTER_NAME}" --config kind-config.yaml 2>&1 | grep -v "^WARNING: IPv4 forwarding" || [ ${PIPESTATUS[0]} -eq 0 ]
   echo "✓ KinD cluster created"
 
   # Merge kubeconfig into ~/.kube/config

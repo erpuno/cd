@@ -10,43 +10,30 @@ ArgoCD cluster controller.
 Run these commands in order after every macOS reboot or fresh cluster setup:
 
 ```bash
-# 1. Start local Gitea and mirror GitHub repos
-./gitops.sh all
-
-# 2. Create the KinD cluster (auto-generates kind-config.yaml for current user)
-./kind.sh create synrc
-
-# 3. Switch kubectl to the KinD context
-./kind.sh kind
-# Verify: kubectl config current-context  →  kind-synrc
-# Verify: kubectl get nodes               →  synrc-control-plane Ready
-
-# 4. Deploy base layer (namespaces, RBAC, storage, infra services)
-./deploy.sh
-
-# 5. Build all custom ERP images from local Dockerfiles and load into KinD
-#    (pulls source from local Gitea via host.docker.internal:3000)
-./rebuild.sh
-
-# 6. Generate unified Helm values
-./values.rb --force
-
-# 7. Deploy ArgoCD + push CD repo to Gitea + set up port-forward
-./argocd.sh
+./gitops.sh all # 1. Start local Gitea and mirror GitHub repos
+./kind.sh create synrc # 2. Create the KinD cluster (auto-generates kind-config.yaml for current user)
+./kind.sh kind # 3. Switch kubectl to the KinD context
+kubectl config current-context # Verify: kind-synrc
+kubectl get nodes # Verify: synrc-control-plane Ready
+./deploy.sh # 4. Deploy base layer (namespaces, RBAC, storage, infra services)
+./rebuild.sh # 5. Build all custom ERP images from local Dockerfiles and load into KinD (pulls source from local Gitea via host.docker.internal:3000)
+./values.rb --force # 6. Generate unified Helm values
+./argocd.sh # 7. Deploy ArgoCD + push CD repo to Gitea + set up port-forward
 ```
 
-> **Note — M1/ARM64**: `./kind.sh create` automatically regenerates `kind-config.yaml`
+> **NOTE**: M1/ARM64. `./kind.sh create` automatically regenerates `kind-config.yaml`
 > using your current `$HOME`, so the `hostPath` for local storage is always correct
 > regardless of which user is running the script.
 
-> **Note — First boot image pull**: On the first run, ArgoCD pulls ~186 MB of ARM64
+> **NOTE**: COLD PULL. On the first run, ArgoCD pulls ~186 MB of ARM64
 > images. The rollout timeout is set to 300 s. If it still times out, all pods will
 > be Running shortly after — just re-run `./argocd.sh` (it is idempotent).
 
 ### Clean Restart
 
 ```bash
-./delete.sh          # deletes K8s namespaces + KinD cluster
+./delete.sh
+./gitops.sh all
 ./kind.sh create synrc
 ./kind.sh kind
 ./deploy.sh
@@ -59,13 +46,13 @@ Run these commands in order after every macOS reboot or fresh cluster setup:
 
 ## Why Gitea?
 
-* **Lightweight & Fast**: SQLite-backed Gitea starts in under 5 seconds and uses
+* Lightweight & Fast: SQLite-backed Gitea starts in under 5 seconds and uses
   minimal resources (less than 100MB of RAM), making it ideal for local MacBook environments.
 
-* **Local Reproducibility**: Pulling from in-cluster or local resources avoids rate limits,
+* Local Reproducibility: Pulling from in-cluster or local resources avoids rate limits,
   network failures, or dependency drift due to deleted external repositories.
 
-* **No Web Install Wizard Required**: Custom configuration variables pre-seed Gitea
+* No Web Install Wizard Required: Custom configuration variables pre-seed Gitea
   and bypass the installation screen completely.
 
 ## Why ArgoCD?
@@ -227,7 +214,6 @@ Once logged in, the context is stored locally and you can manage the sync state 
 ```bash
 # Check the application status
 argocd app get erp-uno
-
 # Trigger manual synchronization
 argocd app sync erp-uno
 ```
@@ -239,7 +225,6 @@ providing the server address and security flags on every execution:
 ```bash
 # Get application status directly
 argocd --server localhost:8080 --insecure app get erp-uno
-
 # Trigger manual synchronization directly
 argocd --server localhost:8080 --insecure app sync erp-uno
 ```
