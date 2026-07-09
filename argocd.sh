@@ -37,6 +37,15 @@ else
   echo "    ✓ Repository '$ORG_NAME/$REPO_NAME' created successfully"
 fi
 
+# 2.5 Generate helm/values.yaml from active configuration
+echo -e "\n[2.5/6] Generating helm/values.yaml from active services..."
+ruby "$SCRIPT_DIR/values.rb" --force
+if ! git diff --quiet helm/values.yaml; then
+  echo "    Committing generated helm/values.yaml..."
+  git add helm/values.yaml
+  git commit -m "auto-generate helm/values.yaml"
+fi
+
 # 3. Push current branch to Gitea
 echo -e "\n[3/6] Pushing local codebase to Gitea..."
 CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "main")
@@ -60,9 +69,26 @@ echo "    ✓ Cluster is accessible"
 
 # 5. Install ArgoCD
 echo -e "\n[5/6] Deploying ArgoCD components..."
+
+# Clean up namespace if it is stuck in Terminating phase
+if kubectl get namespace argocd &>/dev/null; then
+  PHASE=$(kubectl get namespace argocd -o jsonpath='{.status.phase}')
+  if [ "$PHASE" = "Terminating" ]; then
+    echo "⚠️ Namespace 'argocd' is stuck in Terminating state. Cleaning finalizers..."
+    # Remove finalizers from applications in the namespace to allow deletion
+    kubectl get applications.argoproj.io -n argocd -o jsonpath='{.items[*].metadata.name}' 2>/dev/null | xargs -n 1 -I{} kubectl patch applications.argoproj.io -n argocd {} -p '{"metadata":{"finalizers":null}}' --type=merge 2>/dev/null || true
+    
+    echo "⏳ Waiting for namespace 'argocd' to terminate..."
+    until ! kubectl get namespace argocd &>/dev/null; do
+      sleep 2
+    done
+    echo "    ✓ Namespace 'argocd' terminated successfully"
+  fi
+fi
+
 kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 echo "    Applying community ArgoCD manifests..."
-kubectl apply --server-side=true --force-conflicts -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl apply --server-side=true --force-conflicts -n argocd -f "$SCRIPT_DIR/argocd/install.yaml"
 
 echo "    Configuring ArgoCD server in insecure (HTTP) mode..."
 kubectl -n argocd patch deploy argocd-server --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--insecure"}]'
