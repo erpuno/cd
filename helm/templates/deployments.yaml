@@ -53,13 +53,10 @@ spec:
           containerPort: {{ $portNum }}
         {{- end }}
         {{- end }}
+        {{- if $service.resources }}
         resources:
-          requests:
-            cpu: {{ $service.resources.requests.cpu }}
-            memory: {{ $service.resources.requests.memory }}
-          limits:
-            cpu: {{ $service.resources.limits.cpu }}
-            memory: {{ $service.resources.limits.memory }}
+          {{- toYaml $service.resources | nindent 10 }}
+        {{- end }}
         {{- if $service.persistence }}
         volumeMounts:
         - name: data

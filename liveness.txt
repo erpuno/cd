@@ -1,0 +1,79 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                   ERP/1: Cluster Liveness & Events Monitor                     ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+[1/4] Checking Kubernetes API Server and Node Liveness...
+NAME                  STATUS   ROLES           AGE   VERSION
+synrc-control-plane   Ready    control-plane   27h   v1.36.1
+    ✓ Cluster nodes are active
+
+[2/4] Checking ArgoCD Server Connection (127.0.0.1:8080)...
+    ✓ Connection successful
+
+[3/4] Querying ArgoCD Cluster & App Liveness...
+SERVER                          NAME        VERSION  STATUS      MESSAGE  PROJECT
+https://kubernetes.default.svc  in-cluster  v1.36.1  Successful           
+
+Name:               argocd/erp-uno
+Project:            default
+Server:             https://kubernetes.default.svc
+Namespace:          default
+URL:                http://127.0.0.1:8080/applications/erp-uno
+Source:
+- Repo:             http://host.docker.internal:3000/synrc/cd.git
+  Target:           HEAD
+  Path:             helm
+  Helm Values:      values.yaml
+SyncWindow:         Sync Allowed
+Sync Policy:        Automated (Prune)
+Sync Status:        OutOfSync from HEAD (f3b3c67)
+Health Status:      Healthy
+
+GROUP  KIND            NAMESPACE      NAME              STATUS     HEALTH   HOOK  MESSAGE
+apps   StatefulSet     erp-security   ldap-directory    OutOfSync  Healthy        statefulset.apps/ldap-directory serverside-applied
+apps   StatefulSet     erp-telemetry  prometheus        OutOfSync  Healthy        statefulset.apps/prometheus serverside-applied
+       Namespace                      erp-ai            Synced                    
+       Namespace                      erp-apps          Synced                    
+       Namespace                      erp-infra         Synced                    
+       Namespace                      erp-security      Synced                    
+       Namespace                      erp-services      Synced                    
+       Namespace                      erp-telemetry     Synced                    
+       Service         erp-infra      traefik-ingress   Synced     Healthy        
+       Service         erp-security   ldap-directory    Synced     Healthy        
+       Service         erp-telemetry  prometheus        Synced     Healthy        
+       ServiceAccount  erp-ai         erp-ai-sa         Synced                    
+       ServiceAccount  erp-apps       erp-apps-sa       Synced                    
+       ServiceAccount  erp-infra      erp-infra-sa      Synced                    
+       ServiceAccount  erp-security   erp-security-sa   Synced                    
+       ServiceAccount  erp-services   erp-services-sa   Synced                    
+       ServiceAccount  erp-telemetry  erp-telemetry-sa  Synced                    
+apps   Deployment      erp-infra      traefik-ingress   Synced     Healthy        
+
+[4/4] Retrieving latest events (Error/Warning/Info) in ERP namespaces...
+--------------------------------------------------------------------------------
+erp-infra     7m15s Normal  deployment/traefik-ingress             Scaled up replica set traefik-ingress-79f6d44b94 from 0 to 1
+argocd        7m15s Normal  application/erp-uno                    Partial sync operation to f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca succeeded
+argocd        7m15s Normal  application/erp-uno                    Updated health status: Healthy -> Progressing
+argocd        7m15s Normal  application/erp-uno                    Sync operation to f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca succeeded
+erp-telemetry 7m14s Normal  pod/prometheus-0                       Container created                       
+erp-telemetry 7m14s Normal  pod/prometheus-0                       Container started                       
+erp-security  7m14s Normal  pod/ldap-directory-0                   Container image "docker.io/erpuno/ldap:latest" already present on machine and ca
+erp-telemetry 7m14s Normal  pod/prometheus-0                       Container image "docker.io/prom/prometheus:v2.53.0" already present on machine a
+erp-security  7m14s Normal  pod/ldap-directory-0                   Container created                       
+erp-infra     7m14s Normal  pod/traefik-ingress-79f6d44b94-lvrjf   Pulling image "docker.io/traefik:v3.3"  
+erp-infra     7m14s Normal  pod/traefik-ingress-79f6d44b94-lvrjf   Successfully pulled image "docker.io/traefik:v3.3" in 898ms (898ms including wai
+erp-infra     7m14s Normal  pod/traefik-ingress-79f6d44b94-lvrjf   Container created                       
+erp-infra     7m14s Normal  pod/traefik-ingress-79f6d44b94-lvrjf   Container started                       
+erp-security  7m14s Normal  pod/ldap-directory-0                   Container started                       
+argocd        7m13s Normal  application/erp-uno                    Initiated automated sync to 'f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca'
+argocd        7m13s Normal  application/erp-uno                    Updated health status: Progressing -> Healthy
+argocd        7m13s Normal  application/erp-uno                    Partial sync operation to f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca succeeded
+argocd        7m7s  Normal  application/erp-uno                    Partial sync operation to f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca succeeded
+argocd        7m7s  Normal  application/erp-uno                    Initiated automated sync to 'f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca'
+argocd        6m49s Normal  application/erp-uno                    Partial sync operation to f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca succeeded
+argocd        6m49s Normal  application/erp-uno                    Initiated automated sync to 'f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca'
+argocd        5m55s Normal  application/erp-uno                    Initiated automated sync to 'f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca'
+argocd        5m55s Normal  application/erp-uno                    Partial sync operation to f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca succeeded
+argocd        3m13s Normal  application/erp-uno                    Initiated automated sync to 'f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca'
+argocd        3m13s Normal  application/erp-uno                    Partial sync operation to f3b3c677fcd47d4d49ef8a78a1633de5f670c8ca succeeded
+--------------------------------------------------------------------------------
