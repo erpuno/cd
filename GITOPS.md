@@ -15,8 +15,8 @@ Run these commands in order after every macOS reboot or fresh cluster setup:
 ./kind.sh kind # 3. Switch kubectl to the KinD context
 kubectl config current-context # Verify: kind-synrc
 kubectl get nodes # Verify: synrc-control-plane Ready
-./deploy.sh # 4. Deploy base layer (namespaces, RBAC, storage, infra services)
 ./rebuild.sh # 5. Build all custom ERP images from local Dockerfiles and load into KinD (pulls source from local Gitea via host.docker.internal:3000)
+./deploy.sh # 4. Deploy base layer (namespaces, RBAC, storage, infra services)
 ./values.rb --force # 6. Generate unified Helm values
 ./argocd.sh # 7. Deploy ArgoCD + push CD repo to Gitea + set up port-forward
 ```
@@ -36,8 +36,8 @@ kubectl get nodes # Verify: synrc-control-plane Ready
 ./gitops.sh all
 ./kind.sh create synrc
 ./kind.sh kind
-./deploy.sh
 ./rebuild.sh
+./deploy.sh
 ./values.rb --force
 ./argocd.sh
 ```
