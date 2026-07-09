@@ -62,7 +62,7 @@ echo "    ✓ Pushed local code successfully"
 echo -e "\n[4/6] Checking Kubernetes cluster status..."
 if ! kubectl cluster-info &>/dev/null; then
   echo "❌ Kubernetes cluster is not accessible."
-  echo "   Please create it using: ./kind.sh create"
+  echo "   Please create it using: ./kind.sh create synrc"
   exit 1
 fi
 echo "    ✓ Cluster is accessible"
@@ -77,7 +77,7 @@ if kubectl get namespace argocd &>/dev/null; then
     echo "⚠️ Namespace 'argocd' is stuck in Terminating state. Cleaning finalizers..."
     # Remove finalizers from applications in the namespace to allow deletion
     kubectl get applications.argoproj.io -n argocd -o jsonpath='{.items[*].metadata.name}' 2>/dev/null | xargs -n 1 -I{} kubectl patch applications.argoproj.io -n argocd {} -p '{"metadata":{"finalizers":null}}' --type=merge 2>/dev/null || true
-    
+
     echo "⏳ Waiting for namespace 'argocd' to terminate..."
     until ! kubectl get namespace argocd &>/dev/null; do
       sleep 2
