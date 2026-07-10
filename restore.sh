@@ -28,7 +28,6 @@ for backup_file in "$BACKUP_DIR"/*.tar.gz; do
   basename=$(basename "$backup_file" .tar.gz)
   ns=$(echo "$basename" | cut -d'@' -f1)
   pvc=$(echo "$basename" | cut -d'@' -f2)
-  
   echo "   Waiting for PVC: $ns/$pvc to be Bound..."
   for i in {1..60}; do
     STATUS=$(kubectl get pvc -n "$ns" "$pvc" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Pending")
@@ -38,7 +37,7 @@ for backup_file in "$BACKUP_DIR"/*.tar.gz; do
     fi
     sleep 1
   done
-  
+
   FINAL_STATUS=$(kubectl get pvc -n "$ns" "$pvc" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Pending")
   if [ "$FINAL_STATUS" != "Bound" ]; then
     echo "   ⚠️  Warning: PVC $ns/$pvc is still $FINAL_STATUS after 60s"
@@ -97,37 +96,37 @@ for backup_file in "$BACKUP_DIR"/*.tar.gz; do
   if [ ! -f "$backup_file" ]; then
     continue
   fi
-  
+
   basename=$(basename "$backup_file" .tar.gz)
-  
+
   # Parse namespace and pvc name from backup filename
   # Format: namespace@pvcname
   ns=$(echo "$basename" | cut -d'@' -f1)
   pvc=$(echo "$basename" | cut -d'@' -f2)
-  
+
   # Get PVC and its backing PV
   PV_NAME=$(kubectl get pvc -n "$ns" "$pvc" -o jsonpath='{.spec.volumeName}' 2>/dev/null || echo "")
   HOSTPATH=$(kubectl get pv "$PV_NAME" -o jsonpath='{.spec.hostPath.path}' 2>/dev/null || echo "")
-  
+
   if [ -z "$HOSTPATH" ]; then
     echo "   ⚠️  $basename: PVC not found or has no HostPath"
     continue
   fi
-  
+
   echo "   Restoring: $ns/$pvc"
   echo "      Backup: $basename.tar.gz"
   echo "      Target: $HOSTPATH"
-  
+
   # Clear and recreate target directory to ensure it is clean
   docker exec synrc-control-plane rm -rf "$HOSTPATH" 2>/dev/null || true
   docker exec synrc-control-plane mkdir -p "$HOSTPATH" 2>/dev/null || true
-  
+
   # Use stdin streaming for tar extraction directly into HOSTPATH stripping the old directory name
   docker exec -i synrc-control-plane tar -xzf - --strip-components=1 -C "$HOSTPATH" < "$backup_file" 2>/dev/null || {
     echo "      ❌ Restore failed"
     continue
   }
-  
+
   SIZE=$(docker exec synrc-control-plane du -sh "$HOSTPATH" 2>/dev/null | cut -f1 || echo "0")
   FILE_COUNT=$(docker exec synrc-control-plane find "$HOSTPATH" -type f 2>/dev/null | wc -l | xargs || echo "0")
   echo "      ✅ Restored ($SIZE, $FILE_COUNT files)"

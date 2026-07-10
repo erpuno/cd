@@ -6,7 +6,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-echo "🧹 [1/3] Resetting docker-registry to empty state..."
+echo "[1] Resetting docker-registry to empty state..."
 
 # 1. Scale down and delete the registry resources to clean up data
 kubectl delete deployment docker-registry -n erp-infra --ignore-not-found
@@ -23,7 +23,7 @@ kubectl rollout status deployment docker-registry -n erp-infra
 
 echo "✅ Docker registry is reset and ready!"
 
-echo -e "\n🔨 [2/3] Finding and executing all component build scripts..."
+echo -e "\n[2] Finding and executing all component build scripts..."
 
 # Find all build.sh scripts in lib/ subdirectories and run them
 while IFS= read -r build_script; do
@@ -36,7 +36,7 @@ while IFS= read -r build_script; do
   )
 done < <(find lib -type f -name "build.sh" | sort)
 
-echo -e "\n🚀 [3/3] Deploying updated components..."
+echo -e "\n [3] Deploying updated components..."
 ./deploy.sh
 
-echo -e "\n🎉 Rebuild and deploy completed successfully!"
+echo -e "\nRebuild and deploy completed successfully!"
