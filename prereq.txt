@@ -1,9 +1,12 @@
 ╔════════════════════════════════════════════════════════╗
-║  ERP/1: Підприємство / Deployment Prerequisites Check  ║
+║  [93;44mERP[97;45m/1[0m: Підприємство / Deployment Prerequisites Check  ║
 ╚════════════════════════════════════════════════════════╝
 
+[0] kind CLI
+    ✓ kind v0.32.0 installed
+
 [1] kubectl CLI
-    ✓ kubectl  installed
+    ✓ kubectl v1.36.2 installed
 
 [2] Helm Charts
     ✓ Helm v4.2.2+gb05881c installed
@@ -21,11 +24,10 @@
     ✓ Default StorageClass: standard
 
 [5] Ingress Controller
-    ⚠ No Ingress controller detected
+    ✓ Ingress controller found: traefik-ingress
 
 [6] Cluster DNS
-    ⚠ CoreDNS not found
-       Internal service discovery may fail
+    ✓ CoreDNS available
 
 [7] Namespace Setup
     ✓ Namespace 'erp-uno' ready to create
@@ -39,9 +41,9 @@
     ✓ Docker 29.6.1, installed
 
 ╔════════════════════════════════════════════════════════╗
-║                      Next Steps                        ║
+║     [93;44mERP[97;45m/1[0m: Local Deploy vs Helm Deploy                 ║
 ╚════════════════════════════════════════════════════════╝
 
-If all checks pass, run K8S raw deploy: bash deploy.sh
-Or deploy via helm: cd heml && ./deploy.sh
+$ ./gitops.sh all && ./rebuild.sh && ./deploy.sh
+$ ./values.rb --force && cd heml && ./deploy.sh
 

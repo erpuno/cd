@@ -1,18 +1,28 @@
 #!/bin/bash
-# Deployment Prerequisites Checklist
+logo="\033[93;44mERP\033[97;45m/1\033[0m"
 
-echo "╔════════════════════════════════════════════════════════╗"
-echo "║  ERP/1: Підприємство / Deployment Prerequisites Check  ║"
-echo "╚════════════════════════════════════════════════════════╝"
+echo -e "╔════════════════════════════════════════════════════════╗"
+echo -e "║  $logo: Підприємство / Deployment Prerequisites Check  ║"
+echo -e "╚════════════════════════════════════════════════════════╝"
 
 PASS="✓"
 FAIL="✗"
 WARN="⚠"
 
+# Check 0: kind installed
+echo -e "\n[0] kind CLI"
+if command -v kind &> /dev/null; then
+  kind_version=$(kind version | awk '{print $2}')
+  echo "    $PASS kind $kind_version installed"
+else
+  echo "    $FAIL kind NOT found"
+  echo "       Install: https://kind.sigs.k8s.io/docs/user/quick-start/"
+fi
+
 # Check 1: kubectl installed
 echo -e "\n[1] kubectl CLI"
 if command -v kubectl &> /dev/null; then
-  kubectl_version=$(kubectl version --client --short 2>/dev/null | grep "Client" | awk '{print $3}')
+  kubectl_version=$(kubectl version --client | grep "Client" | awk '{print $3}')
   echo "    $PASS kubectl $kubectl_version installed"
 else
   echo "    $FAIL kubectl NOT found"
@@ -74,7 +84,7 @@ fi
 
 # Check 5: Ingress Controller
 echo -e "\n[5] Ingress Controller"
-ingress_ctrl=$(kubectl get deployment -A -o json 2>/dev/null | jq '.items[] | select(.spec.template.spec.containers[].image | contains("nginx") or contains("ingress")) | .metadata.name' -r 2>/dev/null | head -1)
+ingress_ctrl=$(kubectl get deployment -A -o json 2>/dev/null | jq '.items[] | select(.spec.template.spec.containers[].name | contains("ingress")) | .metadata.name' -r 2>/dev/null | head -1)
 if [ -n "$ingress_ctrl" ]; then
   echo "    $PASS Ingress controller found: $ingress_ctrl"
 else
@@ -116,13 +126,13 @@ else
   echo "       (Optional, needed only for local testing)"
 fi
 
-# Summary
 echo
-echo "╔════════════════════════════════════════════════════════╗"
-echo "║                      Next Steps                        ║"
-echo "╚════════════════════════════════════════════════════════╝"
+echo -e "╔════════════════════════════════════════════════════════╗"
+echo -e "║     $logo: Local Deploy vs Helm Deploy                 ║"
+echo -e "╚════════════════════════════════════════════════════════╝"
+echo
 
-echo -e "\nIf all checks pass, run K8S raw deploy: bash deploy.sh"
-echo -e "Or deploy via helm: cd heml && ./deploy.sh"
+echo -e "$ ./gitops.sh all && ./rebuild.sh && ./deploy.sh"
+echo -e "$ ./values.rb --force && cd heml && ./deploy.sh"
 
 echo ""

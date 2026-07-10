@@ -1,72 +1,78 @@
-📦 Complete Device-Level Backup (All PVCs & StatefulSets)
-Backup directory: ./priv/20260709-004026
+╔════════════════════════════════════════════════════════╗
+║  [93;44mERP[97;45m/1[0m: Підприємство / Device-Level PVC/STS Backup     ║
+╚════════════════════════════════════════════════════════╝
+Backup directory: ./priv/20260710-041754
 
 [1] Exporting all Kubernetes manifests...
 ✅ Manifests exported and cleaned
 
 [2] Discovering PVCs ...
    Found 6 PVCs:
-   - erp-infra/registry-data
-   - erp-security/ca-pki-data
-   - erp-security/ldap-directory-data
-   - erp-telemetry/grafana-data
-   - erp-telemetry/opensearch-data
-   - erp-telemetry/prometheus-data
+   - erp-infra/data-docker-registry-0
+   - erp-security/data-ca-pki-0
+   - erp-security/data-ldap-directory-0
+   - erp-telemetry/data-grafana-0
+   - erp-telemetry/data-opensearch-0
+   - erp-telemetry/data-prometheus-0
 
 [3] Stopping pods (unmounting volumes)...
+   Scaling down StatefulSet: argocd/argocd-application-controller
+statefulset.apps/argocd-application-controller scaled
+   Scaling down StatefulSet: erp-infra/docker-registry
+statefulset.apps/docker-registry scaled
+   Scaling down StatefulSet: erp-security/ca-pki
+statefulset.apps/ca-pki scaled
+   Scaling down StatefulSet: erp-security/ldap-directory
+statefulset.apps/ldap-directory scaled
+   Scaling down StatefulSet: erp-telemetry/grafana
+statefulset.apps/grafana scaled
+   Scaling down StatefulSet: erp-telemetry/opensearch
+statefulset.apps/opensearch scaled
    Scaling down StatefulSet: erp-telemetry/prometheus
 statefulset.apps/prometheus scaled
-   Scaling down Deployment: erp-infra/docker-registry
-deployment.apps/docker-registry scaled
-   Scaling down Deployment: erp-security/ca-pki
-deployment.apps/ca-pki scaled
-   Scaling down Deployment: erp-security/ldap-directory
-deployment.apps/ldap-directory scaled
-   Scaling down Deployment: erp-telemetry/grafana
-deployment.apps/grafana scaled
-   Scaling down Deployment: erp-telemetry/opensearch
-deployment.apps/opensearch scaled
 ✅ All pods stopped, volumes unmounted
 
 [4] Creating device image snapshots...
-   Backing up: erp-infra/registry-data (from /var/local-path-provisioner/pvc-572f3e0b-547d-4d42-b708-e864a07daa26_erp-infra_registry-data)
-   ✅ erp-infra@registry-data.tar.gz (4.0K,        1 items)
-   Backing up: erp-security/ca-pki-data (from /var/local-path-provisioner/pvc-9aa3b283-0b54-4a3b-bef0-71f15a58fca4_erp-security_ca-pki-data)
-   ✅ erp-security@ca-pki-data.tar.gz (4.0K,       14 items)
-   Backing up: erp-security/ldap-directory-data (from /var/local-path-provisioner/pvc-1329fe0a-c3ec-466e-bf08-327152e1521f_erp-security_ldap-directory-data)
-   ✅ erp-security@ldap-directory-data.tar.gz (4.0K,        2 items)
-   Backing up: erp-telemetry/grafana-data (from /var/local-path-provisioner/pvc-7a52099a-67db-40a0-895e-c2242da56921_erp-telemetry_grafana-data)
-   ✅ erp-telemetry@grafana-data.tar.gz ( 40K,        6 items)
-   Backing up: erp-telemetry/opensearch-data (from /var/local-path-provisioner/pvc-26e0a42e-817e-4344-8a6f-abf60603f27b_erp-telemetry_opensearch-data)
-   ✅ erp-telemetry@opensearch-data.tar.gz ( 60K,       81 items)
-   Backing up: erp-telemetry/prometheus-data (from /var/local-path-provisioner/pvc-59e2120e-46c1-447d-a18c-7157160356b5_erp-telemetry_prometheus-data)
-   ✅ erp-telemetry@prometheus-data.tar.gz (944K,       33 items)
+   Backing up: erp-infra/data-docker-registry-0 (from /var/local-path-provisioner/pvc-676914be-bba6-4164-b47a-be00c611f626_erp-infra_data-docker-registry-0)
+   ✅ erp-infra@data-docker-registry-0.tar.gz (4.0K,        1 items)
+   Backing up: erp-security/data-ca-pki-0 (from /var/local-path-provisioner/pvc-42dfd413-69d0-45f5-97e6-8c8bbd339c49_erp-security_data-ca-pki-0)
+   ✅ erp-security@data-ca-pki-0.tar.gz (4.0K,       14 items)
+   Backing up: erp-security/data-ldap-directory-0 (from /var/local-path-provisioner/pvc-decefe67-afbd-460d-b1db-c655d9987fb4_erp-security_data-ldap-directory-0)
+   ✅ erp-security@data-ldap-directory-0.tar.gz (4.0K,        2 items)
+   Backing up: erp-telemetry/data-grafana-0 (from /var/local-path-provisioner/pvc-3cd56c30-747b-4233-93b9-2fbbfc3725b7_erp-telemetry_data-grafana-0)
+   ✅ erp-telemetry@data-grafana-0.tar.gz ( 44K,        6 items)
+   Backing up: erp-telemetry/data-opensearch-0 (from /var/local-path-provisioner/pvc-b484bcf5-d551-4721-9058-d46b542beddf_erp-telemetry_data-opensearch-0)
+   ✅ erp-telemetry@data-opensearch-0.tar.gz ( 56K,       72 items)
+   Backing up: erp-telemetry/data-prometheus-0 (from /var/local-path-provisioner/pvc-29094db2-d365-4d0c-9a8e-2a31bd09beb2_erp-telemetry_data-prometheus-0)
+   ✅ erp-telemetry@data-prometheus-0.tar.gz (1.4M,       36 items)
 
 [5] Creating backup metadata...
 ✅ Metadata created
 
 [6] Restarting pods...
+   Scaling up StatefulSet: argocd/argocd-application-controller to 1 replicas
+statefulset.apps/argocd-application-controller scaled
+   Scaling up StatefulSet: erp-infra/docker-registry to 1 replicas
+statefulset.apps/docker-registry scaled
+   Scaling up StatefulSet: erp-security/ca-pki to 1 replicas
+statefulset.apps/ca-pki scaled
+   Scaling up StatefulSet: erp-security/ldap-directory to 1 replicas
+statefulset.apps/ldap-directory scaled
+   Scaling up StatefulSet: erp-telemetry/grafana to 1 replicas
+statefulset.apps/grafana scaled
+   Scaling up StatefulSet: erp-telemetry/opensearch to 1 replicas
+statefulset.apps/opensearch scaled
    Scaling up StatefulSet: erp-telemetry/prometheus to 1 replicas
 statefulset.apps/prometheus scaled
-   Scaling up Deployment: erp-infra/docker-registry to 1 replicas
-deployment.apps/docker-registry scaled
-   Scaling up Deployment: erp-security/ca-pki to 1 replicas
-deployment.apps/ca-pki scaled
-   Scaling up Deployment: erp-security/ldap-directory to 1 replicas
-deployment.apps/ldap-directory scaled
-   Scaling up Deployment: erp-telemetry/grafana to 1 replicas
-deployment.apps/grafana scaled
-   Scaling up Deployment: erp-telemetry/opensearch to 1 replicas
-deployment.apps/opensearch scaled
 ✅ Pods restarting
 
 ✅ Complete backup finished!
 
-📁 Backup location: ./priv/20260709-004026
+📁 Backup location: ./priv/20260710-041754
 
 📊 Backup summary:
-1.1M	./priv/20260709-004026
+1.6M	./priv/20260710-041754
 Total files: 8
 
-🔍 Explore backup: ./view.sh ./priv/20260709-004026
-🔄 Restore backup: ./restore.sh ./priv/20260709-004026
+🔍 Explore backup: ./view.sh ./priv/20260710-041754
+🔄 Restore backup: ./restore.sh ./priv/20260710-041754

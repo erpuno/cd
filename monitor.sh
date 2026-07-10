@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # monitor.sh - Real-time cluster bootstrap and stabilization monitor loop
-
+logo="\033[93;44mERP\033[97;45m/1\033[0m"
 set -euo pipefail
 
 # Ensure kubectl is configured
@@ -23,31 +23,31 @@ while true; do
   clear
   current_time=$(date +"%Y-%m-%d %H:%M:%S")
   current_context=$(kubectl config current-context)
-  
-  echo "================================================================================"
-  echo "📊 ERP/1 Cluster Monitor | Time: $current_time | Context: $current_context"
-  echo "================================================================================"
-  
+
+  echo -e "╔═══════════════════════════════════════════════════════════════════════════════╗"
+  echo -e "║  $logo: Cluster Monitor | Time: $current_time | Context: $current_context     ║"
+  echo -e "╚═══════════════════════════════════════════════════════════════════════════════╝"
+
   # 1. Show ArgoCD Application Sync and Health Status
-  echo -e "\n📌 ArgoCD Application Status [APP: $APP_NAME]"
+  echo -e "\n[1] ArgoCD Application Status [APP: $APP_NAME]"
   echo "--------------------------------------------------------------------------------"
-  if ARGOCD_NAMESPACE=$ARGOCD_NS argocd app get "$APP_NAME" --core &>/dev/null; then
-    ARGOCD_NAMESPACE=$ARGOCD_NS argocd app get "$APP_NAME" --core | grep -E "^(Name:|Sync Status:|Health Status:|Condition:)" || true
+  if ARGOCD_NAMESPACE=$ARGOCD_NS argocd app get "$APP_NAME" &>/dev/null; then
+    ARGOCD_NAMESPACE=$ARGOCD_NS argocd app get "$APP_NAME" | grep -E "^(Name:|Sync Status:|Health Status:|Condition:)" || true
   else
     echo "⚠️ Application '$APP_NAME' not found or ArgoCD not running yet."
   fi
-  
+
   # 2. Show ArgoCD component pods
-  echo -e "\n⚙️ ArgoCD System Pods"
+  echo -e "\n[2] ArgoCD System Pods"
   echo "--------------------------------------------------------------------------------"
   kubectl get pods -n "$ARGOCD_NS" -o custom-columns="NAME:.metadata.name,READY:.status.containerStatuses[0].ready,STATUS:.status.phase,RESTARTS:.status.containerStatuses[0].restartCount" --no-headers 2>/dev/null || echo "No pods in $ARGOCD_NS namespace."
 
   # 3. Show ERP namespace pods
-  echo -e "\n📦 ERP Application Pods"
+  echo -e "\n[3] ERP/1 Application Pods"
   echo "--------------------------------------------------------------------------------"
   printf "%-18s %-45s %-7s %-8s %s\n" "NAMESPACE" "POD NAME" "READY" "STATUS" "RESTARTS"
   printf "%-18s %-45s %-7s %-8s %s\n" "---------" "--------" "-----" "------" "--------"
-  
+
   for ns in "${ERP_NAMESPACES[@]}"; do
     kubectl get pods -n "$ns" -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\t"}{.status.containerStatuses[0].ready}{"\t"}{.status.phase}{"\t"}{.status.containerStatuses[0].restartCount}{"\n"}{end}' 2>/dev/null | while read -r p_ns p_name p_ready p_status p_restarts; do
       if [ -n "$p_name" ]; then
@@ -61,9 +61,9 @@ while true; do
       fi
     done
   done
-  
+
   # 4. Show recent warning/error events
-  echo -e "\n⚠️ Recent Kubernetes Events (ERP & ArgoCD)"
+  echo -e "\n[4] Recent Kubernetes Events (ERP/1 & ArgoCD)"
   echo "--------------------------------------------------------------------------------"
   kubectl get events -A --sort-by='.metadata.creationTimestamp' 2>/dev/null \
     | grep -E "erp-|argocd|default" \
@@ -79,9 +79,8 @@ while true; do
         line = sprintf("%-13.13s %-7.7s %-32.32s %-50.50s", ns, type, obj, msg)
         print line
       }' || echo "No recent events."
-  
-  echo "================================================================================"
+  echo
   echo "💡 Tip: Press Ctrl+C to exit monitoring loop"
-  
-  sleep 3
+
+  sleep 10
 done

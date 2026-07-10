@@ -1,10 +1,14 @@
 #!/bin/bash
+logo="\033[93;44mERP\033[97;45m/1\033[0m"
 set -euo pipefail
 
 BACKUP_DIR="./priv/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$BACKUP_DIR"
 
-echo "📦 Complete Device-Level Backup (All PVCs & StatefulSets)"
+echo -e "╔════════════════════════════════════════════════════════╗"
+echo -e "║  $logo: Підприємство / Device-Level PVC/STS Backup     ║"
+echo -e "╚════════════════════════════════════════════════════════╝"
+
 echo "Backup directory: $BACKUP_DIR"
 echo ""
 
