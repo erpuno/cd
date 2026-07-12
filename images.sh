@@ -24,13 +24,21 @@ echo "║          ERP/1: Docker Registry Catalog                ║"
 echo "╚════════════════════════════════════════════════════════╝"
 echo ""
 
+# Prioritize kind-synrc context if it exists, otherwise fall back to any active kind-* cluster
+if kubectl config get-contexts -o name 2>/dev/null | grep -q '^kind-synrc$'; then
+  kubectl config use-context kind-synrc >/dev/null
+elif kubectl config get-contexts -o name 2>/dev/null | grep -q '^kind-'; then
+  KIND_CTX=$(kubectl config get-contexts -o name 2>/dev/null | grep '^kind-' | head -1)
+  kubectl config use-context "$KIND_CTX" >/dev/null
+fi
+
 # Step 1: Check Kubernetes cluster connectivity
 echo "[1] Checking Kubernetes cluster connectivity..."
 if ! kubectl cluster-info &>/dev/null; then
   echo "   ❌ Error: Cannot connect to Kubernetes cluster." >&2
   exit 1
 fi
-echo "   ✓ Connected to Kubernetes cluster"
+echo "   ✓ Connected to Kubernetes cluster (Context: $(kubectl config current-context))"
 echo ""
 
 # Step 2: Diagnostic check for port 5000 occupancy
@@ -61,7 +69,8 @@ if [ "$SHOW_LOCAL" = true ]; then
   if command -v docker &>/dev/null; then
     if command -v jq &>/dev/null; then
       printf "   %-20s %-10s %-10s %-10s %s\n" "NAME" "DRIVER" "STATUS" "BUILDKIT" "PLATFORMS"
-      docker buildx ls --format json 2>/dev/null | jq -r '[.Name + (if .Current then "*" else "" end) , .Driver, (.Nodes[0].Status // "-"), (.Nodes[0].Version // "-"), ((.Nodes[0].Platforms | join(", ")) // "-")] | @tsv' 2>/dev/null | while IFS=$'\t' read -r name driver node_status version platforms; do
+      docker buildx ls --format json 2>/dev/null | jq -r '[.Name + (if .Current then "*" else "" end) , .Driver, (.Nodes[0].Status // "-"), (.Nodes[0].Version // "-"), (((.Nodes[0].Platforms // []) | join(", ")) // "-")] | @tsv' 2>/dev/null | while IFS=$'\t' read -r name driver node_status version platforms; do
+        if [ -z "$platforms" ]; then platforms="-"; fi
         printf "   %-20s %-10s %-10s %-10s %s\n" "$name" "$driver" "$node_status" "$version" "$platforms"
       done
     else
@@ -74,15 +83,15 @@ if [ "$SHOW_LOCAL" = true ]; then
 
   # Step 4: Discovering local Docker daemon & KinD images
   echo "[4] Discovering local Docker daemon & KinD images..."
-  echo "   Local Docker Daemon Images (erpuno/*):"
+  echo "   Local Docker Daemon Images:"
   if command -v docker &>/dev/null; then
-    docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.Size}}" | grep -E '^erpuno/|^REPOSITORY' | sed 's/^/   /' || echo "   (none)"
+    docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.Size}}" | sed 's/^/   /' || echo "   (none)"
   else
     echo "   ❌ Docker not available."
   fi
 
   echo ""
-  echo "   KinD Cluster Loaded Images (erpuno/*):"
+  echo "   KinD Cluster Loaded Images:"
   if command -v kind &>/dev/null && command -v docker &>/dev/null; then
     kind_clusters=$(kind get clusters 2>/dev/null || true)
     if [ -n "$kind_clusters" ]; then
@@ -93,7 +102,7 @@ if [ "$SHOW_LOCAL" = true ]; then
           echo "     Node: $node"
           images_list=$(docker exec "$node" crictl images 2>/dev/null || true)
           if [ -n "$images_list" ]; then
-            echo "$images_list" | grep -E 'erpuno/|IMAGE' | sed 's/^/       /' || echo "       No erpuno/ images found on node."
+            echo "$images_list" | sed 's/^/       /'
           else
             echo "       Unable to list images (crictl failed or node not running)."
           fi

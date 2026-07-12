@@ -22,7 +22,7 @@ fi
 # Check 1: kubectl installed
 echo -e "\n[1] kubectl CLI"
 if command -v kubectl &> /dev/null; then
-  kubectl_version=$(kubectl version --client | grep "Client" | awk '{print $3}')
+  kubectl_version=$(kubectl version -o json 2>/dev/null | jq -r '.clientVersion.gitVersion' 2>/dev/null || echo "installed")
   echo "    $PASS kubectl $kubectl_version installed"
 else
   echo "    $FAIL kubectl NOT found"
@@ -42,7 +42,7 @@ fi
 # Check 3: Kubernetes cluster accessible
 echo -e "\n[3] Kubernetes Cluster"
 if kubectl cluster-info &>/dev/null; then
-  k8s_version=$(kubectl version --short 2>/dev/null | grep "Server" | awk '{print $3}')
+  k8s_version=$(kubectl version -o json 2>/dev/null | jq -r '.serverVersion.gitVersion' 2>/dev/null || echo "unknown")
   node_count=$(kubectl get nodes --no-headers 2>/dev/null | wc -l)
   echo "    $PASS Cluster accessible"
   echo "       Version: $k8s_version"
