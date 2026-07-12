@@ -14,8 +14,10 @@ if ! command -v kind &> /dev/null; then
 fi
 
 # Ensure docker is running
-if ! docker info &> /dev/null; then
-  echo "Error: Docker is not running"
+if ! docker ps &> /dev/null; then
+  echo "Error: Docker is not running or you do not have permission to access the Docker socket."
+  echo "  - Try restarting your terminal session (or run: newgrp docker)"
+  echo "  - Make sure Docker Desktop is running and WSL2 integration is enabled."
   exit 1
 fi
 
@@ -53,11 +55,25 @@ EOF
 create() {
   echo "Creating KinD cluster: ${KIND_CLUSTER_NAME}"
 
-  # Auto-generate config so hostPath always matches the current user
-  generate_config
+  # Create a temporary config file so we don't dirty the git workspace
+  local temp_config="/tmp/kind-config-$$.yaml"
+  local user_home="${HOME}"
+  local data_dir="${user_home}/kind-data"
+  mkdir -p "${data_dir}"
+  
+  cat > "${temp_config}" <<EOF
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  extraMounts:
+  - hostPath: ${data_dir}
+    containerPath: /var/local-path-provisioner
+EOF
 
-  # Create kind cluster
-  kind create cluster --name "${KIND_CLUSTER_NAME}" --config kind-config.yaml 2>&1 | grep -v "^WARNING: IPv4 forwarding" || [ ${PIPESTATUS[0]} -eq 0 ]
+  # Create kind cluster using the temp config
+  kind create cluster --name "${KIND_CLUSTER_NAME}" --config "${temp_config}" 2>&1 | grep -v "^WARNING: IPv4 forwarding" || [ ${PIPESTATUS[0]} -eq 0 ]
+  rm -f "${temp_config}"
   echo "✓ KinD cluster created"
 
   # Merge kubeconfig into ~/.kube/config

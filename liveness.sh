@@ -10,14 +10,23 @@ echo "╔═══════════════════════�
 echo "║                   ERP/1: Cluster Liveness & Events Monitor                   ║"
 echo "╚════════════════════════════════════════════════════════════════════════════════╝"
 
-# 1. Check Kubernetes Cluster liveness
+# 1. Check and configure Kubernetes Cluster context
 echo -e "\n[1/4] Checking Kubernetes API Server and Node Liveness..."
+
+# Prioritize kind-synrc context if it exists, otherwise fall back to any active kind-* cluster
+if kubectl config get-contexts -o name 2>/dev/null | grep -q '^kind-synrc$'; then
+  kubectl config use-context kind-synrc >/dev/null
+elif kubectl config get-contexts -o name 2>/dev/null | grep -q '^kind-'; then
+  KIND_CTX=$(kubectl config get-contexts -o name 2>/dev/null | grep '^kind-' | head -1)
+  kubectl config use-context "$KIND_CTX" >/dev/null
+fi
+
 if ! kubectl cluster-info &>/dev/null; then
   echo "❌ Kubernetes cluster is unreachable!"
   exit 1
 fi
 kubectl get nodes
-echo "    ✓ Cluster nodes are active"
+echo "    ✓ Cluster nodes are active (Context: $(kubectl config current-context))"
 
 # 2. Check ArgoCD Server connectivity
 echo -e "\n[2/4] Checking ArgoCD Server Connection ($ARGOCD_SERVER)..."

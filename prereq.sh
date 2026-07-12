@@ -49,7 +49,7 @@ if kubectl cluster-info &>/dev/null; then
   echo "       Nodes: $node_count"
   
   # Check node capacity
-  total_cpu=$(kubectl get nodes -o json 2>/dev/null | jq '.items[].status.allocatable.cpu' | sed 's/"//g' | sed 's/m$//' | awk '{s+=$1} END {print s}')
+  total_cpu=$(kubectl get nodes -o json 2>/dev/null | jq '.items[].status.allocatable.cpu' | sed 's/"//g' | awk '{val=$1; if (val ~ /m$/) { sub(/m$/, "", val); s+=val } else { s+=val*1000 }} END {print s}')
   total_mem=$(kubectl get nodes -o json 2>/dev/null | jq '.items[].status.allocatable.memory' | sed 's/"//g' | sed 's/Ki$//' | awk '{s+=$1} END {print s}')
   total_mem_gb=$((total_mem / 1024 / 1024))
   

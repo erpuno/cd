@@ -118,24 +118,29 @@ echo -e "\n[6/7] Applying ArgoCD Application & Ingress manifests..."
 kubectl apply -f "$SCRIPT_DIR/argocd/ingress.yaml"
 kubectl apply -f "$SCRIPT_DIR/argocd/application.yaml"
 
-# 7. Create permanent background port-forward via macOS launchd agent
+# 7. Create permanent background port-forward
 echo -e "\n[7/7] Creating permanent background port-forward (localhost:8080)..."
-PLIST_NAME="uno.erp.argocd-portforward.plist"
-PLIST_PATH="$HOME/Library/LaunchAgents/$PLIST_NAME"
 WRAPPER_SCRIPT="$SCRIPT_DIR/argocd/argocd-portforward.sh"
 
 chmod +x "$WRAPPER_SCRIPT"
 
-mkdir -p "$HOME/Library/LaunchAgents"
-
-# Substitute the script path placeholder with the actual absolute repo path
-sed "s|__SCRIPT_PATH__|${WRAPPER_SCRIPT}|g" \
-    "$SCRIPT_DIR/argocd/$PLIST_NAME" > "$PLIST_PATH"
-
-# Load and launch the agent
-launchctl unload "$PLIST_PATH" 2>/dev/null || true
-launchctl load "$PLIST_PATH"
-echo "    ✓ macOS launchd agent configured (context resolved dynamically at runtime)"
+if [ "$(uname)" = "Darwin" ]; then
+  PLIST_NAME="uno.erp.argocd-portforward.plist"
+  PLIST_PATH="$HOME/Library/LaunchAgents/$PLIST_NAME"
+  mkdir -p "$HOME/Library/LaunchAgents"
+  # Substitute the script path placeholder with the actual absolute repo path
+  sed "s|__SCRIPT_PATH__|${WRAPPER_SCRIPT}|g" \
+      "$SCRIPT_DIR/argocd/$PLIST_NAME" > "$PLIST_PATH"
+  # Load and launch the agent
+  launchctl unload "$PLIST_PATH" 2>/dev/null || true
+  launchctl load "$PLIST_PATH"
+  echo "    ✓ macOS launchd agent configured (context resolved dynamically at runtime)"
+else
+  # Kill existing port-forward on port 8080
+  pkill -f "port-forward.*8080" 2>/dev/null || true
+  nohup "$WRAPPER_SCRIPT" >/tmp/argocd-portforward.log 2>&1 &
+  echo "    ✓ Background port-forward started on Linux/WSL (localhost:8080)"
+fi
 
 echo -e "\n🎉 ArgoCD Local GitOps Setup Completed!"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
