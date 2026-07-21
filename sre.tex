@@ -440,72 +440,72 @@ erp-apps      & acc-accounting-3a1b4c-rv   & 1/1 & \textcolor{successgreen}{\tex
 
 \vspace{6pt}
 {\footnotesize
-\begin{longtable}{L{5.5cm} L{2.0cm} L{1.6cm} C{0.9cm} L{1.7cm} L{1.5cm}}
+\begin{longtable}{L{5.5cm} L{2.0cm} C{0.9cm} L{1.7cm} L{1.5cm}}
 \toprule
 \rowcolor{headerbg}
-\color{primary}\textbf{Сервіс} & \color{primary}\textbf{Namespace} & \color{primary}\textbf{Kind} & \color{primary}\textbf{Port} & \color{primary}\textbf{CPU req/lim} & \color{primary}\textbf{Легенда} \\
+\color{primary}\textbf{Сервіс} & \color{primary}\textbf{Namespace} & \color{primary}\textbf{Port} & \color{primary}\textbf{CPU req/lim} & \color{primary}\textbf{Легенда} \\
 \midrule\endhead\bottomrule\endfoot
-\multicolumn{6}{l}{\textcolor{infrablue}{\bfseries\small Рівень інфраструктури}}\\
+\multicolumn{5}{l}{\textcolor{infrablue}{\bfseries\small Рівень інфраструктури}}\\
 \midrule
 \rowcolor{rowalt}
-\texttt{docker-registry} & erp-infra     & Deployment  & 5000 & 50m/200m  & PDSV \\
-\texttt{traefik-ingress} & erp-infra     & Deployment  & 5000 & 50m/200m  & PDSV \\
+\texttt{docker-registry} & erp-infra       & 5000 & 50m/200m  & PDSV \\
+\texttt{traefik-ingress} & erp-infra       & 5000 & 50m/200m  & PDSV \\
 \rowcolor{rowalt}
-\texttt{ns-dns}          & erp-infra     & Deployment  & 8080 & 100m/500m & DSV \\
+\texttt{ns-dns}          & erp-infra       & 8080 & 100m/500m & DSV \\
 \midrule
-\multicolumn{6}{l}{\textcolor{successgreen}{\bfseries\small Рівень спостереження}}\\
+\multicolumn{5}{l}{\textcolor{successgreen}{\bfseries\small Рівень спостереження}}\\
 \midrule
-\texttt{prometheus}      & erp-telemetry & StatefulSet & 9090 & 100m/500m & PDSV \\
+\texttt{prometheus}      & erp-telemetry   & 9090 & 100m/500m & PDSV \\
 \rowcolor{rowalt}
-\texttt{grafana}         & erp-telemetry & Deployment  & 3000 & 50m/200m  & PDSV \\
-\texttt{otel-collector}  & erp-telemetry & Deployment  & 8404 & 100m/500m & DSV \\
+\texttt{grafana}         & erp-telemetry   & 3000 & 50m/200m  & PDSV \\
+\texttt{otel-collector}  & erp-telemetry   & 8404 & 100m/500m & DSV \\
 \midrule
-\multicolumn{6}{l}{\textcolor{secpurple}{\bfseries\small Рівень безпеки}}\\
+\multicolumn{5}{l}{\textcolor{secpurple}{\bfseries\small Рівень безпеки}}\\
 \midrule
-\texttt{ca-pki}          & erp-security  & Deployment  & 8201 & 100m/500m & DSV \\
+\texttt{ca-pki}          & erp-security    & 8201 & 100m/500m & DSV \\
 \rowcolor{rowalt}
-\texttt{abac-clearance}  & erp-security  & Deployment  & 8201 & 100m/500m & DSV \\
-\texttt{ldap-directory}  & erp-security  & Deployment  & 8201 & 100m/500m & DSV \\
+\texttt{abac-clearance}  & erp-security    & 8201 & 100m/500m & DSV \\
+\texttt{ldap-directory}  & erp-security    & 8201 & 100m/500m & DSV \\
 \rowcolor{rowalt}
-\texttt{vpn-wireguard}   & erp-security  & Deployment  & 8201 & 100m/500m & DSV \\
-\texttt{ias-auth}        & erp-security  & Deployment  & 8201 & 100m/500m & DSV \\
+\texttt{vpn-wireguard}   & erp-security    & 8201 & 100m/500m & DSV \\
+\texttt{ias-auth}        & erp-security    & 8201 & 100m/500m & DSV \\
 \rowcolor{rowalt}
-\texttt{chat-messenger}  & erp-security  & Deployment & 8507 & 100m/500m & DSV \\
+\texttt{chat-messenger}  & erp-security   & 8507 & 100m/500m & DSV \\
 \midrule
-\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small Рівень моделей}}\\
+\multicolumn{5}{l}{\textcolor{tieryellow}{\bfseries\small Рівень моделей}}\\
 \rowcolor{rowalt}
-\texttt{ai-generation}   & erp-ai & Deployment & 8601 & 100m/500m & DSV \\
-\texttt{faiss-search}    & erp-ai & Deployment & 8601 & 100m/500m & DSV \\
+\texttt{ai-generation}   & erp-ai  & 8601 & 100m/500m & DSV \\
+\texttt{faiss-search}    & erp-ai  & 8601 & 100m/500m & DSV \\
 \midrule
-\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small Рівень служб і сервісів}}\\
+\multicolumn{5}{l}{\textcolor{tieryellow}{\bfseries\small Рівень служб і сервісів}}\\
 \midrule
-\texttt{kvs-storage}     & erp-services & Deployment & 8301 & 100m/500m & DSV \\
+\texttt{kvs-storage}     & erp-services  & 8301 & 100m/500m & DSV \\
 \rowcolor{rowalt}
-\texttt{bpe-processes}   & erp-services & Deployment & 8302 & 100m/500m & DSV \\
-\texttt{rest-api}        & erp-services & Deployment & 8303 & 100m/500m & DSV \\
+\texttt{bpe-processes}   & erp-services  & 8302 & 100m/500m & DSV \\
+\texttt{rest-api}        & erp-services  & 8303 & 100m/500m & DSV \\
 \rowcolor{rowalt}
-\texttt{mach-ivr}        & erp-services & Deployment & 8303 & 100m/500m & DSV \\
-\texttt{n2o-connections} & erp-services & Deployment & 8511 & 100m/500m & DSV \\
+\texttt{mach-ivr}        & erp-services  & 8303 & 100m/500m & DSV \\
+\texttt{n2o-connections} & erp-services  & 8511 & 100m/500m & DSV \\
 \midrule
-\multicolumn{6}{l}{\textcolor{tieryellow}{\bfseries\small Рівень ІКС}}\\
+\multicolumn{5}{l}{\textcolor{tieryellow}{\bfseries\small Рівень ІКС}}\\
 \midrule
 \rowcolor{rowalt}
-\texttt{hl7-health}   & erp-apps & Deployment & 8502 & 100m/500m & HDSV \\
-\texttt{lms-education}   & erp-apps & Deployment & 8506 & 100m/500m & HDSV \\
+\texttt{hl7-health}   & erp-apps  & 8502 & 100m/500m & HDSV \\
+\texttt{lms-education}   & erp-apps  & 8506 & 100m/500m & HDSV \\
 \rowcolor{rowalt}
-\texttt{wms-warehouse}& erp-apps & Deployment & 8505 & 100m/500m & DSV \\
-\texttt{acc-accounting}  & erp-apps & Deployment & 8504 & 100m/500m & DSV \\
+\texttt{wms-warehouse}& erp-apps  & 8505 & 100m/500m & DSV \\
+\texttt{acc-accounting}  & erp-apps  & 8504 & 100m/500m & DSV \\
 \rowcolor{rowalt}
-\texttt{crm-documents}& erp-apps & Deployment & 8503 & 100m/500m & DSV \\
-\texttt{cart-registers}  & erp-apps & Deployment & 8501 & 100m/500m & DSV \\
+\texttt{crm-documents}& erp-apps  & 8503 & 100m/500m & DSV \\
+\texttt{cart-registers}  & erp-apps  & 8501 & 100m/500m & DSV \\
 \rowcolor{rowalt}
-\texttt{pm-projects}  & erp-apps & Deployment & 8514 & 100m/500m & DSV \\
-\texttt{plm-products}  & erp-apps & Deployment & 8514 & 100m/500m & DSV \\
+\texttt{pm-projects}  & erp-apps  & 8514 & 100m/500m & DSV \\
+\texttt{plm-products}  & erp-apps  & 8514 & 100m/500m & DSV \\
 \rowcolor{rowalt}
-\texttt{scm-supply}  & erp-apps & Deployment & 8514 & 100m/500m & DSV \\
-\texttt{olap-analytics}  & erp-apps & Deployment & 8514 & 100m/500m & DSV \\
+\texttt{scm-supply}  & erp-apps  & 8514 & 100m/500m & DSV \\
+\texttt{olap-analytics}  & erp-apps  & 8514 & 100m/500m & DSV \\
 \rowcolor{rowalt}
-\texttt{itsm-incidents}  & erp-apps & Deployment & 8513 & 100m/500m & DSV \\
+\texttt{itsm-incidents}  & erp-apps  & 8513 & 100m/500m & DSV \\
 \end{longtable}
 }
 

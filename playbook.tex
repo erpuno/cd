@@ -1,0 +1,173 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+
+\let\originalfootnotesize\footnotesize
+\let\oldverbatim\verbatim
+\let\oldendverbatim\endverbatim
+\renewenvironment{verbatim}{\originalfootnotesize\oldverbatim}{\oldendverbatim}
+
+\title{Incident Response Management}
+\author{ERP/1 SRE Team}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This article presents a lightweight, Git-native methodology for managing incident response
+playbooks within the ERP/1 Kubernetes platform. By maintaining all documentation
+in version-controlled Markdown files, the approach achieves maximal simplicity, auditability,
+traceability, and seamless integration with GitOps principles.
+\end{abstract}
+
+\tableofcontents
+
+\newpage
+\section{Introduction}
+
+In Site Reliability Engineering, playbooks are critical for reducing Mean Time To Recovery (MTTR).
+Google SRE practices demonstrate that well-documented playbooks can improve incident resolution times by
+compared to ad-hoc responses. For the ERP/1 platform, we adopted a pure git strategy \footnote{\url{https://github.com/erpuno/cd/tree/main/playbooks}}:
+
+\begin{itemize}
+    \item No heavy tools or databases
+    \item Full version history and collaboration via pull requests
+    \item Seamless integration with ArgoCD and the existing CD pipeline
+    \item Easy search and rendering on GitHub
+\end{itemize}
+
+\subsection{Core Principles from Google SRE}
+
+\begin{itemize}
+    \item \textbf{Playbooks dramatically improve MTTR} — Google observed roughly 3x faster resolution when on-call engineers follow documented playbooks instead of “winging it.”
+    \item \textbf{Preparation beats heroics} — Invest in up-to-date, actionable documentation + regular practice (e.g., “Wheel of Misfortune” drills).
+    \item \textbf{Blameless culture} — Focus postmortems on systems and processes, not people.
+    \item \textbf{Automate where possible} — But keep humans in the loop for judgment.
+\end{itemize}
+
+\subsection{The 5 A’s Framework for Excellent Playbooks}
+
+A widely recommended structure for high-quality playbooks includes:
+
+\begin{enumerate}
+    \item \textbf{Actionable} — Every step is a clear command/checklist (not prose).
+    \item \textbf{Accessible} — Available where responders work (Git, linked from alerts).
+    \item \textbf{Accurate} — Regularly reviewed and tested.
+    \item \textbf{Authoritative} — Single source of truth with ownership last update date.
+    \item \textbf{Adaptable} — Easy to update; includes decision trees for variations.
+\end{enumerate}
+
+\newpage
+\subsection{Key Structural Best Practices}
+
+\begin{itemize}
+    \item Standard Template per playbook — Title + Severity + Impact, Detection (alerts / SLIs),
+          Immediate Actions, Diagnosis / Troubleshooting flow (with commands), Resolution steps, Escalation path, Prevention / Follow-up, Metadata.
+    \item Keep it concise — Aim for scannable under stress. Use numbered steps, code blocks, and decision trees.
+    \item Make it executable — Tools like Runme turn Markdown code blocks into one-click commands.
+    \item Version control — Store in Git (Markdown) alongside code. Link to service diagrams, dashboards, and dependencies.
+    \item Service-specific and Generic — Combine broad (e.g., “Resource Exhaustion”) and component-specific playbooks.
+\end{itemize}
+
+\subsection{Operational Best Practices}
+
+\begin{itemize}
+    \item Regular reviews \& testing — Quarterly or after every Sev1/2 incident. Test via chaos engineering and tabletop exercises.
+    \item Integrate with tools — Link playbooks directly from Prometheus/Grafana alerts.
+    \item Train \& practice — On-call rotations should include playbook familiarization and simulated incidents.
+    \item Measure \& improve — Track playbook usage versus MTTR. Update based on real postmortems.
+    \item Minimize toil — Automate repetitive steps where appropriate.
+    \item Include architecture context — Diagrams, dependencies, recent changes, known issues.
+\end{itemize}
+
+\subsection{Common Pitfalls to Avoid}
+
+\begin{itemize}
+    \item Outdated steps (leads to worse outcomes).
+    \item Too much narrative instead of commands.
+    \item Buried in wikis (hard to find during incidents).
+    \item No ownership or review process.
+    \item Ignoring non-technical aspects (communication templates, stakeholder updates).
+\end{itemize}
+
+\section{ERP/1 Playbooks}
+
+\subsection{Detailed Playbook Template Specification}
+
+To satisfy all requirements of the 5 A’s framework and Google SRE best practices,
+every playbook in the repository follows this standardized template:
+
+\begin{itemize}
+    \item \textbf{Title \& Metadata} — Clear title, severity level, impact statement, owner, last reviewed date.
+    \item \textbf{Impact \& Scope} — Description of affected services/namespaces and potential business impact.
+    \item \textbf{Detection} — Specific alerts, SLIs, or symptoms that trigger the playbook.
+    \item \textbf{Immediate Actions} (First 5 Minutes) — High-priority steps to stabilize the situation.
+    \item \textbf{Diagnosis} — Step-by-step troubleshooting with commands, logs, and decision trees.
+    \item \textbf{Resolution} — Detailed remediation procedures, including rollback and verification steps.
+    \item \textbf{Escalation Path} — Clear criteria and contacts for further escalation.
+    \item \textbf{Prevention \& Follow-up} — Long-term improvements, chaos tests, and postmortem requirements.
+    \item \textbf{References} — Links to architecture diagrams, dashboards, related playbooks, and playbooks.
+\end{itemize}
+
+This template ensures playbooks are concise yet comprehensive, scannable under pressure,
+and fully executable (using code blocks). It balances generic patterns with service-specific guidance.
+
+\subsection{Architecture}
+
+The playbooks live in a dedicated \texttt{playbooks/} directory:
+
+\begin{verbatim}
+  README.md
+  01-sev1-cluster-outage.md
+  02-sev2-application-degradation.md
+  03-sev2-resource-exhaustion.md
+  04-sev2-gitops-network-stateful.md
+\end{verbatim}
+
+Each file follows a template optimized for on-call use under pressure.
+
+\subsection{Best Practices Implemented}
+
+\begin{enumerate}
+    \item \textbf{Actionable} — Every playbook contains ready-to-run \texttt{kubectl}, \texttt{argocd}.
+    \item \textbf{Versioned} — Git tracks every change with clear commit messages.
+    \item \textbf{Searchable} — GitHub search + static site.
+    \item \textbf{Executable} — Compatible for one-click execution.
+    \item \textbf{Reviewed} — Changes via PRs with SRE approval.
+\end{enumerate}
+
+\subsection{Usage During Incidents}
+
+\begin{enumerate}
+    \item Open the relevant playbook directly from GitHub or local clone.
+    \item Follow numbered steps.
+    \item Document actions in the incident record.
+    \item After resolution, update the playbook if new lessons were learned.
+\end{enumerate}
+
+\subsection{Advantages of Pure Git Approach}
+
+\begin{itemize}
+    \item Zero operational overhead
+    \item Works offline
+    \item Perfect audit trail for compliance (NIST)
+    \item Natural fit for GitOps culture
+    \item Easy to extend with automation (e.g., linking from Prometheus alerts)
+\end{itemize}
+
+\subsection{Future Enhancements}
+
+\begin{itemize}
+    \item Runme integration for executable blocks
+    \item Automated testing of playbook steps
+    \item AI-assisted playbook generation
+\end{itemize}
+
+\section{Conclusion}
+
+Managing playbooks in pure Git represents the SRE ideal: simplicity, reliability,
+and developer-friendly workflows. This approach keeps our focus on reliability rather than tool administration.
+
+\end{document}
